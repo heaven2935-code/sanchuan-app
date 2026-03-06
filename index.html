@@ -1,699 +1,1579 @@
-import { useState, useRef, useEffect } from “react”;
+<!DOCTYPE html>
 
-// ─── 顏色系統 ────────────────────────────────────────────────────────────────
-const C = {
-bg:      “#0F1117”,
-sidebar: “#161B27”,
-card:    “#1C2333”,
-border:  “#252E42”,
-accent:  “#E07B39”,
-text:    “#E8EAF0”,
-muted:   “#5A6A8A”,
-green:   “#4CAF8A”,
-};
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>三川工方｜工程管理系統</title>
+<style>
+:root {
+  --bg:      #0D1117;
+  --sb:      #131920;
+  --card:    #1A2230;
+  --card2:   #1E2840;
+  --border:  #243040;
+  --border2: #2E3D52;
+  --gold:    #C9A84C;
+  --gold2:   #E8C97A;
+  --gold-bg: rgba(201,168,76,0.08);
+  --text:    #E8EDF5;
+  --muted:   #4A5E78;
+  --muted2:  #6A7E98;
+  --green:   #4AB87A;
+  --red:     #D05050;
+  --blue:    #4A8CD0;
+  --font:    'PingFang TC','Noto Sans TC','Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
 
-// ─── 模組定義 ────────────────────────────────────────────────────────────────
-const MODULES = {
-attendance: { label: “出勤管理”, icon: “◈”, color: “#E07B39” },
-dimension:  { label: “尺寸紀錄”, icon: “◰”, color: “#4A90D9” },
-material:   { label: “材料管理”, icon: “◫”, color: “#5BA85A” },
-tool:       { label: “工具管理”, icon: “◧”, color: “#9B6BC6” },
-project:    { label: “案件管理”, icon: “◩”, color: “#D4A017” },
-diary:      { label: “施工日誌”, icon: “◪”, color: “#3AAFA9” },
-finance:    { label: “收支紀錄”, icon: “◬”, color: “#C0392B” },
-};
+/* ══ LAYOUT ══ */
+.app{display:flex;height:100dvh;overflow:hidden}
 
-// ─── Schema ──────────────────────────────────────────────────────────────────
-const SCHEMA = {
-attendance: [
-{ key: “date”,         label: “日期” },
-{ key: “project”,      label: “案場” },
-{ key: “workers”,      label: “人員”, render: v => Array.isArray(v) ? v.join(”、”) : v },
-{ key: “time_start”,   label: “開始” },
-{ key: “time_end”,     label: “結束” },
-{ key: “hours”,        label: “工時(h)” },
-{ key: “work_content”, label: “工作內容” },
-],
-dimension: [
-{ key: “project”,  label: “案場” },
-{ key: “location”, label: “位置” },
-{ key: “length”,   label: “長(cm)” },
-{ key: “width”,    label: “寬(cm)” },
-{ key: “height”,   label: “高(cm)” },
-{ key: “depth”,    label: “深(cm)” },
-{ key: “note”,     label: “備註” },
-],
-material: [
-{ key: “project”,   label: “案場” },
-{ key: “item_name”, label: “品名” },
-{ key: “spec”,      label: “規格” },
-{ key: “quantity”,  label: “數量” },
-{ key: “unit”,      label: “單位” },
-{ key: “purpose”,   label: “用途” },
-],
-tool: [
-{ key: “project”,   label: “案場” },
-{ key: “tool_name”, label: “工具” },
-{ key: “quantity”,  label: “數量” },
-{ key: “purpose”,   label: “用途” },
-],
-project: [
-{ key: “project_name”, label: “案場名稱” },
-{ key: “address”,      label: “地址” },
-{ key: “client”,       label: “業主” },
-{ key: “start_date”,   label: “開工日” },
-{ key: “status”,       label: “狀態” },
-{ key: “note”,         label: “備註” },
-],
-diary: [
-{ key: “date”,      label: “日期” },
-{ key: “project”,   label: “案場” },
-{ key: “progress”,  label: “進度” },
-{ key: “issues”,    label: “問題/異常” },
-{ key: “next_step”, label: “下一步” },
-],
-finance: [
-{ key: “date”,    label: “日期” },
-{ key: “project”, label: “案場” },
-{ key: “type”,    label: “收/支” },
-{ key: “item”,    label: “項目” },
-{ key: “amount”,  label: “金額” },
-{ key: “note”,    label: “備註” },
-],
-};
+/* ── SIDEBAR ── */
+.sidebar{
+width:200px;min-width:200px;
+background:var(–sb);
+border-right:1px solid var(–border);
+display:flex;flex-direction:column;
+transition:width 0.22s cubic-bezier(.4,0,.2,1);
+overflow:visible;flex-shrink:0;
+position:relative;
+}
+.sidebar.collapsed{width:52px;min-width:52px}
 
-// ─── AI 解析 ─────────────────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `你是一套「室內裝修工程管理 AI」。
-使用者會用自然語言輸入工程相關訊息，你必須：
+.sb-logo{
+padding:14px 12px 12px;
+border-bottom:1px solid var(–border);
+display:flex;align-items:center;
+min-height:56px;
+}
+.sb-logo-text{overflow:hidden;white-space:nowrap}
+.sb-title{font-size:13px;font-weight:800;color:var(–gold);letter-spacing:1px}
+.sb-sub{font-size:9px;color:var(–muted2);margin-top:2px;letter-spacing:0.5px}
 
-1. 判斷屬於哪個模組（attendance/dimension/material/tool/project/diary/finance）
-1. 解析出欄位值
-1. 以 JSON 格式回傳，絕對不加其他說明文字
+/* 收合鍵：固定在側欄右邊緣垂直正中央 */
+.sb-toggle{
+position:absolute;
+right:-12px;
+top:50%;
+transform:translateY(-50%);
+z-index:100;
+width:24px;height:40px;
+background:var(–sb);
+border:1px solid var(–border);
+border-left:none;
+border-radius:0 8px 8px 0;
+cursor:pointer;
+display:flex;align-items:center;justify-content:center;
+color:var(–muted);
+transition:color 0.15s, background 0.15s;
+padding:0;
+}
+.sb-toggle:hover{color:var(–gold);background:var(–card)}
+.sidebar{position:relative}
 
-回傳格式（只回傳 JSON，不要 markdown code block）：
-{“module”:”<模組代碼>”,“confidence”:<0-1>,“data”:{…對應欄位},“summary”:”<中文摘要一句話>”}
+.sb-nav{padding:4px 6px;overflow-y:auto;display:flex;flex-direction:column;gap:1px;flex:1}
+.sb-nav::-webkit-scrollbar{display:none}
+.sb-bottom{border-top:1px solid var(–border);padding:8px 6px;display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.sb-new-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:var(–gold);border:none;border-radius:8px;cursor:pointer;color:#000;padding:10px 12px;font-size:12px;font-weight:700;font-family:var(–font);transition:all 0.15s}
+.sb-new-btn svg{stroke:#000}
+.sb-new-btn:hover{background:#e0ba5c;transform:translateY(-1px)}
+.sidebar.collapsed .sb-new-btn .nav-label{display:none}
+.sb-stats-inline{display:flex;align-items:center;gap:5px;padding:3px 6px;font-size:11px}
+.sb-stats-inline .stat-l{color:var(–muted2)}
+.sb-stats-inline .stat-v{color:var(–gold);font-weight:700}
+.sidebar.collapsed .sb-stats-inline .stat-l{display:none}
+.sidebar.collapsed .sb-stats-inline{justify-content:center}
+.sb-nav::-webkit-scrollbar{display:none}
+.sb-section{font-size:9px;color:var(–muted);padding:10px 8px 3px;letter-spacing:1.5px;text-transform:uppercase;white-space:nowrap}
+.sidebar.collapsed .sb-section{display:none}
+.sb-divider{border-top:1px solid var(–border);margin:6px 8px}
 
-各模組欄位定義：
-attendance: {“date”:“YYYY-MM-DD”,“project”:“案場名稱”,“workers”:[“人員1”],“time_start”:“HH:MM”,“time_end”:“HH:MM”,“hours”:“工數”,“work_content”:“工作內容”}
-dimension:  {“project”:“案場”,“location”:“位置”,“length”:“長cm”,“width”:“寬cm”,“height”:“高cm”,“depth”:“深cm”,“note”:“備註”}
-material:   {“project”:“案場”,“item_name”:“品名”,“spec”:“規格”,“quantity”:“數量”,“unit”:“單位”,“purpose”:“用途”}
-tool:       {“project”:“案場”,“tool_name”:“工具名稱”,“quantity”:“數量”,“purpose”:“用途”}
-project:    {“project_name”:“案場名稱”,“address”:“地址”,“client”:“業主”,“start_date”:“YYYY-MM-DD”,“status”:“進行中/已完工/暫停”,“note”:“備註”}
-diary:      {“date”:“YYYY-MM-DD”,“project”:“案場”,“progress”:“進度描述”,“issues”:“問題”,“next_step”:“下一步”}
-finance:    {“date”:“YYYY-MM-DD”,“project”:“案場”,“type”:“收入/支出”,“item”:“項目”,“amount”:“金額”,“note”:“備註”}
+.nav-item{
+display:flex;align-items:center;gap:9px;
+width:100%;border:none;border-radius:7px;cursor:pointer;
+padding:8px 9px;font-size:12.5px;font-family:var(–font);
+background:transparent;color:var(–muted2);
+transition:all 0.13s;position:relative;white-space:nowrap;
+overflow:hidden;text-align:left;
+}
+.nav-item:hover{background:rgba(255,255,255,0.04);color:var(–text)}
+.nav-item.active{background:var(–gold-bg);color:var(–gold);font-weight:600}
+.nav-item .active-bar{
+position:absolute;left:0;top:20%;bottom:20%;
+width:3px;border-radius:2px;background:var(–gold);
+display:none;
+}
+.nav-item.active .active-bar{display:none}
 
-規則：
-
-- 今天 = ${new Date().toISOString().slice(0,10)}
-- 自動計算工時（08:00~17:00 = 9小時）
-- 多人員拆成陣列
-- 尺寸預設 cm
-- 無法確定的欄位填 null`;
-
-async function parseWithAI(parts) {
-const res = await fetch(“https://api.anthropic.com/v1/messages”, {
-method: “POST”,
-headers: { “Content-Type”: “application/json” },
-body: JSON.stringify({
-model: “claude-sonnet-4-20250514”,
-max_tokens: 1000,
-system: SYSTEM_PROMPT,
-messages: [{ role: “user”, content: parts }],
-}),
-});
-const data = await res.json();
-const text = data.content?.find(b => b.type === “text”)?.text || “”;
-return JSON.parse(text.replace(/`json|`/g, “”).trim());
+/* ── 幾何圖示：正方形 → 旋轉45度菱形 ── */
+.nav-icon{
+width:26px;height:26px;flex-shrink:0;
+display:flex;align-items:center;justify-content:center;
+}
+.nav-icon-box{
+width:14px;height:14px;
+border-radius:2px;
+transition:transform 0.28s cubic-bezier(.34,1.4,.64,1),
+box-shadow 0.22s;
+transform:rotate(0deg);
+position:relative;
+/* 純色填滿，靠 background 顏色區分 */
+}
+/* 選中：旋轉45度成菱形，右頂角指向內容區 */
+.nav-item.active .nav-icon-box{
+transform:rotate(45deg);
+border-radius:1px;
+}
+.nav-item.active .nav-icon-box span{
+transform:rotate(-45deg);
+}
+.nav-icon-box span{
+display:flex;align-items:center;justify-content:center;
+transition:transform 0.30s cubic-bezier(.34,1.4,.64,1);
+transform:rotate(0deg);
 }
 
-// ─── 主元件 ──────────────────────────────────────────────────────────────────
-export default function App() {
-const [sidebarOpen, setSidebarOpen] = useState(true);
-const [activeModule, setActiveModule] = useState(“chat”);
-const [messages, setMessages] = useState([{
-role: “assistant”,
-text: “您好！我是工程管理 AI。\n\n請直接用自然語言輸入工程資訊，我會自動解析分類並儲存到對應模組。\n\n例如：「今天新泰路案場，家豪跟阿倫出工，早上八點到下午五點，做天花板角材定位」”,
-parsed: null,
-attachments: [],
-}]);
-const [input, setInput] = useState(””);
-const [loading, setLoading] = useState(false);
-const [records, setRecords] = useState({
-attendance: [], dimension: [], material: [],
-tool: [], project: [], diary: [], finance: [],
+.nav-label{flex:1;overflow:hidden;text-overflow:ellipsis}
+.sidebar.collapsed .nav-label{display:none}
+.nav-badge{
+font-size:9px;padding:1px 5px;border-radius:8px;
+font-weight:700;min-width:16px;text-align:center;
+flex-shrink:0;
+}
+.sidebar.collapsed .nav-badge{display:none}
+.nav-dot{
+position:absolute;right:7px;top:8px;
+width:5px;height:5px;border-radius:50%;
+display:none;
+}
+.sidebar.collapsed .nav-dot{display:block}
+
+.stat-l{color:var(–muted2)}
+.stat-v{color:var(–gold);font-weight:700}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+.topbar{
+display:flex;align-items:center;justify-content:space-between;
+padding:0 24px;height:56px;
+border-bottom:1px solid var(–border);
+background:var(–sb);flex-shrink:0;
+}
+.topbar-left{display:flex;flex-direction:column;gap:2px}
+.topbar-title{font-size:15px;font-weight:800;letter-spacing:0.5px}
+.topbar-sub{font-size:11px;color:var(–muted2)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.online-dot{
+width:7px;height:7px;border-radius:50%;background:var(–green);
+box-shadow:0 0 6px var(–green);display:inline-block;
+}
+.online-label{font-size:11px;color:var(–green)}
+
+.content{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* ══ CHAT PANEL ══ */
+.chat-wrap{display:flex;flex-direction:column;height:100%;overflow:hidden}
+.messages{
+flex:1;overflow-y:auto;
+padding:20px 24px 12px;
+display:flex;flex-direction:column;gap:16px;
+}
+.messages::-webkit-scrollbar{width:4px}
+.messages::-webkit-scrollbar-thumb{background:var(–border2);border-radius:2px}
+
+.msg-row{display:flex;align-items:flex-start;gap:10px}
+.msg-row.user{justify-content:flex-end}
+.avatar{
+width:28px;height:28px;border-radius:8px;
+background:linear-gradient(135deg,var(–gold),#A07020);
+color:#fff;font-size:9px;font-weight:800;
+display:flex;align-items:center;justify-content:center;
+flex-shrink:0;margin-top:2px;letter-spacing:0.5px;
+}
+.bubble{
+padding:10px 14px;border-radius:12px;
+font-size:13.5px;line-height:1.65;word-break:break-word;
+max-width:72%;
+}
+.bubble.ai{background:var(–card);border:1px solid var(–border);color:var(–text)}
+.bubble.user{background:linear-gradient(135deg,#8A5A1A,var(–gold));color:#fff}
+
+.parsed-card{
+background:var(–card);border:1px solid var(–border);
+border-left:3px solid;border-radius:10px;overflow:hidden;
+max-width:72%;margin-left:38px;
+}
+.parsed-head{
+display:flex;justify-content:space-between;align-items:center;
+padding:7px 12px;border-bottom:1px solid var(–border);
+}
+.parsed-tag{
+font-size:10px;padding:2px 8px;border-radius:5px;
+font-weight:700;
+}
+.parsed-conf{font-size:10px;color:var(–muted2)}
+.parsed-table{width:100%;border-collapse:collapse}
+.parsed-table td{
+padding:5px 12px;font-size:12px;
+border-bottom:1px solid var(–border);
+}
+.parsed-table td:first-child{color:var(–muted2);width:60px;white-space:nowrap}
+.parsed-table td:last-child{color:var(–text);border-bottom:none}
+.parsed-table tr:last-child td{border-bottom:none}
+.parsed-saved{
+padding:6px 12px;font-size:11px;color:var(–green);
+border-top:1px solid var(–border);display:flex;align-items:center;gap:5px;
+}
+
+.typing-dots{display:flex;gap:4px;align-items:center;padding:2px 0}
+.typing-dots span{
+width:6px;height:6px;border-radius:50%;background:var(–muted);
+animation:blink 1.2s ease-in-out infinite;
+}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.3;transform:scale(.7)}40%{opacity:1;transform:scale(1)}}
+
+/* Input */
+.input-area{
+padding:10px 24px 16px;
+border-top:1px solid var(–border);
+background:var(–sb);flex-shrink:0;
+}
+.attach-strip{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.attach-thumb{
+width:50px;height:50px;object-fit:cover;
+border-radius:7px;border:1px solid var(–border);
+}
+.attach-file{
+background:var(–card);border:1px solid var(–border);
+border-radius:6px;padding:4px 8px;font-size:11px;
+color:var(–muted2);max-width:100px;overflow:hidden;
+text-overflow:ellipsis;white-space:nowrap;
+}
+.attach-wrap{position:relative;display:inline-flex}
+.attach-x{
+position:absolute;top:-4px;right:-4px;
+width:14px;height:14px;border-radius:50%;
+background:#922;border:none;color:#fff;
+cursor:pointer;font-size:8px;
+display:flex;align-items:center;justify-content:center;
+}
+.input-box{
+background:var(–card);border:1px solid var(–border2);
+border-radius:12px;overflow:hidden;
+transition:border-color 0.15s;
+}
+.input-box:focus-within{border-color:rgba(201,168,76,0.4)}
+.input-textarea{
+width:100%;background:transparent;border:none;
+color:var(–text);padding:12px 15px;font-size:13.5px;
+resize:none;outline:none;line-height:1.6;
+font-family:var(–font);display:block;
+}
+.input-textarea::placeholder{color:var(–muted)}
+.input-footer{
+display:flex;justify-content:space-between;align-items:center;
+padding:7px 12px;border-top:1px solid var(–border);
+}
+.input-hint{font-size:11px;color:var(–muted)}
+.input-btns{display:flex;gap:6px;align-items:center}
+.icon-btn{
+background:transparent;border:none;cursor:pointer;
+color:var(–muted);display:flex;align-items:center;
+padding:5px 7px;border-radius:7px;transition:all 0.13s;
+}
+.icon-btn:hover{background:var(–card2);color:var(–text)}
+.icon-btn svg{width:16px;height:16px}
+.send-btn{
+background:linear-gradient(135deg,#A07020,var(–gold));
+border:none;border-radius:8px;color:#fff;cursor:pointer;
+padding:8px 12px;display:flex;align-items:center;
+transition:opacity 0.13s;
+}
+.send-btn:disabled{opacity:0.45;cursor:default}
+.send-btn svg{width:15px;height:15px}
+
+/* ══ DATA PANEL ══ */
+.data-wrap{display:flex;flex-direction:column;height:100%;overflow:hidden}
+
+.data-topbar{
+display:flex;justify-content:space-between;align-items:center;
+padding:0 24px;height:56px;
+border-bottom:1px solid var(–border);
+background:var(–sb);flex-shrink:0;
+}
+.data-title-row{display:flex;align-items:center;gap:10px}
+.data-mod-icon{
+width:40px;height:40px;border-radius:11px;
+display:flex;align-items:center;justify-content:center;
+flex-shrink:0;
+}
+.data-mod-icon svg{width:26px;height:26px}
+.data-title{font-size:15px;font-weight:800}
+.data-count{font-size:11px;color:var(–muted2);margin-top:1px}
+.search-input{
+background:var(–card);border:1px solid var(–border2);
+border-radius:9px;color:var(–text);padding:7px 13px;
+font-size:13px;outline:none;width:180px;font-family:var(–font);
+transition:border-color 0.15s;
+}
+.search-input:focus{border-color:rgba(201,168,76,0.4)}
+.search-input::placeholder{color:var(–muted)}
+
+/* AI quick input in data panel */
+.data-ai-bar{
+padding:10px 24px;border-bottom:1px solid var(–border);
+background:rgba(201,168,76,0.03);flex-shrink:0;
+display:flex;gap:8px;align-items:center;
+}
+.data-ai-input{
+flex:1;background:var(–card);border:1px solid var(–border2);
+border-radius:9px;color:var(–text);padding:8px 13px;
+font-size:13px;outline:none;font-family:var(–font);
+transition:border-color 0.15s;
+}
+.data-ai-input:focus{border-color:rgba(201,168,76,0.4)}
+.data-ai-input::placeholder{color:var(–muted)}
+.data-ai-btn{
+background:var(–gold);border:none;border-radius:8px;
+color:#1A1000;font-size:11px;font-weight:800;
+cursor:pointer;padding:8px 14px;white-space:nowrap;
+font-family:var(–font);letter-spacing:0.5px;
+transition:opacity 0.13s;
+}
+.data-ai-btn:disabled{opacity:0.5;cursor:default}
+
+/* Table */
+.table-area{flex:1;overflow:auto;padding:16px 24px 20px}
+.table-area::-webkit-scrollbar{width:4px;height:4px}
+.table-area::-webkit-scrollbar-thumb{background:var(–border2);border-radius:2px}
+
+.data-table{width:100%;border-collapse:collapse;font-size:13px}
+.data-table th{
+padding:8px 14px;background:var(–card2);
+border:1px solid var(–border);
+color:var(–muted2);font-weight:700;
+font-size:10px;letter-spacing:1px;
+text-transform:uppercase;white-space:nowrap;text-align:left;
+position:sticky;top:0;z-index:2;
+}
+.data-table td{
+padding:10px 14px;border:1px solid var(–border);
+color:var(–text);vertical-align:middle;
+line-height:1.4;
+}
+.data-table tr:hover td{background:rgba(255,255,255,0.02)}
+.del-cell{text-align:center;width:36px}
+.del-row-btn{
+background:none;border:none;color:var(–muted);
+cursor:pointer;font-size:14px;padding:2px 4px;
+transition:color 0.13s;
+}
+.del-row-btn:hover{color:var(–red)}
+
+/* Manual add form */
+.add-form-bar{
+border-top:1px solid var(–border);
+padding:12px 24px;background:var(–sb);flex-shrink:0;
+}
+.add-form-toggle{
+display:flex;align-items:center;gap:8px;
+font-size:11px;font-weight:700;color:var(–muted2);
+cursor:pointer;padding:2px 0;letter-spacing:0.5px;
+user-select:none;
+}
+.add-form-toggle svg{width:14px;height:14px;transition:transform 0.2s}
+.add-form-toggle.open svg{transform:rotate(180deg)}
+.add-form-fields{
+display:flex;flex-wrap:wrap;gap:8px;
+margin-top:10px;
+}
+.form-field{display:flex;flex-direction:column;gap:4px;min-width:110px;flex:1}
+.form-field label{font-size:9px;font-weight:700;color:var(–muted);letter-spacing:1px;text-transform:uppercase}
+.form-field input,.form-field select{
+background:var(–card);border:1px solid var(–border2);
+border-radius:7px;color:var(–text);padding:7px 10px;
+font-size:12.5px;outline:none;font-family:var(–font);
+transition:border-color 0.15s;
+}
+.form-field input:focus,.form-field select:focus{border-color:rgba(201,168,76,0.4)}
+.form-field select option{background:var(–card)}
+.form-add-btn{
+align-self:flex-end;background:var(–gold);border:none;
+border-radius:8px;color:#1A1000;font-size:12px;font-weight:800;
+cursor:pointer;padding:8px 18px;font-family:var(–font);
+white-space:nowrap;height:36px;transition:opacity 0.13s;
+}
+.form-add-btn:hover{opacity:0.88}
+
+/* Empty state */
+.empty-state{
+flex:1;display:flex;flex-direction:column;
+align-items:center;justify-content:center;gap:10px;
+}
+.empty-icon{opacity:0.12;font-size:48px}
+.empty-text{color:var(–muted2);font-size:13px}
+
+/* Status tags */
+.tag{
+display:inline-block;padding:2px 8px;
+border-radius:6px;font-size:10px;font-weight:700;
+}
+.tag-gold{background:rgba(201,168,76,0.15);color:var(–gold)}
+.tag-green{background:rgba(74,184,122,0.15);color:var(–green)}
+.tag-red{background:rgba(208,80,80,0.15);color:var(–red)}
+.tag-blue{background:rgba(74,140,208,0.15);color:var(–blue)}
+
+/* Finance overview */
+.fin-overview{
+margin:16px 24px 0;
+background:linear-gradient(135deg,#131C2C,#1A2438);
+border:1px solid rgba(201,168,76,0.18);
+border-radius:16px;padding:18px 20px;flex-shrink:0;
+}
+.fin-ov-label{font-size:9px;font-weight:800;color:rgba(255,255,255,0.3);letter-spacing:2px;margin-bottom:4px}
+.fin-ov-balance{font-size:28px;font-weight:800;color:var(–gold);letter-spacing:1px;margin-bottom:14px}
+.fin-ov-row{display:flex;gap:0}
+.fin-ov-stat{flex:1;padding:0 14px;border-right:1px solid rgba(255,255,255,0.07)}
+.fin-ov-stat:first-child{padding-left:0}
+.fin-ov-stat:last-child{border-right:none}
+.fin-ov-stat-l{font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-bottom:4px;font-weight:700}
+.fin-ov-stat-v{font-size:14px;font-weight:800}
+
+/* Timeline for log */
+.timeline{padding:0 24px 20px;overflow-y:auto;flex:1}
+.timeline::-webkit-scrollbar{width:4px}
+.timeline::-webkit-scrollbar-thumb{background:var(–border2);border-radius:2px}
+.tl-item{display:flex;gap:14px;margin-bottom:18px;position:relative}
+.tl-item::before{
+content:’’;position:absolute;left:11px;top:24px;bottom:-18px;
+width:1.5px;background:linear-gradient(to bottom,var(–border2),transparent);
+}
+.tl-item:last-child::before{display:none}
+.tl-dot{
+width:24px;height:24px;border-radius:50%;flex-shrink:0;margin-top:12px;
+background:var(–card2);border:2px solid var(–gold);
+display:flex;align-items:center;justify-content:center;
+}
+.tl-dot svg{width:10px;height:10px;color:var(–gold)}
+.tl-card{
+flex:1;background:var(–card);border:1px solid var(–border);
+border-radius:12px;overflow:hidden;
+}
+.tl-head{
+display:flex;justify-content:space-between;align-items:center;
+padding:9px 13px;
+background:linear-gradient(135deg,#131C2C,#1A2438);
+border-bottom:1px solid var(–border);
+}
+.tl-date{font-size:11px;font-weight:800;color:var(–gold);letter-spacing:1px}
+.tl-site{font-size:11px;color:rgba(255,255,255,0.45);display:flex;align-items:center;gap:4px}
+.tl-site svg{width:10px;height:10px}
+.tl-body{padding:11px 13px}
+.tl-work{font-size:13px;font-weight:700;color:var(–text);margin-bottom:5px;line-height:1.4}
+.tl-note{font-size:12px;color:var(–muted2);line-height:1.6}
+.tl-footer{
+display:flex;gap:7px;padding:8px 13px;flex-wrap:wrap;
+border-top:1px solid var(–border);background:rgba(0,0,0,0.15);
+align-items:center;
+}
+.tl-tag{
+display:inline-flex;align-items:center;gap:4px;
+font-size:10px;font-weight:600;color:var(–muted2);
+background:var(–card2);border-radius:6px;padding:3px 8px;
+}
+.tl-tag svg{width:10px;height:10px}
+.tl-del{
+background:none;border:none;color:var(–muted);
+cursor:pointer;font-size:13px;margin-left:auto;padding:0 2px;
+transition:color 0.13s;
+}
+.tl-del:hover{color:var(–red)}
+
+/* ── API Key Modal ── */
+#key-modal{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px}
+.key-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(3px)}
+.key-box{
+position:relative;z-index:1;
+background:#161E2C;border:1px solid #C9A84C55;border-radius:16px;
+padding:24px;width:100%;max-width:340px;
+}
+.key-title{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:#C9A84C;margin-bottom:10px}
+.key-desc{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.7;margin-bottom:16px}
+.key-desc b{color:rgba(255,255,255,0.7)}
+.key-input{
+width:100%;box-sizing:border-box;
+background:#0D1117;border:1px solid #2A3A50;border-radius:8px;
+color:#E8EDF5;font-size:13px;padding:11px 12px;font-family:monospace;
+outline:none;margin-bottom:14px;
+}
+.key-input:focus{border-color:#C9A84C55}
+.key-row{display:flex;gap:10px}
+.key-cancel{flex:1;background:transparent;border:1px solid #2A3A50;border-radius:8px;color:#4A5E78;padding:10px;cursor:pointer;font-size:13px;font-family:inherit}
+.key-save{flex:2;background:#C9A84C;border:none;border-radius:8px;color:#000;padding:10px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit}
+.key-save:hover{background:#e0ba5c}
+.key-ok{margin-top:10px;font-size:11px;color:#4AB87A;text-align:center}
+.key-warn{margin-top:10px;font-size:11px;color:#C9A84C88;text-align:center}
+.toast-ok{
+position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+background:#4AB87A;color:#000;font-weight:700;font-size:13px;
+padding:10px 20px;border-radius:20px;z-index:9999;
+animation:fadeup 0.3s ease;
+}
+@keyframes fadeup{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* key status dot in sidebar */
+.sb-key-btn{
+display:flex;align-items:center;gap:8px;
+width:100%;background:transparent;border:1px solid var(–border);
+border-radius:8px;padding:8px 10px;cursor:pointer;
+font-size:11px;color:var(–muted2);font-family:var(–font);
+transition:all 0.15s;
+}
+.sb-key-btn:hover{border-color:#C9A84C55;color:var(–text)}
+.key-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.sidebar.collapsed .sb-key-btn .nav-label{display:none}
+.sidebar.collapsed .sb-key-btn{justify-content:center;padding:8px 0;border:none;background:none}
+
+.sb-sync-btn{
+width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+background:transparent;border:1px solid #3AAFA955;
+border-radius:8px;padding:8px 10px;cursor:pointer;
+font-size:11px;color:#3AAFA9;font-family:var(–font);
+transition:all 0.15s;
+}
+.sb-sync-btn:hover{background:#3AAFA915;border-color:#3AAFA9}
+.sidebar.collapsed .sb-sync-btn .nav-label{display:none}
+.sidebar.collapsed .sb-sync-btn{justify-content:center;padding:8px 0}
+</style>
+
+</head>
+<body>
+<div class="app">
+
+  <!-- ── SIDEBAR ── -->
+
+  <aside class="sidebar" id="sidebar">
+    <!-- 收合鍵：固定在側欄右邊緣垂直中央 -->
+    <button class="sb-toggle" onclick="toggleSidebar()" title="收合/展開" id="sb-toggle-btn">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" id="toggle-icon">
+        <path d="M10 3L5 8L10 13"/>
+      </svg>
+    </button>
+    <div class="sb-logo">
+      <div class="sb-logo-text">
+        <div class="sb-title">三川工方</div>
+        <div class="sb-sub">Engineering Manager</div>
+      </div>
+    </div>
+
+```
+<nav class="sb-nav">
+  <div class="sb-section">管理模組</div>
+
+  <button class="nav-item" id="nav-attendance" onclick="switchModule('attendance')">
+    <span class="active-bar"></span>
+    <span class="nav-icon" id="navicon-attendance"></span>
+    <span class="nav-label">出勤管理</span>
+    <span class="nav-badge" id="badge-attendance" style="background:rgba(224,123,57,0.2);color:#E07B39"></span>
+    <span class="nav-dot" id="dot-attendance" style="background:#E07B39"></span>
+  </button>
+
+  <button class="nav-item" id="nav-dimension" onclick="switchModule('dimension')">
+    <span class="active-bar"></span>
+    <span class="nav-icon" id="navicon-dimension"></span>
+    <span class="nav-label">尺寸紀錄</span>
+    <span class="nav-badge" id="badge-dimension" style="background:rgba(74,140,208,0.2);color:#4A8CD0"></span>
+    <span class="nav-dot" id="dot-dimension" style="background:#4A8CD0"></span>
+  </button>
+
+  <button class="nav-item" id="nav-material" onclick="switchModule('material')">
+    <span class="active-bar"></span>
+    <span class="nav-icon" id="navicon-material"></span>
+    <span class="nav-label">材料管理</span>
+    <span class="nav-badge" id="badge-material" style="background:rgba(91,168,90,0.2);color:#5BA85A"></span>
+    <span class="nav-dot" id="dot-material" style="background:#5BA85A"></span>
+  </button>
+
+  <button class="nav-item" id="nav-tool" onclick="switchModule('tool')">
+    <span class="active-bar"></span>
+    <span class="nav-icon" id="navicon-tool"></span>
+    <span class="nav-label">工具管理</span>
+    <span class="nav-badge" id="badge-tool" style="background:rgba(155,107,198,0.2);color:#9B6BC6"></span>
+    <span class="nav-dot" id="dot-tool" style="background:#9B6BC6"></span>
+  </button>
+
+  <button class="nav-item" id="nav-project" onclick="switchModule('project')">
+    <span class="active-bar"></span>
+    <span class="nav-icon" id="navicon-project"></span>
+    <span class="nav-label">案件管理</span>
+    <span class="nav-badge" id="badge-project" style="background:rgba(212,160,23,0.2);color:#D4A017"></span>
+    <span class="nav-dot" id="dot-project" style="background:#D4A017"></span>
+  </button>
+
+  <button class="nav-item" id="nav-diary" onclick="switchModule('diary')">
+    <span class="active-bar"></span>
+    <span class="nav-icon" id="navicon-diary"></span>
+    <span class="nav-label">施工日誌</span>
+    <span class="nav-badge" id="badge-diary" style="background:rgba(58,175,169,0.2);color:#3AAFA9"></span>
+    <span class="nav-dot" id="dot-diary" style="background:#3AAFA9"></span>
+  </button>
+
+  <button class="nav-item" id="nav-finance" onclick="switchModule('finance')">
+    <span class="active-bar"></span>
+    <span class="nav-icon" id="navicon-finance"></span>
+    <span class="nav-label">收支紀錄</span>
+    <span class="nav-badge" id="badge-finance" style="background:rgba(192,57,43,0.2);color:#C0392B"></span>
+    <span class="nav-dot" id="dot-finance" style="background:#C0392B"></span>
+  </button>
+</nav>
+
+<!-- ── 底部操作區（拇指熱區）── -->
+<div class="sb-bottom">
+  <button class="sb-sync-btn" onclick="syncAllToSheets()" id="sync-all-btn" title="同步到 Google Sheets">
+    <span style="font-size:13px">☁</span>
+    <span class="nav-label">同步到試算表</span>
+  </button>
+  <button class="sb-key-btn" onclick="showKeyModal()" id="key-status-btn">
+    <span class="key-dot" id="key-dot" style="background:#555"></span>
+    <span class="nav-label" id="key-label">設定 API Key</span>
+  </button>
+  <button class="nav-item active" id="nav-chat" onclick="switchModule('chat')">
+    <span class="active-bar"></span>
+    <span class="nav-icon" id="navicon-chat"></span>
+    <span class="nav-label">AI 對話輸入</span>
+    <span class="nav-badge" id="badge-chat" style="background:rgba(201,168,76,0.2);color:var(--gold)"></span>
+    <span class="nav-dot" id="dot-chat" style="background:var(--gold)"></span>
+  </button>
+  <button class="sb-new-btn" onclick="switchModule('chat')" title="新增紀錄">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M7 1v12M1 7h12"/></svg>
+    <span class="nav-label">新增紀錄</span>
+  </button>
+  <div class="sb-stats-inline">
+    <span class="stat-v" id="total-count">0 筆</span>
+    <span class="stat-l">紀錄</span>
+  </div>
+</div>
+```
+
+  </aside>
+
+  <!-- ── MAIN ── -->
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title" id="topbar-title">AI 語意輸入</div>
+        <div class="topbar-sub" id="topbar-sub">輸入工程資訊，自動分類存入各管理模組</div>
+      </div>
+      <div class="topbar-right">
+        <span class="online-dot"></span>
+        <span class="online-label">AI 就緒</span>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+
+</div>
+
+<script>
+try {
+// ══════════════════════════════════════════════════════
+// 資料層
+// ══════════════════════════════════════════════════════
+const TODAY = new Date().toISOString().slice(0,10);
+// API Key 從 localStorage 讀取
+let API_KEY = localStorage.getItem('sk_apikey') || '';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxz7LxSNx_llXUd06BGH8aMbacjUuR3sz2fBurBrQhwjB-6q2En2gDtoXFWdMPdGlIC/exec';
+
+const LS = {
+  get: k => JSON.parse(localStorage.getItem(k) || '[]'),
+  set: (k,v) => localStorage.setItem(k, JSON.stringify(v)),
+};
+
+const DB = {
+  attendance: LS.get('db_attendance'),
+  dimension:  LS.get('db_dimension'),
+  material:   LS.get('db_material'),
+  tool:       LS.get('db_tool'),
+  project:    LS.get('db_project'),
+  diary:      LS.get('db_diary'),
+  finance:    LS.get('db_finance'),
+};
+
+function saveDB(mod) {
+  LS.set('db_'+mod, DB[mod]);
+  updateBadges();
+  syncToSheets(mod);
+}
+
+// 同步到 Google Sheets
+async function syncToSheets(mod) {
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      body: JSON.stringify({ module: mod, records: DB[mod] }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showSyncToast('✓ 已同步到 Google Sheets（' + data.count + ' 筆）');
+    }
+  } catch (err) {
+    // 離線時靜默失敗，資料已存在本機
+    console.log('同步失敗（離線？）:', err.message);
+  }
+}
+
+function showSyncToast(msg) {
+  const old = document.getElementById('sync-toast');
+  if (old) old.remove();
+  const el = document.createElement('div');
+  el.id = 'sync-toast';
+  el.textContent = msg;
+  el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a2e1a;border:1px solid #4AB87A55;color:#4AB87A;font-size:12px;font-weight:600;padding:8px 16px;border-radius:20px;z-index:9999;white-space:nowrap;pointer-events:none;';
+  if (document.body) document.body.appendChild(el);
+  setTimeout(() => { try { el.remove(); } catch(e){} }, 2000);
+}
+
+// ══════════════════════════════════════════════════════
+// 模組設定
+// ══════════════════════════════════════════════════════
+const MODS = {
+  attendance: { label:'出勤管理', color:'#E07B39', aiHint:'今天新泰路案場 家豪阿倫出工 08:00~17:00 做天花板角材定位' },
+  dimension:  { label:'尺寸紀錄', color:'#4A8CD0', aiHint:'主臥衣櫃 寬300 高240 深60' },
+  material:   { label:'材料管理', color:'#5BA85A', aiHint:'新泰路 矽酸鈣板6mm 50片 天花板封板用' },
+  tool:       { label:'工具管理', color:'#9B6BC6', aiHint:'帶空壓機1台 電鑽2支 去新泰路' },
+  project:    { label:'案件管理', color:'#D4A017', aiHint:'新增新泰路案場 客廳+主臥+廚房 業主陳先生 3月1日開工' },
+  diary:      { label:'施工日誌', color:'#3AAFA9', aiHint:'今天新泰路 家豪阿倫出工 天花板角材定位完成80% 明天繼續封板' },
+  finance:    { label:'收支紀錄', color:'#C0392B', aiHint:'收到新泰路第二期款 150000元' },
+};
+
+const SCHEMA = {
+  attendance: [
+    {key:'date',      label:'日期'},
+    {key:'project',   label:'案場'},
+    {key:'workers',   label:'人員', render:v=>Array.isArray(v)?v.join('、'):v},
+    {key:'time_start',label:'開始'},
+    {key:'time_end',  label:'結束'},
+    {key:'hours',     label:'工時(h)'},
+    {key:'work_content',label:'工作內容'},
+  ],
+  dimension: [
+    {key:'project', label:'案場'},
+    {key:'location',label:'位置'},
+    {key:'length',  label:'長(cm)'},
+    {key:'width',   label:'寬(cm)'},
+    {key:'height',  label:'高(cm)'},
+    {key:'depth',   label:'深(cm)'},
+    {key:'note',    label:'備註'},
+  ],
+  material: [
+    {key:'project',   label:'案場'},
+    {key:'item_name', label:'品名'},
+    {key:'spec',      label:'規格'},
+    {key:'quantity',  label:'數量'},
+    {key:'unit',      label:'單位'},
+    {key:'purpose',   label:'用途'},
+    {key:'date',      label:'日期'},
+  ],
+  tool: [
+    {key:'project',   label:'案場'},
+    {key:'tool_name', label:'工具名稱'},
+    {key:'quantity',  label:'數量'},
+    {key:'status',    label:'狀態'},
+    {key:'purpose',   label:'用途/備註'},
+    {key:'date',      label:'日期'},
+  ],
+  project: [
+    {key:'project_name',label:'案場名稱'},
+    {key:'address',     label:'地址'},
+    {key:'client',      label:'業主'},
+    {key:'start_date',  label:'開工日'},
+    {key:'end_date',    label:'預計完工'},
+    {key:'status',      label:'狀態'},
+    {key:'note',        label:'備註'},
+  ],
+  diary: [
+    {key:'date',     label:'日期'},
+    {key:'project',  label:'案場'},
+    {key:'weather',  label:'天氣'},
+    {key:'workers',  label:'出工人員', render:v=>Array.isArray(v)?v.join('、'):v},
+    {key:'work',     label:'施工項目'},
+    {key:'progress', label:'進度'},
+    {key:'note',     label:'備註/狀況'},
+  ],
+  finance: [
+    {key:'date',    label:'日期'},
+    {key:'project', label:'案場'},
+    {key:'type',    label:'收/支', render:v=>`<span class="tag ${v==='收入'?'tag-green':'tag-red'}">${v||'—'}</span>`},
+    {key:'item',    label:'項目'},
+    {key:'amount',  label:'金額', render:v=>v?'NT$ '+Number(v).toLocaleString('zh-TW'):'—'},
+    {key:'note',    label:'備註'},
+  ],
+};
+
+const FORM_FIELDS = {
+  attendance: [
+    {key:'date',         label:'日期',     type:'date',   default:TODAY},
+    {key:'project',      label:'案場',     type:'text',   placeholder:'新泰路'},
+    {key:'workers',      label:'人員',     type:'text',   placeholder:'家豪、阿倫'},
+    {key:'time_start',   label:'開始',     type:'time',   default:'08:00'},
+    {key:'time_end',     label:'結束',     type:'time',   default:'17:00'},
+    {key:'hours',        label:'工時(h)',  type:'number', placeholder:'9'},
+    {key:'work_content', label:'工作內容', type:'text',   placeholder:'天花板角材定位'},
+  ],
+  dimension: [
+    {key:'project',  label:'案場',   type:'text',   placeholder:'新泰路'},
+    {key:'location', label:'位置',   type:'text',   placeholder:'主臥衣櫃'},
+    {key:'length',   label:'長(cm)', type:'number', placeholder:'0'},
+    {key:'width',    label:'寬(cm)', type:'number', placeholder:'0'},
+    {key:'height',   label:'高(cm)', type:'number', placeholder:'0'},
+    {key:'depth',    label:'深(cm)', type:'number', placeholder:'0'},
+    {key:'note',     label:'備註',   type:'text',   placeholder:''},
+  ],
+  material: [
+    {key:'date',      label:'日期',  type:'date', default:TODAY},
+    {key:'project',   label:'案場',  type:'text', placeholder:'新泰路'},
+    {key:'item_name', label:'品名',  type:'text', placeholder:'矽酸鈣板 6mm'},
+    {key:'spec',      label:'規格',  type:'text', placeholder:''},
+    {key:'quantity',  label:'數量',  type:'number', placeholder:'0'},
+    {key:'unit',      label:'單位',  type:'text', placeholder:'片'},
+    {key:'purpose',   label:'用途',  type:'text', placeholder:'天花板封板'},
+  ],
+  tool: [
+    {key:'date',      label:'日期',  type:'date',   default:TODAY},
+    {key:'project',   label:'案場',  type:'text',   placeholder:'新泰路'},
+    {key:'tool_name', label:'工具',  type:'text',   placeholder:'空壓機'},
+    {key:'quantity',  label:'數量',  type:'number', placeholder:'1'},
+    {key:'status',    label:'狀態',  type:'select', options:['帶出','歸還','備用','維修']},
+    {key:'purpose',   label:'備註',  type:'text',   placeholder:''},
+  ],
+  project: [
+    {key:'project_name',label:'案場名稱', type:'text', placeholder:'新泰路案場'},
+    {key:'address',     label:'地址',    type:'text', placeholder:''},
+    {key:'client',      label:'業主',    type:'text', placeholder:'陳先生'},
+    {key:'start_date',  label:'開工日',  type:'date', default:TODAY},
+    {key:'end_date',    label:'預計完工',type:'date', default:''},
+    {key:'status',      label:'狀態',   type:'select', options:['進行中','收尾','已完工','暫停']},
+    {key:'note',        label:'備註',   type:'text', placeholder:''},
+  ],
+  diary: [
+    {key:'date',     label:'日期',     type:'date', default:TODAY},
+    {key:'project',  label:'案場',     type:'text', placeholder:'新泰路'},
+    {key:'weather',  label:'天氣',     type:'select', options:['晴','陰','雨','颱風']},
+    {key:'workers',  label:'出工人員', type:'text', placeholder:'家豪、阿倫'},
+    {key:'work',     label:'施工項目', type:'text', placeholder:'天花板角材定位'},
+    {key:'progress', label:'進度',     type:'text', placeholder:'80%'},
+    {key:'note',     label:'備註/狀況',type:'text', placeholder:''},
+  ],
+  finance: [
+    {key:'date',    label:'日期', type:'date',   default:TODAY},
+    {key:'project', label:'案場', type:'text',   placeholder:'新泰路'},
+    {key:'type',    label:'類型', type:'select', options:['收入','支出']},
+    {key:'item',    label:'項目', type:'text',   placeholder:'第二期款'},
+    {key:'amount',  label:'金額', type:'number', placeholder:'0'},
+    {key:'note',    label:'備註', type:'text',   placeholder:''},
+  ],
+};
+
+// ══════════════════════════════════════════════════════
+// AI 解析
+// ══════════════════════════════════════════════════════
+const AI_SYSTEM = `你是「三川工方」室內裝修工程管理 AI。使用者用自然語言輸入工程資訊，你必須：
+1. 判斷屬於哪個模組
+2. 解析欄位
+3. 只回傳 JSON，不加任何說明
+
+回傳格式：{"module":"模組代碼","confidence":0-1,"data":{...欄位},"summary":"中文摘要一句話"}
+
+模組與欄位：
+attendance: {"date":"YYYY-MM-DD","project":"案場","workers":["人員"],"time_start":"HH:MM","time_end":"HH:MM","hours":"工數","work_content":"工作內容"}
+dimension:  {"project":"案場","location":"位置","length":"長cm","width":"寬cm","height":"高cm","depth":"深cm","note":"備註"}
+material:   {"project":"案場","item_name":"品名","spec":"規格","quantity":"數量","unit":"單位","purpose":"用途","date":"YYYY-MM-DD"}
+tool:       {"project":"案場","tool_name":"工具名稱","quantity":"數量","status":"帶出/歸還/備用/維修","purpose":"備註","date":"YYYY-MM-DD"}
+project:    {"project_name":"案場名稱","address":"地址","client":"業主","start_date":"YYYY-MM-DD","end_date":"YYYY-MM-DD","status":"進行中/收尾/已完工/暫停","note":"備註"}
+diary:      {"date":"YYYY-MM-DD","project":"案場","weather":"晴/陰/雨","workers":["人員"],"work":"施工項目","progress":"進度","note":"備註"}
+finance:    {"date":"YYYY-MM-DD","project":"案場","type":"收入/支出","item":"項目","amount":"金額數字","note":"備註"}
+
+規則：今天=${TODAY}，自動計算工時，多人員拆成陣列，尺寸預設cm，未確定欄位填null`;
+
+async function callAI(text, imageParts=[]) {
+  if (!API_KEY) {
+    showKeyModal();
+    throw new Error('請先設定 API Key');
+  }
+  const parts = [...imageParts, {type:'text', text}];
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': API_KEY,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true',
+    },
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:1000,
+      system:AI_SYSTEM,
+      messages:[{role:'user',content:parts}],
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const raw = data.content?.find(b=>b.type==='text')?.text || '';
+  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+}
+
+// ── API Key 設定 Modal ──
+function showKeyModal() {
+  if (document.getElementById('key-modal')) return;
+  const current = API_KEY;
+  const el = document.createElement('div');
+  el.id = 'key-modal';
+  const statusHtml = current
+    ? '<div class="key-ok">✓ 已設定 API Key</div>'
+    : '<div class="key-warn">⚠ 尚未設定，AI 功能無法使用</div>';
+  el.innerHTML = [
+    '<div class="key-overlay" onclick="closeKeyModal()"></div>',
+    '<div class="key-box">',
+    '  <div class="key-title">設定 API Key</div>',
+    '  <div class="key-desc">前往 <b>console.anthropic.com</b> 取得 API Key，貼入下方啟用 AI。</div>',
+    '  <input class="key-input" id="key-input" type="password" placeholder="sk-ant-api03-..." autocomplete="off"/>',
+    '  <div class="key-row">',
+    '    <button class="key-cancel" onclick="closeKeyModal()">取消</button>',
+    '    <button class="key-save" onclick="saveApiKey()">儲存啟用</button>',
+    '  </div>',
+    statusHtml,
+    '</div>'
+  ].join('');
+  el.querySelector('#key-input').value = current || '';
+  document.body.appendChild(el);
+  setTimeout(function(){ var i = document.getElementById('key-input'); if(i) i.focus(); }, 100);
+}
+function closeKeyModal() {
+  document.getElementById('key-modal')?.remove();
+}
+function saveApiKey() {
+  const val = document.getElementById('key-input')?.value.trim();
+  if (!val || !val.startsWith('sk-')) {
+    alert('請輸入正確的 API Key（以 sk- 開頭）');
+    return;
+  }
+  API_KEY = val;
+  localStorage.setItem('sk_apikey', val);
+  closeKeyModal();
+  updateKeyStatus();
+  // 顯示成功提示
+  const toast = document.createElement('div');
+  toast.className = 'toast-ok';
+  toast.textContent = '✓ API Key 已儲存，AI 功能已啟用';
+  document.body.appendChild(toast);
+  setTimeout(()=>toast.remove(), 2500);
+}
+
+// ══════════════════════════════════════════════════════
+// 側欄 + 導覽
+// ══════════════════════════════════════════════════════
+let sidebarOpen = true;
+let currentModule = 'chat';
+let messages = [{
+  role:'assistant',
+  text:'您好！我是三川工方工程管理 AI。\n\n請直接用自然語言輸入工程資訊，我會自動解析分類。\n\n例如：「今天新泰路案場，家豪跟阿倫出工，早上八點到下午五點，做天花板角材定位」',
+  parsed:null, attachments:[],
+}];
+let attachments = [];
+
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('collapsed', !sidebarOpen);
+  const icon = document.getElementById('toggle-icon');
+  icon?.querySelector('path')?.setAttribute('d', sidebarOpen ? 'M10 3L5 8L10 13' : 'M6 3L11 8L6 13');
+}
+
+function switchModule(mod) {
+  currentModule = mod;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-'+mod)?.classList.add('active');
+  const info = mod === 'chat' ? {label:'AI 語意輸入', sub:'輸入工程資訊，自動分類存入各管理模組'}
+    : {label:MODS[mod].label, sub:`共 ${DB[mod].length} 筆紀錄`};
+  document.getElementById('topbar-title').textContent = info.label;
+  document.getElementById('topbar-sub').textContent = info.sub;
+  if(typeof updateIconBoxes === 'function') updateIconBoxes();
+  renderContent();
+}
+
+// 圖示系統 — 純色正方形，靠顏色區分，旋轉後成菱形
+// 框內完全空白，乾淨俐落
+function getNavIconInner(mod, color) {
+  // 不需要任何內容，框本身就是圖示
+  // 顏色由外層 nav-icon-box 的 background 控制
+  return ``;
+}
+
+
+function updateBadges() {
+  let total = 0;
+  Object.keys(DB).forEach(mod => {
+    const n = DB[mod].length;
+    total += n;
+    const badge = document.getElementById('badge-'+mod);
+    const dot = document.getElementById('dot-'+mod);
+    if(badge) badge.textContent = n > 0 ? n : '';
+    if(dot) dot.style.display = n > 0 ? 'block' : 'none';
+  });
+  // chat badge = message count
+  const chatMsgs = messages.filter(m=>m.role==='user').length;
+  const cb = document.getElementById('badge-chat');
+  const cd = document.getElementById('dot-chat');
+  if(cb) cb.textContent = chatMsgs > 0 ? chatMsgs : '';
+  if(cd) cd.style.display = chatMsgs > 0 ? 'block' : 'none';
+  const tc = document.getElementById('total-count');
+  const pc = document.getElementById('project-count');
+  const sm = document.getElementById('stat-mini');
+  if(tc) tc.textContent = total + ' 筆';
+  if(pc) pc.textContent = DB.project.length;
+  if(sm) sm.textContent = total;
+  // update sub when on data panel
+  if(currentModule !== 'chat') {
+    document.getElementById('topbar-sub').textContent = `共 ${DB[currentModule].length} 筆紀錄`;
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// 渲染內容
+// ══════════════════════════════════════════════════════
+function renderContent() {
+  const el = document.getElementById('content');
+  if(currentModule === 'chat') {
+    el.innerHTML = renderChatHTML();
+    setupChat();
+  } else if(currentModule === 'diary') {
+    el.innerHTML = renderDiaryHTML();
+    setupDataAI('diary');
+  } else if(currentModule === 'finance') {
+    el.innerHTML = renderFinanceHTML();
+    setupDataAI('finance');
+  } else {
+    el.innerHTML = renderDataHTML(currentModule);
+    setupDataAI(currentModule);
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// CHAT PANEL
+// ══════════════════════════════════════════════════════
+function renderChatHTML() {
+  return `<div class="chat-wrap">
+    <div class="messages" id="msgs">${renderMessages()}</div>
+    <div class="input-area">
+      <div class="attach-strip" id="attach-strip"></div>
+      <div class="input-box">
+        <textarea class="input-textarea" id="chat-input" rows="3"
+          placeholder="輸入工程資訊，例如：「今天新泰路案場，家豪出工 08:00~17:00，做天花板角材定位」"></textarea>
+
+```
+    <div class="input-footer">
+      <span class="input-hint">Enter 送出　Shift+Enter 換行</span>
+      <div class="input-btns">
+        <input type="file" id="file-input" accept="image/*" multiple style="display:none">
+        <button class="icon-btn" onclick="document.getElementById('file-input').click()" title="上傳圖片">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </button>
+        <button class="send-btn" id="send-btn" onclick="sendChat()">
+          <svg viewBox="0 0 15 15" fill="none" width="15" height="15"><path d="M13 7.5L2 2L4.5 7.5L2 13L13 7.5Z" fill="white"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+  </div>`;
+}
+
+function renderMessages() {
+return messages.map((m,i) => {
+const isUser = m.role === ‘user’;
+let html = `<div class="msg-row ${isUser?'user':''}">`;
+if(!isUser) html += `<div class="avatar">AI</div>`;
+html += `<div style="display:flex;flex-direction:column;gap:8px;max-width:72%">`;
+if(m.attachments?.length) {
+html += `<div style="display:flex;gap:6px;flex-wrap:wrap">`;
+m.attachments.forEach(a => {
+if(a.isImage) html += `<img src="${a.url}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">`;
 });
-const [attachments, setAttachments] = useState([]);
-const fileInputRef = useRef(null);
-const bottomRef = useRef(null);
-const textareaRef = useRef(null);
+html += `</div>`;
+}
+html += `<div class="bubble ${isUser?'user':'ai'}">${m.text.split('\n').map(l=>l||'<br>').join('<br>')}</div>`;
+if(m.parsed) html += renderParsedCard(m.parsed);
+html += `</div></div>`;
+return html;
+}).join(’’) + `<div id="msg-bottom"></div>`;
+}
 
-useEffect(() => {
-bottomRef.current?.scrollIntoView({ behavior: “smooth” });
-}, [messages]);
+function renderParsedCard(parsed) {
+const mod = MODS[parsed.module];
+const schema = SCHEMA[parsed.module];
+if(!mod||!schema) return ‘’;
+let rows = schema.map(col => {
+const v = parsed.data?.[col.key];
+if(v==null||v===’’) return ‘’;
+const disp = col.render ? col.render(v) : (Array.isArray(v)?v.join(’、’):v);
+return `<tr><td>${col.label}</td><td>${disp}</td></tr>`;
+}).filter(Boolean).join(’’);
+return `<div class="parsed-card" style="border-left-color:${mod.color}">
+<div class="parsed-head">
+<span class="parsed-tag" style="background:${mod.color}20;color:${mod.color};border:1px solid ${mod.color}40">${mod.label}</span>
+<span class="parsed-conf">信心度 ${Math.round((parsed.confidence||0.9)*100)}%</span>
+</div>
+<table class="parsed-table"><tbody>${rows}</tbody></table>
+<div class="parsed-saved">
+<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+已儲存至「${mod.label}」
+</div>
 
-const handleFileChange = (e) => {
+  </div>`;
+}
+
+function setupChat() {
+const input = document.getElementById(‘chat-input’);
+const fileInput = document.getElementById(‘file-input’);
+if (!input || !fileInput) return;
+input.addEventListener(‘keydown’, e => {
+if(e.key===‘Enter’&&!e.shiftKey){e.preventDefault();sendChat();}
+});
+fileInput.addEventListener(‘change’, e => {
 Array.from(e.target.files).forEach(file => {
 const reader = new FileReader();
-reader.onload = (ev) => {
-const b64 = ev.target.result;
-setAttachments(prev => […prev, {
-name: file.name, type: file.type,
-url: b64, base64: b64.split(”,”)[1],
-isImage: file.type.startsWith(“image/”),
-}]);
+reader.onload = ev => {
+attachments.push({
+name:file.name, type:file.type,
+url:ev.target.result,
+base64:ev.target.result.split(’,’)[1],
+isImage:file.type.startsWith(‘image/’),
+});
+renderAttachStrip();
 };
 reader.readAsDataURL(file);
 });
-e.target.value = “”;
-};
+e.target.value=’’;
+});
+scrollToBottom();
+}
 
-const removeAttachment = (i) => setAttachments(prev => prev.filter((_, idx) => idx !== i));
+function renderAttachStrip() {
+const strip = document.getElementById(‘attach-strip’);
+if(!strip) return;
+strip.innerHTML = attachments.map((a,i) => `<div class="attach-wrap"> ${a.isImage ?`<img src="${a.url}" class="attach-thumb">`:`<div class="attach-file">📄 ${a.name}</div>`} <button class="attach-x" onclick="removeAttach(${i})">✕</button> </div> `).join(’’);
+}
 
-const handleSend = async () => {
-const msg = input.trim();
-if ((!msg && attachments.length === 0) || loading) return;
+function removeAttach(i) { attachments.splice(i,1); renderAttachStrip(); }
+
+let chatLoading = false;
+async function sendChat() {
+const input = document.getElementById(‘chat-input’);
+const msg = input?.value.trim() || ‘’;
+if((!msg && attachments.length===0)||chatLoading) return;
 const snap = […attachments];
-setInput(””); setAttachments([]);
-setMessages(prev => […prev, {
-role: “user”, text: msg || “（已附上檔案）”,
-parsed: null, attachments: snap,
-}]);
-setLoading(true);
+attachments = [];
+input.value = ‘’;
+renderAttachStrip();
+messages.push({role:‘user’,text:msg||’（已附上圖片）’,parsed:null,attachments:snap});
+chatLoading = true;
+refreshMessages();
+addLoadingBubble();
 try {
-const parts = [];
-snap.filter(a => a.isImage).forEach(a =>
-parts.push({ type: “image”, source: { type: “base64”, media_type: a.type, data: a.base64 } })
-);
-parts.push({ type: “text”, text: msg || “請分析這張工程現場照片，解析相關資訊。” });
-const parsed = await parseWithAI(parts);
-setRecords(prev => ({
-…prev,
-[parsed.module]: […prev[parsed.module], { …parsed.data, _id: Date.now() }],
+const imgParts = snap.filter(a=>a.isImage).map(a=>({
+type:‘image’, source:{type:‘base64’,media_type:a.type,data:a.base64}
 }));
-setMessages(prev => […prev, { role: “assistant”, text: parsed.summary, parsed, attachments: [] }]);
-} catch {
-setMessages(prev => […prev, {
-role: “assistant”, text: “解析失敗，請重新輸入或描述得更清楚一些。”,
-parsed: null, attachments: [],
-}]);
+const parsed = await callAI(msg||‘請分析這張工程現場照片’, imgParts);
+DB[parsed.module].unshift({…parsed.data, _id:Date.now()});
+saveDB(parsed.module);
+messages.push({role:‘assistant’,text:parsed.summary,parsed,attachments:[]});
+} catch(err) {
+messages.push({role:‘assistant’,text:‘解析失敗，請再試一次或描述得更清楚。’,parsed:null,attachments:[]});
 }
-setLoading(false);
+chatLoading = false;
+updateBadges();
+refreshMessages();
+scrollToBottom();
+}
+
+function refreshMessages() {
+const el = document.getElementById(‘msgs’);
+if(el) el.innerHTML = renderMessages();
+scrollToBottom();
+}
+
+function addLoadingBubble() {
+const el = document.getElementById(‘msgs’);
+if(!el) return;
+el.innerHTML += `<div class="msg-row" id="loading-bubble">
+<div class="avatar">AI</div>
+<div class="bubble ai"><div class="typing-dots"><span></span><span></span><span></span></div></div>
+
+  </div>`;
+  scrollToBottom();
+}
+
+function scrollToBottom() {
+const el = document.getElementById(‘msg-bottom’);
+el?.scrollIntoView({behavior:‘smooth’});
+}
+
+// ══════════════════════════════════════════════════════
+// DATA PANEL
+// ══════════════════════════════════════════════════════
+function renderDataHTML(mod) {
+const schema = SCHEMA[mod];
+const records = DB[mod];
+const mod_info = MODS[mod];
+const fields = FORM_FIELDS[mod];
+
+const thHTML = schema.map(col=>`<th>${col.label}</th>`).join(’’)+’<th></th>’;
+const tbodyHTML = records.length === 0 ? ‘’ : records.map((row,i) =>
+`<tr>${schema.map(col=>{ const v = row[col.key]; const disp = col.render ? col.render(v) : (v??'—'); return `<td>${Array.isArray(v)?v.join(’、’):disp}</td>`; }).join('')}<td class="del-cell"><button class="del-row-btn" onclick="delRecord('${mod}',${i})">✕</button></td></tr>`
+).join(’’);
+
+const formFields = fields.map(f => {
+if(f.type===‘select’) {
+const opts = f.options.map(o=>`<option value="${o}">${o}</option>`).join(’’);
+return `<div class="form-field"><label>${f.label}</label><select id="ff-${f.key}">${opts}</select></div>`;
+}
+return `<div class="form-field"><label>${f.label}</label><input id="ff-${f.key}" type="${f.type}" placeholder="${f.placeholder||''}" value="${f.default||''}"></div>`;
+}).join(’’);
+
+return `<div class="data-wrap"> <div class="data-topbar"> <div class="data-title-row"> <div class="data-mod-icon" style="background:${mod_info.color}18;border:1px solid ${mod_info.color}30"> ${getModIcon(mod, mod_info.color, 26)} </div> <div> <div class="data-title">${mod_info.label}</div> <div class="data-count">共 ${records.length} 筆紀錄</div> </div> </div> <input class="search-input" placeholder="🔍 搜尋..." oninput="filterTable(this.value,'${mod}')"> </div> <div class="data-ai-bar"> <input class="data-ai-input" id="data-ai-input" placeholder="🤖 AI 快速輸入：${mod_info.aiHint}"> <button class="data-ai-btn" id="data-ai-btn" onclick="dataAIParse('${mod}')">AI 解析新增</button> </div> <div class="table-area" id="table-area"> ${records.length === 0 ? `<div class="empty-state"><div class="empty-icon">—</div><div class="empty-text">尚無資料，請透過 AI 輸入或手動新增</div></div>`:`<table class="data-table" id="data-tbl"><thead><tr>${thHTML}</tr></thead><tbody id="data-tbody">${tbodyHTML}</tbody></table>`
+}
+</div>
+<div class="add-form-bar">
+<div class="add-form-toggle" id="form-toggle" onclick="toggleForm()">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+手動新增
+</div>
+<div id="form-fields" style="display:none">
+<div class="add-form-fields" style="margin-top:10px">
+${formFields}
+<button class="form-add-btn" onclick="manualAdd('${mod}')">新增</button>
+</div>
+</div>
+</div>
+
+  </div>`;
+}
+
+function toggleForm() {
+const fields = document.getElementById(‘form-fields’);
+const toggle = document.getElementById(‘form-toggle’);
+const show = fields.style.display === ‘none’;
+fields.style.display = show ? ‘block’ : ‘none’;
+toggle.classList.toggle(‘open’, show);
+}
+
+function manualAdd(mod) {
+const fields = FORM_FIELDS[mod];
+const item = {_id:Date.now()};
+fields.forEach(f => {
+const el = document.getElementById(‘ff-’+f.key);
+if(!el) return;
+let v = el.value.trim();
+if(f.key===‘workers’&&v) v = v.split(/[、,，\s]+/).filter(Boolean);
+item[f.key] = v || null;
+});
+DB[mod].unshift(item);
+saveDB(mod);
+switchModule(mod);
+}
+
+function delRecord(mod, idx) {
+if(!confirm(‘確定刪除？’)) return;
+DB[mod].splice(idx,1);
+saveDB(mod);
+switchModule(mod);
+}
+
+function filterTable(q, mod) {
+const tbody = document.getElementById(‘data-tbody’);
+if(!tbody) return;
+const schema = SCHEMA[mod];
+const filtered = DB[mod].filter(row =>
+!q || Object.values(row).some(v=>String(v).toLowerCase().includes(q.toLowerCase()))
+);
+tbody.innerHTML = filtered.map((row,i) =>
+`<tr>${schema.map(col=>{ const v = row[col.key]; const disp = col.render ? col.render(v) : (v??'—'); return `<td>${Array.isArray(v)?v.join(’、’):disp}</td>`; }).join('')}<td class="del-cell"><button class="del-row-btn" onclick="delRecord('${mod}',${DB[mod].indexOf(row)})">✕</button></td></tr>`
+).join(’’);
+}
+
+function setupDataAI(mod) {
+const input = document.getElementById(‘data-ai-input’);
+if(input) {
+input.addEventListener(‘keydown’, e => {
+if(e.key===‘Enter’) dataAIParse(mod);
+});
+}
+}
+
+async function dataAIParse(mod) {
+const input = document.getElementById(‘data-ai-input’);
+const btn = document.getElementById(‘data-ai-btn’);
+const text = input?.value.trim();
+if(!text) return;
+btn.textContent = ‘解析中…’;
+btn.disabled = true;
+try {
+const parsed = await callAI(text);
+const targetMod = parsed.module || mod;
+DB[targetMod].unshift({…parsed.data, _id:Date.now()});
+saveDB(targetMod);
+input.value = ‘’;
+if(targetMod !== mod) {
+alert(`✅ 已解析並儲存至「${MODS[targetMod].label}」`);
+switchModule(targetMod);
+} else {
+switchModule(mod);
+}
+} catch(e) {
+alert(‘解析失敗，請重試’);
+}
+if(btn) { btn.textContent = ‘AI 解析新增’; btn.disabled = false; }
+}
+
+// ══════════════════════════════════════════════════════
+// 施工日誌 (時間軸)
+// ══════════════════════════════════════════════════════
+function renderDiaryHTML() {
+const records = DB.diary;
+const timelineHTML = records.length === 0
+? `<div class="empty-state"><div class="empty-icon">—</div><div class="empty-text">尚無日誌，請透過 AI 輸入或手動新增</div></div>`
+: records.map((r,i) => `<div class="tl-item"> <div class="tl-dot"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg> </div> <div class="tl-card"> <div class="tl-head"> <div class="tl-date">${r.date||'—'}</div> <div class="tl-site"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/></svg> ${r.project||'未指定'} </div> </div> <div class="tl-body"> ${r.work ?`<div class="tl-work">${r.work}</div>`: ''} ${r.note ?`<div class="tl-note">${r.note}</div>`: ''} </div> <div class="tl-footer"> ${r.weather ?`<span class="tl-tag">${r.weather===‘晴’?‘☀’:r.weather===‘陰’?‘⛅’:‘🌧’} ${r.weather}</span>`: ''} ${r.workers ?`<span class="tl-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="10" height="10"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.5 8.5 0 0113 0"/></svg> ${Array.isArray(r.workers)?r.workers.join(’、’):r.workers}</span>`: ''} ${r.progress ?`<span class="tl-tag">進度 ${r.progress}</span>`: ''} <button class="tl-del" onclick="delRecord('diary',${i})">✕</button> </div> </div> </div>`).join(’’);
+
+return `<div class="data-wrap"> <div class="data-topbar"> <div class="data-title-row"> <div class="data-mod-icon" style="background:#3AAFA918;border:1px solid #3AAFA930"> ${getModIcon('diary','#3AAFA9',26)} </div> <div> <div class="data-title">施工日誌</div> <div class="data-count">共 ${records.length} 筆紀錄</div> </div> </div> </div> <div class="data-ai-bar"> <input class="data-ai-input" id="data-ai-input" placeholder="🤖 AI 輸入：${MODS.diary.aiHint}"> <button class="data-ai-btn" id="data-ai-btn" onclick="dataAIParse('diary')">AI 解析新增</button> </div> <div class="timeline">${timelineHTML}</div> <div class="add-form-bar"> <div class="add-form-toggle" id="form-toggle" onclick="toggleForm()"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> 手動新增日誌 </div> <div id="form-fields" style="display:none"> <div class="add-form-fields" style="margin-top:10px"> ${FORM_FIELDS.diary.map(f => { if(f.type==='select') { const opts = f.options.map(o=>`<option value="${o}">${o}</option>`).join(''); return `<div class="form-field"><label>${f.label}</label><select id="ff-${f.key}">${opts}</select></div>`; } return `<div class="form-field"><label>${f.label}</label><input id="ff-${f.key}" type="${f.type}" placeholder="${f.placeholder||''}" value="${f.default||''}"></div>`;
+}).join(’’)}
+<button class="form-add-btn" onclick="manualAdd('diary')">新增</button>
+</div>
+</div>
+</div>
+
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// 收支紀錄
+// ══════════════════════════════════════════════════════
+function renderFinanceHTML() {
+const records = DB.finance;
+const income  = records.filter(r=>r.type===‘收入’).reduce((s,r)=>s+(+r.amount||0),0);
+const expense = records.filter(r=>r.type===‘支出’).reduce((s,r)=>s+(+r.amount||0),0);
+const balance = income - expense;
+const fmt = n => ’NT$ ’+Math.abs(Math.round(n)).toLocaleString(‘zh-TW’);
+
+const schema = SCHEMA.finance;
+const tbodyHTML = records.map((row,i) =>
+`<tr>${schema.map(col=>{ const v = row[col.key]; const disp = col.render ? col.render(v) : (v??'—'); return `<td>${disp}</td>`; }).join('')}<td class="del-cell"><button class="del-row-btn" onclick="delRecord('finance',${i})">✕</button></td></tr>`
+).join(’’);
+
+return `<div class="data-wrap"> <div class="data-topbar"> <div class="data-title-row"> <div class="data-mod-icon" style="background:#C0392B18;border:1px solid #C0392B30"> ${getModIcon('finance','#C0392B',26)} </div> <div> <div class="data-title">收支紀錄</div> <div class="data-count">共 ${records.length} 筆</div> </div> </div> </div> <div class="fin-overview"> <div class="fin-ov-label">本期結餘</div> <div class="fin-ov-balance">${(balance<0?'− ':'')}${fmt(balance)}</div> <div class="fin-ov-row"> <div class="fin-ov-stat"> <div class="fin-ov-stat-l">收入</div> <div class="fin-ov-stat-v" style="color:var(--green)">${fmt(income)}</div> </div> <div class="fin-ov-stat"> <div class="fin-ov-stat-l">支出</div> <div class="fin-ov-stat-v" style="color:var(--red)">${fmt(expense)}</div> </div> <div class="fin-ov-stat"> <div class="fin-ov-stat-l">筆數</div> <div class="fin-ov-stat-v" style="color:var(--gold)">${records.length} 筆</div> </div> </div> </div> <div class="data-ai-bar"> <input class="data-ai-input" id="data-ai-input" placeholder="🤖 AI 輸入：${MODS.finance.aiHint}"> <button class="data-ai-btn" id="data-ai-btn" onclick="dataAIParse('finance')">AI 解析新增</button> </div> <div class="table-area"> ${records.length===0 ? `<div class="empty-state"><div class="empty-icon">—</div><div class="empty-text">尚無收支紀錄</div></div>`:`<table class="data-table"><thead><tr>${schema.map(c=>`<th>${c.label}</th>`).join(’’)}<th></th></tr></thead><tbody>${tbodyHTML}</tbody></table>` } </div> <div class="add-form-bar"> <div class="add-form-toggle" id="form-toggle" onclick="toggleForm()"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> 手動新增收支 </div> <div id="form-fields" style="display:none"> <div class="add-form-fields" style="margin-top:10px"> ${FORM_FIELDS.finance.map(f => { if(f.type==='select') { const opts = f.options.map(o=>`<option value="${o}">${o}</option>`).join(''); return `<div class="form-field"><label>${f.label}</label><select id="ff-${f.key}">${opts}</select></div>`; } return `<div class="form-field"><label>${f.label}</label><input id="ff-${f.key}" type="${f.type}" placeholder="${f.placeholder||''}" value="${f.default||''}"></div>`;
+}).join(’’)}
+<button class="form-add-btn" onclick="manualAdd('finance')">新增</button>
+</div>
+</div>
+</div>
+
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// 工具函式
+// ══════════════════════════════════════════════════════
+function getModIcon(mod, color, size=26) {
+const s = size, c = color;
+const icons = {
+
+```
+// AI對話 — 菱形垂直線條
+chat: `<svg viewBox="0 0 40 40" width="${s}" height="${s}">
+  <defs><clipPath id="bcp-chat"><polygon points="20,2 38,20 20,38 2,20"/></clipPath></defs>
+  <polygon points="20,2 38,20 20,38 2,20" fill="${c}" opacity="0.12" stroke="${c}" stroke-width="1.5"/>
+  <g clip-path="url(#bcp-chat)" fill="${c}">
+    <rect x="8" y="0" width="3" height="40" opacity="0.8"/>
+    <rect x="14" y="0" width="3" height="40" opacity="0.8"/>
+    <rect x="20" y="0" width="3" height="40" opacity="0.8"/>
+    <rect x="26" y="0" width="3" height="40" opacity="0.8"/>
+    <rect x="32" y="0" width="3" height="40" opacity="0.8"/>
+  </g>
+  <polygon points="20,2 38,20 20,38 2,20" fill="none" stroke="${c}" stroke-width="2"/>
+</svg>`,
+
+// 出勤管理 — 棋盤菱形排列
+attendance: `<svg viewBox="0 0 40 40" width="${s}" height="${s}" fill="${c}">
+  <g transform="rotate(45 20 20)">
+    <rect x="5" y="5" width="7" height="7" opacity="1"/>
+    <rect x="16" y="5" width="7" height="7" opacity="0.7"/>
+    <rect x="27" y="5" width="7" height="7" opacity="0.45"/>
+    <rect x="5" y="16" width="7" height="7" opacity="0.7"/>
+    <rect x="16" y="16" width="7" height="7" opacity="1"/>
+    <rect x="27" y="16" width="7" height="7" opacity="0.7"/>
+    <rect x="5" y="27" width="7" height="7" opacity="0.45"/>
+    <rect x="16" y="27" width="7" height="7" opacity="0.7"/>
+    <rect x="27" y="27" width="7" height="7" opacity="1"/>
+  </g>
+</svg>`,
+
+// 尺寸紀錄 — 立體方塊三面
+dimension: `<svg viewBox="0 0 40 40" width="${s}" height="${s}" fill="none">
+  <polygon points="20,4 36,13 36,27 20,36 4,27 4,13" stroke="${c}" stroke-width="1.5" fill="${c}" opacity="0.08"/>
+  <polygon points="20,4 36,13 20,20 4,13" fill="${c}" opacity="0.6"/>
+  <polygon points="4,13 20,20 20,36 4,27" fill="${c}" opacity="0.35"/>
+  <polygon points="36,13 20,20 20,36 36,27" fill="${c}" opacity="0.75"/>
+  <line x1="5" y1="15" x2="20" y2="20" stroke="${c}" stroke-width="1" opacity="0.5"/>
+  <line x1="7" y1="18" x2="20" y2="22.5" stroke="${c}" stroke-width="1" opacity="0.5"/>
+  <line x1="35" y1="15" x2="20" y2="20" stroke="${c}" stroke-width="1" opacity="0.6"/>
+  <line x1="33" y1="18" x2="20" y2="22.5" stroke="${c}" stroke-width="1" opacity="0.6"/>
+</svg>`,
+
+// 材料管理 — 三層平行四邊形堆疊
+material: `<svg viewBox="0 0 40 40" width="${s}" height="${s}" fill="none">
+  <polygon points="4,28 20,21 36,28 20,35" fill="${c}" opacity="0.8" stroke="${c}" stroke-width="1"/>
+  <polygon points="4,20 20,13 36,20 20,27" fill="${c}" opacity="0.55" stroke="${c}" stroke-width="1"/>
+  <polygon points="4,12 20,5 36,12 20,19" fill="${c}" opacity="0.32" stroke="${c}" stroke-width="1"/>
+</svg>`,
+
+// 工具管理 — 六邊形三面條紋立體
+tool: `<svg viewBox="0 0 40 40" width="${s}" height="${s}" fill="none">
+  <defs>
+    <clipPath id="bcp-tt"><polygon points="20,4 34,12 20,20 6,12"/></clipPath>
+    <clipPath id="bcp-tl"><polygon points="6,12 20,20 20,36 6,28"/></clipPath>
+    <clipPath id="bcp-tr"><polygon points="34,12 20,20 20,36 34,28"/></clipPath>
+  </defs>
+  <g clip-path="url(#bcp-tt)" fill="${c}" opacity="0.85">
+    <rect x="4" y="2" width="3.5" height="22" transform="rotate(-28 20 12)"/>
+    <rect x="10" y="0" width="3.5" height="22" transform="rotate(-28 20 12)"/>
+    <rect x="16" y="-2" width="3.5" height="22" transform="rotate(-28 20 12)"/>
+    <rect x="22" y="-4" width="3.5" height="22" transform="rotate(-28 20 12)"/>
+  </g>
+  <g clip-path="url(#bcp-tl)" fill="${c}" opacity="0.45">
+    <rect x="4" y="17" width="18" height="3.2"/>
+    <rect x="4" y="22" width="18" height="3.2"/>
+    <rect x="4" y="27" width="18" height="3.2"/>
+    <rect x="4" y="32" width="18" height="3.2"/>
+  </g>
+  <g clip-path="url(#bcp-tr)" fill="${c}" opacity="0.7">
+    <rect x="18" y="17" width="18" height="3.2"/>
+    <rect x="18" y="22" width="18" height="3.2"/>
+    <rect x="18" y="27" width="18" height="3.2"/>
+    <rect x="18" y="32" width="18" height="3.2"/>
+  </g>
+  <polygon points="20,4 34,12 34,28 20,36 6,28 6,12" stroke="${c}" stroke-width="1.8"/>
+  <polyline points="20,4 20,20 6,12" stroke="${c}" stroke-width="1.2" fill="none"/>
+  <line x1="20" y1="20" x2="34" y2="12" stroke="${c}" stroke-width="1.2"/>
+  <line x1="20" y1="20" x2="20" y2="36" stroke="${c}" stroke-width="1.2"/>
+</svg>`,
+
+// 案件管理 — 六邊形S折線（房屋立體感）
+project: `<svg viewBox="0 0 40 40" width="${s}" height="${s}" fill="none">
+  <polygon points="20,4 36,14 36,26 20,36 4,26 4,14" stroke="${c}" stroke-width="1.5" fill="${c}" opacity="0.08"/>
+  <polyline points="12,14 20,10 28,14 28,20 20,24 12,20 12,26 20,30 28,26"
+    stroke="${c}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="20" y1="4" x2="20" y2="10" stroke="${c}" stroke-width="1.5"/>
+  <line x1="20" y1="30" x2="20" y2="36" stroke="${c}" stroke-width="1.5"/>
+</svg>`,
+
+// 施工日誌 — 菱形實心＋斜切分割線
+diary: `<svg viewBox="0 0 40 40" width="${s}" height="${s}">
+  <polygon points="20,2 38,20 20,38 2,20" fill="${c}" opacity="0.9"/>
+  <line x1="2" y1="20" x2="38" y2="20" stroke="rgba(0,0,0,0.3)" stroke-width="1.5"/>
+  <line x1="20" y1="2" x2="38" y2="20" stroke="rgba(0,0,0,0.3)" stroke-width="1.5"/>
+  <line x1="6" y1="6" x2="34" y2="34" stroke="rgba(255,255,255,0.28)" stroke-width="1.2"/>
+  <line x1="5" y1="27" x2="27" y2="5" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
+</svg>`,
+
+// 收支紀錄 — 菱形條柱聲波形（圖8）
+finance: `<svg viewBox="0 0 40 40" width="${s}" height="${s}" fill="${c}">
+  <polygon points="20,2 23,20 20,38 17,20" opacity="1"/>
+  <polygon points="7,10 10,20 7,30 4,20" opacity="0.65"/>
+  <polygon points="33,10 36,20 33,30 30,20" opacity="0.65"/>
+  <polygon points="12,6 15,20 12,34 9,20" opacity="0.42"/>
+  <polygon points="28,6 31,20 28,34 25,20" opacity="0.42"/>
+</svg>`,
+```
+
 };
+return icons[mod] || icons.chat;
+}
 
-const handleKeyDown = (e) => {
-if (e.key === “Enter” && !e.shiftKey) { e.preventDefault(); handleSend(); }
+// ══════════════════════════════════════════════════════
+// 初始化
+// ══════════════════════════════════════════════════════
+
+// 注入側欄幾何圖示
+const NAV_ICON_MAP = {
+chat:       { color: ‘#C9A84C’ },
+attendance: { color: ‘#E07B39’ },
+dimension:  { color: ‘#4A8CD0’ },
+material:   { color: ‘#5BA85A’ },
+tool:       { color: ‘#9B6BC6’ },
+project:    { color: ‘#D4A017’ },
+diary:      { color: ‘#3AAFA9’ },
+finance:    { color: ‘#C0392B’ },
 };
+// 圖示注入移到 DOMContentLoaded 裡執行（見下方）
 
-const totalRecords = Object.values(records).reduce((a, b) => a + b.length, 0);
-const SIDEBAR_W = sidebarOpen ? 220 : 52;
-
-return (
-<div style={s.root}>
-{/* ── 側欄 ── */}
-<aside style={{ …s.sidebar, width: SIDEBAR_W }}>
-
-```
-    {/* Logo + 收合按鈕 */}
-    <div style={{ ...s.logoRow, justifyContent: sidebarOpen ? "space-between" : "center" }}>
-      {sidebarOpen && (
-        <div style={{ overflow: "hidden" }}>
-          <div style={s.logoTitle}>工程管理 AI</div>
-          <div style={s.logoSub}>Construction Manager</div>
-        </div>
-      )}
-      <button style={s.toggleBtn} onClick={() => setSidebarOpen(o => !o)} title={sidebarOpen ? "收合側欄" : "展開側欄"}>
-        {sidebarOpen
-          ? <ChevronLeft />
-          : <ChevronRight />
-        }
-      </button>
-    </div>
-
-    {/* 新增按鈕 */}
-    <div style={{ padding: sidebarOpen ? "8px 10px 4px" : "8px 6px 4px" }}>
-      <button
-        style={{ ...s.newBtn, justifyContent: sidebarOpen ? "flex-start" : "center", padding: sidebarOpen ? "8px 10px" : "9px 0" }}
-        onClick={() => setActiveModule("chat")}
-        title={!sidebarOpen ? "新增紀錄" : undefined}
-      >
-        <PlusIcon />
-        {sidebarOpen && <span style={{ marginLeft: 8, fontSize: 12 }}>新增紀錄</span>}
-      </button>
-    </div>
-
-    {/* 導覽項目 */}
-    <nav style={s.nav}>
-      <NavItem
-        label="AI 對話輸入"
-        active={activeModule === "chat"}
-        expanded={sidebarOpen}
-        badge={messages.filter(m => m.role === "user").length || null}
-        badgeColor={C.accent}
-        icon={<ChatIcon />}
-        onClick={() => setActiveModule("chat")}
-      />
-
-      {sidebarOpen
-        ? <div style={s.sectionLabel}>管理模組</div>
-        : <div style={s.divider} />
-      }
-
-      {Object.entries(MODULES).map(([key, mod]) => (
-        <NavItem
-          key={key}
-          label={mod.label}
-          active={activeModule === key}
-          expanded={sidebarOpen}
-          badge={records[key].length || null}
-          badgeColor={mod.color}
-          icon={<span style={{ fontSize: 12, color: mod.color, fontFamily: "monospace", lineHeight: 1 }}>{mod.icon}</span>}
-          onClick={() => setActiveModule(key)}
-        />
-      ))}
-    </nav>
-
-    {/* 底部統計 */}
-    <div style={{ ...s.statsBox, alignItems: sidebarOpen ? "stretch" : "center" }}>
-      {sidebarOpen ? (
-        <>
-          <div style={s.statRow}><span style={s.statL}>總紀錄</span><span style={s.statV}>{totalRecords}</span></div>
-          <div style={s.statRow}><span style={s.statL}>案場數</span><span style={s.statV}>{records.project.length}</span></div>
-        </>
-      ) : (
-        <span style={{ fontSize: 10, color: C.muted }}>{totalRecords}</span>
-      )}
-    </div>
-  </aside>
-
-  {/* ── 主區 ── */}
-  <main style={s.main}>
-    {activeModule === "chat"
-      ? <ChatPanel
-          messages={messages} input={input} loading={loading}
-          setInput={setInput} handleSend={handleSend} handleKeyDown={handleKeyDown}
-          bottomRef={bottomRef} textareaRef={textareaRef}
-          attachments={attachments} removeAttachment={removeAttachment}
-          fileInputRef={fileInputRef} handleFileChange={handleFileChange}
-        />
-      : <DataPanel
-          module={activeModule}
-          records={records[activeModule]}
-          schema={SCHEMA[activeModule]}
-          modInfo={MODULES[activeModule]}
-        />
-    }
-  </main>
-</div>
-```
-
-);
+// 更新 active 狀態時同步更新 icon-box 顏色
+function updateIconBoxes() {
+Object.entries(NAV_ICON_MAP).forEach(([mod, cfg]) => {
+const box = document.getElementById(‘iconbox-’ + mod);
+if (!box) return;
+const isActive = document.getElementById(‘nav-’+mod)?.classList.contains(‘active’);
+if (isActive) {
+box.style.background = cfg.color;
+box.style.border = `1.5px solid ${cfg.color}`;
+box.style.boxShadow = `0 0 10px ${cfg.color}60`;
+} else {
+box.style.background = cfg.color + ‘35’;
+box.style.border = `1.5px solid ${cfg.color}60`;
+box.style.boxShadow = ‘’;
+}
+});
 }
 
-// ─── 小圖示元件 ──────────────────────────────────────────────────────────────
-function ChevronLeft() {
-return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="#5A6A8A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+// 更新 API Key 狀態指示
+function updateKeyStatus() {
+const dot = document.getElementById(‘key-dot’);
+const label = document.getElementById(‘key-label’);
+if (!dot) return;
+if (API_KEY) {
+dot.style.background = ‘#4AB87A’;
+if (label) label.textContent = ‘AI 已就緒’;
+} else {
+dot.style.background = ‘#C9A84C’;
+if (label) label.textContent = ‘設定 API Key’;
 }
-function ChevronRight() {
-return <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#5A6A8A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-}
-function PlusIcon() {
-return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>;
-}
-function ChatIcon() {
-return <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1h12v8H7.5L5 12V9H1V1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>;
-}
-function SendIcon() {
-return <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M13 7.5L2 2L4.5 7.5L2 13L13 7.5Z" fill="white"/></svg>;
-}
-function UploadIcon() {
-return (
-<svg width="17" height="17" viewBox="0 0 17 17" fill="none">
-<path d="M2.5 12V14C2.5 14.55 2.95 15 3.5 15H13.5C14.05 15 14.5 14.55 14.5 14V12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-<path d="M8.5 2V11M5.5 5L8.5 2L11.5 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-</svg>
-);
 }
 
-// ─── 側欄導覽項 ──────────────────────────────────────────────────────────────
-function NavItem({ label, active, expanded, badge, badgeColor, icon, onClick }) {
-const [hov, setHov] = useState(false);
-return (
-<button
-style={{
-…s.navItem,
-justifyContent: expanded ? “flex-start” : “center”,
-padding: expanded ? “7px 10px” : “9px 0”,
-background: active ? “rgba(224,123,57,0.11)” : hov ? “rgba(255,255,255,0.04)” : “transparent”,
-color: active ? C.accent : hov ? C.text : C.muted,
-fontWeight: active ? 600 : 400,
-position: “relative”,
-}}
-onClick={onClick}
-onMouseEnter={() => setHov(true)}
-onMouseLeave={() => setHov(false)}
-title={!expanded ? label : undefined}
->
-{active && <span style={s.activeBar} />}
-<span style={{ flexShrink: 0, display: “flex”, alignItems: “center”, width: 16, justifyContent: “center” }}>{icon}</span>
-{expanded && (
-<span style={{ flex: 1, marginLeft: 9, fontSize: 12.5, whiteSpace: “nowrap”, overflow: “hidden”, textOverflow: “ellipsis” }}>
-{label}
-</span>
-)}
-{expanded && badge > 0 && (
-<span style={{ …s.badge, background: badgeColor }}>{badge}</span>
-)}
-{!expanded && badge > 0 && (
-<span style={{ position: “absolute”, top: 6, right: 7, width: 5, height: 5, borderRadius: “50%”, background: badgeColor }} />
-)}
-</button>
-);
+// 確保 DOM 完全載入後再初始化
+window.addEventListener(‘DOMContentLoaded’, function() {
+try {
+// 注入圖示
+Object.entries(NAV_ICON_MAP).forEach(([mod, cfg]) => {
+const el = document.getElementById(‘navicon-’ + mod);
+if (!el) return;
+el.innerHTML = ‘<div class="nav-icon-box" id="iconbox-' + mod + '" style="background:' + cfg.color + '35;border:1.5px solid ' + cfg.color + '60" data-color="' + cfg.color + '"></div>’;
+});
+updateBadges();
+renderContent();
+updateIconBoxes();
+updateKeyStatus();
+} catch(e) {
+console.warn(‘Init error:’, e);
 }
+});
 
-// ─── 對話面板 ────────────────────────────────────────────────────────────────
-function ChatPanel({ messages, input, loading, setInput, handleSend, handleKeyDown, bottomRef, textareaRef, attachments, removeAttachment, fileInputRef, handleFileChange }) {
-return (
-<div style={s.chatWrap}>
-<div style={s.topBar}>
-<div>
-<div style={s.topTitle}>AI 語意輸入</div>
-<div style={s.topSub}>輸入工程資訊，自動分類存入各管理模組</div>
-</div>
-<div style={s.onlineRow}>
-<span style={s.dot} />
-<span style={{ fontSize: 12, color: C.green }}>AI 就緒</span>
-</div>
-</div>
+} catch(e) { console.warn(‘Script error:’, e); }
+</script>
 
-```
-  <div style={s.messages}>
-    {messages.map((m, i) => <MsgRow key={i} m={m} />)}
-    {loading && (
-      <div style={s.msgRowWrap}>
-        <Avatar />
-        <div style={{ ...s.bubble, ...s.bubbleAI }}><Dots /></div>
-      </div>
-    )}
-    <div ref={bottomRef} />
-  </div>
-
-  <div style={s.inputArea}>
-    {attachments.length > 0 && (
-      <div style={s.attachStrip}>
-        {attachments.map((a, i) => (
-          <div key={i} style={{ position: "relative", display: "inline-flex" }}>
-            {a.isImage
-              ? <img src={a.url} alt={a.name} style={s.attachThumb} />
-              : <div style={s.attachFile}>📄 {a.name}</div>
-            }
-            <button style={s.attachX} onClick={() => removeAttachment(i)}>✕</button>
-          </div>
-        ))}
-      </div>
-    )}
-
-    <div style={s.inputBox}>
-      <textarea
-        ref={textareaRef}
-        style={s.textarea}
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="輸入工程資訊，例如：「今天新泰路案場，家豪出工 08:00–17:00，做天花板角材定位」"
-        rows={3}
-      />
-      <div style={s.inputFooter}>
-        <span style={{ fontSize: 11, color: C.muted }}>Enter 送出　Shift+Enter 換行</span>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <input ref={fileInputRef} type="file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx" multiple style={{ display: "none" }} onChange={handleFileChange} />
-          <button style={s.iconBtn} onClick={() => fileInputRef.current?.click()} title="上傳照片或檔案">
-            <UploadIcon />
-          </button>
-          <button style={{ ...s.sendBtn, opacity: loading ? 0.45 : 1 }} onClick={handleSend} disabled={loading}>
-            <SendIcon />
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-```
-
-);
-}
-
-function MsgRow({ m }) {
-const isUser = m.role === “user”;
-return (
-<div style={{ …s.msgRowWrap, justifyContent: isUser ? “flex-end” : “flex-start” }}>
-{!isUser && <Avatar />}
-<div style={{ display: “flex”, flexDirection: “column”, gap: 8, maxWidth: “70%” }}>
-{m.attachments?.length > 0 && (
-<div style={{ display: “flex”, gap: 6, flexWrap: “wrap” }}>
-{m.attachments.map((a, i) => a.isImage
-? <img key={i} src={a.url} alt={a.name} style={{ width: 88, height: 88, objectFit: “cover”, borderRadius: 8, border: `1px solid ${C.border}` }} />
-: <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 6, padding: “5px 9px”, fontSize: 11, color: C.muted }}>📄 {a.name}</div>
-)}
-</div>
-)}
-<div style={{ …s.bubble, …(isUser ? s.bubbleUser : s.bubbleAI) }}>
-{m.text.split(”\n”).map((ln, j) => <div key={j}>{ln || <br />}</div>)}
-</div>
-{m.parsed && <ParsedCard parsed={m.parsed} />}
-</div>
-</div>
-);
-}
-
-function Avatar() {
-return <div style={s.avatar}>AI</div>;
-}
-
-function Dots() {
-return (
-<div style={{ display: “flex”, gap: 4, alignItems: “center”, padding: “3px 0” }}>
-{[0,1,2].map(i => (
-<div key={i} style={{ width: 6, height: 6, borderRadius: “50%”, background: C.muted, animation: `blink 1.2s ${i*0.2}s ease-in-out infinite` }} />
-))}
-<style>{`@keyframes blink{0%,80%,100%{opacity:.3;transform:scale(.7)}40%{opacity:1;transform:scale(1)}}`}</style>
-</div>
-);
-}
-
-// ─── 解析卡片 ────────────────────────────────────────────────────────────────
-function ParsedCard({ parsed }) {
-const mod = MODULES[parsed.module];
-const schema = SCHEMA[parsed.module];
-return (
-<div style={{ …s.parsedCard, borderLeftColor: mod.color }}>
-<div style={s.parsedHead}>
-<span style={{ fontSize: 11, padding: “2px 8px”, borderRadius: 5, fontWeight: 600, background: mod.color + “20”, color: mod.color, border: `1px solid ${mod.color}40` }}>
-{mod.label}
-</span>
-<span style={{ fontSize: 10, color: C.muted }}>信心度 {Math.round(parsed.confidence * 100)}%</span>
-</div>
-<table style={{ width: “100%”, borderCollapse: “collapse” }}>
-<tbody>
-{schema.map(col => {
-const v = parsed.data?.[col.key];
-if (v == null) return null;
-return (
-<tr key={col.key}>
-<td style={{ padding: “4px 12px”, fontSize: 11, color: C.muted, whiteSpace: “nowrap”, width: 68 }}>{col.label}</td>
-<td style={{ padding: “4px 12px”, fontSize: 12.5, color: C.text }}>{col.render ? col.render(v) : v}</td>
-</tr>
-);
-})}
-</tbody>
-</table>
-<div style={{ padding: “5px 12px”, fontSize: 11, color: C.green, borderTop: `1px solid ${C.border}` }}>✓ 已儲存至「{mod.label}」</div>
-</div>
-);
-}
-
-// ─── 資料面板 ────────────────────────────────────────────────────────────────
-function DataPanel({ records, schema, modInfo }) {
-const [search, setSearch] = useState(””);
-const filtered = records.filter(r =>
-Object.values(r).some(v => String(v).toLowerCase().includes(search.toLowerCase()))
-);
-return (
-<div style={s.dataWrap}>
-<div style={s.topBar}>
-<div>
-<div style={s.topTitle}>{modInfo.label}</div>
-<div style={s.topSub}>共 {records.length} 筆紀錄</div>
-</div>
-<input style={s.searchBox} placeholder=“搜尋紀錄…” value={search} onChange={e => setSearch(e.target.value)} />
-</div>
-{filtered.length === 0
-? <div style={s.empty}><div style={{ fontSize: 36, opacity: 0.2, marginBottom: 10 }}>—</div><div style={{ color: C.muted, fontSize: 13 }}>尚無資料，請透過 AI 對話輸入</div></div>
-: (
-<div style={{ flex: 1, overflow: “auto”, padding: “24px 32px” }}>
-<table style={s.table}>
-<thead>
-<tr>{schema.map(col => <th key={col.key} style={s.th}>{col.label}</th>)}</tr>
-</thead>
-<tbody>
-{filtered.map((row, i) => (
-<tr key={row._id || i} style={{ background: i % 2 === 0 ? “transparent” : “rgba(255,255,255,0.015)” }}>
-{schema.map(col => (
-<td key={col.key} style={s.td}>{col.render ? col.render(row[col.key]) : (row[col.key] ?? “—”)}</td>
-))}
-</tr>
-))}
-</tbody>
-</table>
-</div>
-)
-}
-</div>
-);
-}
-
-// ─── 樣式 ────────────────────────────────────────────────────────────────────
-const s = {
-root: {
-display: “flex”, height: “100vh”, overflow: “hidden”,
-background: C.bg, color: C.text,
-fontFamily: “‘Noto Sans TC’,‘PingFang TC’,‘Helvetica Neue’,sans-serif”,
-},
-
-// 側欄
-sidebar: {
-background: C.sidebar, borderRight: `1px solid ${C.border}`,
-display: “flex”, flexDirection: “column”,
-transition: “width 0.2s cubic-bezier(.4,0,.2,1)”,
-overflow: “hidden”, flexShrink: 0,
-},
-logoRow: {
-display: “flex”, alignItems: “center”,
-padding: “13px 10px”, borderBottom: `1px solid ${C.border}`, minHeight: 54,
-},
-logoTitle: { fontSize: 12.5, fontWeight: 700, color: C.accent, whiteSpace: “nowrap” },
-logoSub: { fontSize: 9.5, color: C.muted, whiteSpace: “nowrap”, marginTop: 1 },
-toggleBtn: {
-background: “transparent”, border: “none”, cursor: “pointer”,
-padding: 6, borderRadius: 6, display: “flex”, alignItems: “center”, flexShrink: 0,
-},
-newBtn: {
-width: “100%”, display: “flex”, alignItems: “center”,
-background: “transparent”, border: `1px solid ${C.border}`,
-borderRadius: 7, cursor: “pointer”, color: C.muted,
-transition: “all 0.13s”, fontSize: 12,
-},
-nav: { flex: 1, padding: “4px 6px”, display: “flex”, flexDirection: “column”, gap: 1, overflowY: “auto” },
-sectionLabel: { fontSize: 10, color: C.muted, padding: “10px 8px 3px”, letterSpacing: 1.2, textTransform: “uppercase” },
-divider: { borderTop: `1px solid ${C.border}`, margin: “6px 8px” },
-navItem: {
-display: “flex”, alignItems: “center”, width: “100%”,
-border: “none”, borderRadius: 6, cursor: “pointer”,
-transition: “background 0.12s, color 0.12s”, overflow: “hidden”,
-},
-activeBar: {
-position: “absolute”, left: 0, top: “20%”, bottom: “20%”,
-width: 3, borderRadius: 2, background: C.accent,
-},
-badge: {
-marginLeft: “auto”, flexShrink: 0, fontSize: 10,
-padding: “1px 5px”, borderRadius: 9, color: “#fff”, minWidth: 16, textAlign: “center”,
-},
-statsBox: {
-borderTop: `1px solid ${C.border}`, padding: “10px 12px”,
-display: “flex”, flexDirection: “column”, gap: 4,
-},
-statRow: { display: “flex”, justifyContent: “space-between”, fontSize: 11 },
-statL: { color: C.muted },
-statV: { color: C.accent, fontWeight: 700 },
-
-// 主區
-main: { flex: 1, display: “flex”, overflow: “hidden” },
-
-// 頂 bar
-topBar: {
-display: “flex”, justifyContent: “space-between”, alignItems: “center”,
-padding: “13px 28px”, borderBottom: `1px solid ${C.border}`,
-background: C.sidebar, flexShrink: 0,
-},
-topTitle: { fontSize: 14.5, fontWeight: 700 },
-topSub: { fontSize: 11.5, color: C.muted, marginTop: 2 },
-onlineRow: { display: “flex”, alignItems: “center”, gap: 6 },
-dot: {
-display: “inline-block”, width: 7, height: 7, borderRadius: “50%”,
-background: C.green, boxShadow: `0 0 5px ${C.green}`,
-},
-
-// 對話
-chatWrap: { flex: 1, display: “flex”, flexDirection: “column”, overflow: “hidden” },
-messages: { flex: 1, overflowY: “auto”, padding: “24px 28px 16px”, display: “flex”, flexDirection: “column”, gap: 18 },
-msgRowWrap: { display: “flex”, alignItems: “flex-start”, gap: 11 },
-avatar: {
-width: 28, height: 28, borderRadius: 7, background: C.accent,
-color: “#fff”, display: “flex”, alignItems: “center”, justifyContent: “center”,
-fontSize: 10, fontWeight: 700, flexShrink: 0, marginTop: 2,
-},
-bubble: { padding: “10px 14px”, borderRadius: 11, fontSize: 13.5, lineHeight: 1.65, wordBreak: “break-word” },
-bubbleAI: { background: C.card, border: `1px solid ${C.border}`, color: C.text },
-bubbleUser: { background: C.accent, color: “#fff” },
-
-parsedCard: {
-background: C.card, border: `1px solid ${C.border}`,
-borderLeft: “3px solid”, borderRadius: 8, overflow: “hidden”,
-},
-parsedHead: {
-display: “flex”, justifyContent: “space-between”, alignItems: “center”,
-padding: “7px 12px”, borderBottom: `1px solid ${C.border}`,
-},
-
-// 輸入
-inputArea: { padding: “10px 28px 16px”, borderTop: `1px solid ${C.border}`, background: C.sidebar, flexShrink: 0 },
-attachStrip: { display: “flex”, gap: 7, flexWrap: “wrap”, marginBottom: 8 },
-attachThumb: { width: 52, height: 52, objectFit: “cover”, borderRadius: 6, border: `1px solid ${C.border}` },
-attachFile: {
-background: C.card, border: `1px solid ${C.border}`, borderRadius: 6,
-padding: “4px 8px”, fontSize: 11, color: C.muted, maxWidth: 110,
-overflow: “hidden”, textOverflow: “ellipsis”, whiteSpace: “nowrap”,
-},
-attachX: {
-position: “absolute”, top: -5, right: -5,
-width: 14, height: 14, borderRadius: “50%”, background: “#922”,
-border: “none”, color: “#fff”, cursor: “pointer”, fontSize: 8, padding: 0,
-display: “flex”, alignItems: “center”, justifyContent: “center”,
-},
-inputBox: { background: C.card, border: `1px solid ${C.border}`, borderRadius: 11, overflow: “hidden” },
-textarea: {
-width: “100%”, background: “transparent”, border: “none”,
-color: C.text, padding: “11px 15px”, fontSize: 13.5,
-resize: “none”, outline: “none”, lineHeight: 1.6,
-fontFamily: “inherit”, boxSizing: “border-box”, display: “block”,
-},
-inputFooter: {
-display: “flex”, justifyContent: “space-between”, alignItems: “center”,
-padding: “6px 10px”, borderTop: `1px solid ${C.border}`,
-},
-iconBtn: {
-background: “transparent”, border: “none”, cursor: “pointer”,
-color: C.muted, display: “flex”, alignItems: “center”,
-padding: “5px 6px”, borderRadius: 6,
-},
-sendBtn: {
-background: C.accent, border: “none”, borderRadius: 7,
-color: “#fff”, cursor: “pointer”, padding: “7px 10px”,
-display: “flex”, alignItems: “center”, justifyContent: “center”,
-transition: “opacity 0.13s”,
-},
-
-// 資料
-dataWrap: { flex: 1, display: “flex”, flexDirection: “column”, overflow: “hidden” },
-searchBox: {
-background: C.card, border: `1px solid ${C.border}`, borderRadius: 8,
-color: C.text, padding: “7px 13px”, fontSize: 13, outline: “none”, width: 190,
-},
-table: { width: “100%”, borderCollapse: “collapse”, fontSize: 13 },
-th: {
-padding: “8px 13px”, background: C.card, border: `1px solid ${C.border}`,
-color: C.muted, fontWeight: 600, whiteSpace: “nowrap”, textAlign: “left”, fontSize: 11,
-},
-td: { padding: “9px 13px”, border: `1px solid ${C.border}`, color: C.text },
-empty: { flex: 1, display: “flex”, flexDirection: “column”, alignItems: “center”, justifyContent: “center” },
-};
+</body>
+</html>
