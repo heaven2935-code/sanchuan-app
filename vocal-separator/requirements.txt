@@ -1,0 +1,7 @@
+streamlit>=1.32
+yt-dlp>=2024.3.10
+demucs>=4.0.1
+torch>=2.1
+torchaudio>=2.1
+soundfile>=0.12
+numpy>=1.24
