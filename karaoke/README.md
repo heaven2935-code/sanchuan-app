@@ -54,6 +54,52 @@ npm run dev
 > **注意**：麥克風錄音（`getUserMedia`）需要安全情境（HTTPS 或 `localhost`）。正式上線後前端網域
 > 必須是 HTTPS，否則瀏覽器會拒絕麥克風權限。
 
+## Demo／Fixture 模式（手機測試用）
+
+`frontend` 內建一個完全不需要後端的 Demo 模式，方便在沒有後端可連線（例如純靜態網頁託管）
+的情況下，於手機上測試完整互動流程：貼網址（實際上不會真的連線）→ 模擬處理進度 → KTV
+播放器（合成測試音效）→ 原唱/伴奏/導唱切換 → 升降 Key → 播放同時錄音 → 回顧回放 → 下載/
+重新演唱。
+
+- 開啟方式：建置時設定環境變數 `VITE_DEMO_MODE=true`（`npm run build:demo` 已內建此設定）。
+- 畫面最上方會持續顯示醒目的黃色「示範模式 Demo」橫幅，歌曲標題也會標註「非真實分離結果」，
+  確保使用者不會誤以為是真的處理了他們貼的網址。
+- Demo 音檔（`frontend/public/demo/*.mp3`）為合成測試音效，非真實歌曲、非真實人聲分離結果。
+- 實作於 `src/lib/demoApi.js`，與真後端 `src/lib/api.js` 實作同一組介面
+  （`createJob/getJob/trackUrl/thumbnailUrl`），由 `src/lib/apiProvider.js` 依
+  `VITE_DEMO_MODE` 切換，其餘元件一律從 `apiProvider` import，不需要另外改動。
+
+## 部署
+
+### 前端 Demo 版：GitHub Pages（已設定自動部署）
+
+`.github/workflows/deploy-karaoke-demo.yml` 會在推送到本分支時自動建置 Demo 版前端並部署到
+GitHub Pages，網址為 `https://<github帳號>.github.io/<repo名稱>/karaoke/`。此工作流程使用
+`actions/configure-pages` 嘗試自動啟用 Pages；若 repo 尚未啟用過 Pages 且 Actions 權限不足，
+第一次執行可能需要到 repo 的 **Settings → Pages → Build and deployment → Source** 手動選擇
+「GitHub Actions」一次（僅需一次，之後每次 push 都會自動重新部署，不需要再操作）。
+
+### 後端：Render（或其他支援 Docker 的平台）
+
+`backend/Dockerfile` 已可直接建置容器，並支援以下環境變數：
+
+| 環境變數 | 說明 | 預設值 |
+|---|---|---|
+| `PORT` | 監聽埠（平台通常會自動注入） | `8001` |
+| `CORS_ORIGINS` | 允許呼叫 API 的前端網域，逗號分隔 | `http://localhost:5173,http://127.0.0.1:5173` |
+| `CACHE_DIR` | 快取／工作資料目錄 | 容器內 `/app/data/cache` |
+
+repo 根目錄的 `render.yaml` 是 Render 的 Blueprint 設定檔，部署步驟：
+
+1. 用 GitHub 帳號登入 [Render](https://render.com)
+2. 選擇「New +」→「Blueprint」，連接 `sanchuan-app` 這個 repo、選這個分支
+3. Render 會讀到 `render.yaml` 自動建立 `karaoke-backend` 服務，按「Apply」部署
+4. 部署完成後把服務網址填入 `CORS_ORIGINS`（取代 `render.yaml` 裡的預留字串），並在前端
+   建置時設定 `VITE_API_BASE=https://你的後端網址`、`VITE_DEMO_MODE=false` 重新建置正式前端
+
+> ⚠️ Demucs + PyTorch 需要一定的記憶體與運算資源，Render 部分方案的免費／最低規格可能不足
+> （記憶體不夠會導致處理時 OOM），請選擇有足夠記憶體（建議至少 2GB）的方案。
+
 ## 已知限制
 
 - Demucs 在 CPU 上分離一首歌需要數分鐘，這是目前最大的體驗瓶頸。MVP 策略是坦然接受這個等待

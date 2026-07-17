@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { KaraokeEngine } from "../lib/KaraokeEngine";
 import { VocalRecorder } from "../lib/VocalRecorder";
-import { trackUrl, thumbnailUrl } from "../lib/api";
+import { trackUrl, thumbnailUrl } from "../lib/apiProvider";
 import { formatTime } from "../lib/format";
 
 const MODES = [

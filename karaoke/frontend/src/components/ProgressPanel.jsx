@@ -19,7 +19,7 @@ export default function ProgressPanel({ job, onRetry, onCancel }) {
   }
 
   const percent = Math.round((job?.progress ?? 0) * 100);
-  const label = STATUS_LABELS[job?.status] || "處理中…";
+  const label = job?.message || STATUS_LABELS[job?.status] || "處理中…";
 
   return (
     <div className="progress-panel">

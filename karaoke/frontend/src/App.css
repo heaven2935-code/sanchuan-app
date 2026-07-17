@@ -10,6 +10,21 @@
   width: 100%;
 }
 
+/* ---------- Demo 模式橫幅 ---------- */
+
+.demo-banner {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 179, 71, 0.15);
+  border: 1px solid var(--accent-2);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 /* ---------- URL 輸入表單 ---------- */
 
 .url-form {

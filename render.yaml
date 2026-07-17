@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: karaoke-backend
+    runtime: docker
+    rootDir: karaoke/backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: CORS_ORIGINS
+        value: "https://REPLACE-WITH-YOUR-FRONTEND-DOMAIN"

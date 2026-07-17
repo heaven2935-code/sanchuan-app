@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import UrlForm from "./components/UrlForm";
 import ProgressPanel from "./components/ProgressPanel";
 import KaraokePlayer from "./components/KaraokePlayer";
-import { createJob, getJob } from "./lib/api";
+import DemoBanner from "./components/DemoBanner";
+import { createJob, getJob, DEMO_MODE } from "./lib/apiProvider";
 import "./App.css";
 
 const POLL_INTERVAL_MS = 800;
@@ -50,6 +51,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      {DEMO_MODE && <DemoBanner />}
       {phase === "input" && <UrlForm onSubmit={handleSubmitUrl} disabled={false} />}
       {phase === "loading" && <ProgressPanel job={job} onRetry={handleReset} onCancel={handleReset} />}
       {phase === "player" && job && <KaraokePlayer job={job} onReset={handleReset} />}
