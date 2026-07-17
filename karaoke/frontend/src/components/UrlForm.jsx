@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 const BAR_HEIGHTS = [
-  14, 22, 10, 30, 18, 40, 24, 55, 32, 70, 45, 85, 60, 95, 70, 100, 78, 100, 70, 95, 60, 85, 45, 70,
-  32, 55, 24, 40, 18, 30, 10, 22, 14,
+  8, 14, 10, 20, 14, 28, 20, 38, 26, 48, 34, 60, 42, 74, 52, 88, 62, 98, 72, 100, 82, 100, 90, 100,
+  82, 100, 72, 100, 62, 98, 52, 88, 42, 74, 34, 60, 26, 48, 20, 38, 14, 28, 10, 20, 8, 14,
 ];
 
 function Waveform() {
@@ -12,6 +12,45 @@ function Waveform() {
         <span key={i} className="waveform__bar" style={{ height: `${h}%` }} />
       ))}
     </div>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <path d="M9 15 15 9" />
+      <path d="M13.5 5.5 15 4a4 4 0 0 1 5.66 5.66l-1.5 1.5" />
+      <path d="M10.5 18.5 9 20a4 4 0 0 1-5.66-5.66l1.5-1.5" />
+    </svg>
+  );
+}
+
+function ClipboardIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="6" y="4" width="12" height="17" rx="2" />
+      <path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" />
+      <path d="M9 12h6M9 16h6" />
+    </svg>
+  );
+}
+
+function EqualizerIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+      <path d="M5 10v4" />
+      <path d="M10 6v12" />
+      <path d="M14 9v6" />
+      <path d="M19 4v16" />
+    </svg>
+  );
+}
+
+function ShieldIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3 5 6v5c0 4.5 3 7.7 7 9 4-1.3 7-4.5 7-9V6l-7-3Z" />
+    </svg>
   );
 }
 
@@ -49,12 +88,14 @@ export default function UrlForm({ onSubmit, disabled }) {
           HO<span className="brand-logo__o">O</span>KED
         </h1>
         <p className="brand-logo__sub">MUSIC</p>
-        <p className="tagline">HEAR YOURSELF AT YOUR BEST</p>
+        <p className="tagline">HEAR YOURSELF AT YOUR BEST.</p>
       </div>
 
       <form className="input-card" onSubmit={handleSubmit}>
         <div className="input-card__header">
-          <span className="input-card__icon">🔗</span>
+          <span className="input-card__icon">
+            <LinkIcon />
+          </span>
           <div>
             <h2 className="input-card__title">貼上歌曲網址</h2>
             <p className="input-card__subtitle">支援 YouTube 等音樂來源</p>
@@ -73,17 +114,19 @@ export default function UrlForm({ onSubmit, disabled }) {
             aria-label="歌曲網址"
           />
           <button type="button" className="paste-button" onClick={handlePaste} disabled={disabled}>
-            📋 貼上
+            <ClipboardIcon /> 貼上
           </button>
         </div>
         {pasteError && <p className="paste-error">無法讀取剪貼簿，請手動貼上網址</p>}
 
         <button className="load-button" type="submit" disabled={disabled || !url.trim()}>
-          🎵 載入歌曲
+          <EqualizerIcon /> 載入歌曲
         </button>
       </form>
 
-      <p className="disclaimer">🛡️ 請確認你有權使用該音樂內容</p>
+      <p className="disclaimer">
+        <ShieldIcon /> 請確認你有權使用該音樂內容
+      </p>
     </div>
   );
 }

@@ -79,19 +79,20 @@
 .waveform {
   position: relative;
   width: 100%;
-  height: 90px;
+  height: 110px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  margin-bottom: -46px;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent);
+  gap: 3px;
+  margin-bottom: -56px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
 
 .waveform__bar {
-  width: 3px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.1));
+  flex: 1;
+  max-width: 4px;
+  background: linear-gradient(180deg, #fff, rgba(255, 255, 255, 0.15));
   border-radius: 2px;
 }
 
@@ -115,16 +116,17 @@
 .brand-logo__o::before {
   content: "";
   position: absolute;
-  inset: -0.15em;
+  inset: -0.2em;
   border-radius: 50%;
   background: radial-gradient(
-    circle,
+    circle at 50% 42%,
     #fff 0%,
-    var(--accent-2) 45%,
-    var(--accent) 70%,
-    transparent 78%
+    rgba(255, 255, 255, 0.9) 25%,
+    rgba(210, 210, 220, 0.5) 45%,
+    rgba(120, 120, 130, 0.25) 62%,
+    transparent 76%
   );
-  box-shadow: 0 0 26px 4px rgba(255, 77, 103, 0.55);
+  box-shadow: 0 0 40px 10px rgba(255, 255, 255, 0.35);
 }
 
 .brand-logo__sub {
@@ -163,9 +165,9 @@
 }
 
 .input-card__icon {
-  font-size: 20px;
-  line-height: 1;
+  display: flex;
   margin-top: 2px;
+  color: var(--accent-2);
 }
 
 .input-card__title {
@@ -201,11 +203,14 @@
 
 .paste-button {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   padding: 0 16px;
   border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--bg);
-  color: var(--accent);
+  color: var(--accent-2);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -218,6 +223,10 @@
 
 .load-button {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   padding: 16px;
   font-size: 18px;
   font-weight: 600;
@@ -234,6 +243,10 @@
 
 .disclaimer {
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   color: var(--text-muted);
   font-size: 12px;
   text-align: center;
