@@ -98,18 +98,42 @@
 .brand-logo {
   position: relative;
   margin: 0;
-  font-size: 56px;
+  font-size: 46px;
   font-weight: 800;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   color: #fff;
   text-shadow: 0 0 24px rgba(255, 255, 255, 0.45), 0 0 60px rgba(255, 77, 103, 0.35);
+  white-space: nowrap;
 }
 
-.brand-logo__accent {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  background-clip: text;
+.brand-logo__o {
+  position: relative;
+  display: inline-block;
   color: transparent;
+}
+
+.brand-logo__o::before {
+  content: "";
+  position: absolute;
+  inset: -0.15em;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #fff 0%,
+    var(--accent-2) 45%,
+    var(--accent) 70%,
+    transparent 78%
+  );
+  box-shadow: 0 0 26px 4px rgba(255, 77, 103, 0.55);
+}
+
+.brand-logo__sub {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 10px;
+  padding-left: 10px;
+  color: var(--text-muted);
 }
 
 .tagline {

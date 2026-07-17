@@ -1,4 +1,4 @@
-# 樂癮 Karaoke — V1 MVP
+# HOOKED MUSIC — V1 MVP
 
 手機優先的 K 歌網站。貼上歌曲網址 → 自動人聲分離 → KTV 風格播放器（原唱／伴奏／導唱／升降 Key）→
 錄音、回放、下載。

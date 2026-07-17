@@ -46,8 +46,9 @@ export default function UrlForm({ onSubmit, disabled }) {
         </div>
         <Waveform />
         <h1 className="brand-logo">
-          樂<span className="brand-logo__accent">癮</span>
+          HO<span className="brand-logo__o">O</span>KED
         </h1>
+        <p className="brand-logo__sub">MUSIC</p>
         <p className="tagline">HEAR YOURSELF AT YOUR BEST</p>
       </div>
 

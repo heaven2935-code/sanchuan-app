@@ -285,7 +285,7 @@ export default function KaraokePlayer({ job, onReset }) {
                 <a
                   className="download-button"
                   href={recordingUrl}
-                  download={`樂癮錄音-${job.title || "song"}.${recordingExt}`}
+                  download={`HOOKED-錄音-${job.title || "song"}.${recordingExt}`}
                 >
                   下載錄音
                 </a>

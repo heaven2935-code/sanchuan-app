@@ -8,7 +8,7 @@
 
 export const DEMO_AUDIO_DURATION = 20;
 export const DEMO_TITLE = "示範歌曲（Demo 測試音效，非真實分離結果）";
-export const DEMO_ARTIST = "樂癮 Demo";
+export const DEMO_ARTIST = "HOOKED MUSIC Demo";
 
 const TOTAL_MS = 3200;
 const STAGES = [
