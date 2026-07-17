@@ -24,6 +24,7 @@ export default function KaraokePlayer({ job, onReset }) {
   const [duration, setDuration] = useState(job.duration || 0);
   const [playState, setPlayState] = useState("ready"); // ready | singing | paused | reviewing
   const [recordingUrl, setRecordingUrl] = useState(null);
+  const [recordingExt, setRecordingExt] = useState("webm");
   const [reviewPosition, setReviewPosition] = useState(0);
   const [reviewDuration, setReviewDuration] = useState(0);
   const [reviewPlaying, setReviewPlaying] = useState(false);
@@ -87,13 +88,16 @@ export default function KaraokePlayer({ job, onReset }) {
     if (!engine) return;
 
     if (playState === "ready") {
+      // iOS Safari 等瀏覽器要求 AudioContext resume 必須緊跟在使用者手勢後，
+      // 中間不能先 await 其他非音訊的非同步操作（例如麥克風權限請求），
+      // 否則會被視為不是使用者手勢觸發而靜音。所以先啟動音訊，再要求錄音權限。
+      await engine.play();
       try {
         await recorder.start();
       } catch (err) {
         console.error(err);
         alert("無法取得麥克風權限，將僅播放歌曲不錄音。");
       }
-      await engine.play();
       setPlayState("singing");
     } else if (playState === "singing") {
       engine.pause();
@@ -114,6 +118,7 @@ export default function KaraokePlayer({ job, onReset }) {
     const blob = await recorder.stop();
     if (blob && blob.size > 0) {
       setRecordingUrl(URL.createObjectURL(blob));
+      setRecordingExt(recorder.getFileExtension());
     }
     setPlayState("reviewing");
   }
@@ -123,6 +128,7 @@ export default function KaraokePlayer({ job, onReset }) {
     setPosition(0);
     if (recordingUrl) URL.revokeObjectURL(recordingUrl);
     setRecordingUrl(null);
+    setRecordingExt("webm");
     setPlayState("ready");
   }
 
@@ -279,7 +285,7 @@ export default function KaraokePlayer({ job, onReset }) {
                 <a
                   className="download-button"
                   href={recordingUrl}
-                  download={`樂癮錄音-${job.title || "song"}.webm`}
+                  download={`樂癮錄音-${job.title || "song"}.${recordingExt}`}
                 >
                   下載錄音
                 </a>
