@@ -55,7 +55,19 @@ export class KaraokeEngine {
     this.duration = Math.max(...TRACKS.map((name) => this.players[name].buffer.duration));
     TRACKS.forEach((name) => this.players[name].sync().start(0));
     this.applyMode(this.mode);
+
+    // 額外把最終混音（含升降Key）接到一個 MediaStreamDestination，
+    // 供錄音時跟麥克風一起混音，讓錄下來的檔案聽起來像完整的 KTV 演唱
+    // （而不是只有乾淨的人聲）。
+    this._recordingDestination = Tone.getContext().rawContext.createMediaStreamDestination();
+    this.pitchShift.connect(this._recordingDestination);
+
     this.loaded = true;
+  }
+
+  /** 目前播放器輸出（伴奏/導唱/原唱，依模式與音量而定）的 MediaStream，供錄音混音使用。 */
+  getBackingStream() {
+    return this._recordingDestination ? this._recordingDestination.stream : null;
   }
 
   applyMode(mode) {

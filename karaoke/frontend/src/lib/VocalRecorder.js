@@ -1,3 +1,5 @@
+import * as Tone from "tone";
+
 // 依優先順序挑選瀏覽器支援的錄音格式：iOS Safari 不支援 audio/webm，
 // 只支援 audio/mp4；桌面 Chrome/Firefox 則普遍支援 audio/webm。
 const MIME_CANDIDATES = ["audio/mp4", "audio/webm", "audio/ogg"];
@@ -8,21 +10,42 @@ function pickSupportedMimeType() {
   return MIME_CANDIDATES.find((type) => MediaRecorder.isTypeSupported(type)) || "";
 }
 
-/** 包裝 MediaRecorder：錄下麥克風輸入，供錄音回放與下載使用。 */
+/**
+ * 包裝 MediaRecorder：錄下麥克風聲音，若有提供伴奏／導唱的 backingStream，
+ * 會在同一個 AudioContext 內把麥克風與伴奏混音成同一軌再錄製，讓錄音聽起來
+ * 像一次完整的 KTV 演唱（人聲 + 伴奏），而不是只有乾淨的人聲。
+ */
 export class VocalRecorder {
   constructor() {
     this.mediaRecorder = null;
-    this.stream = null;
+    this.micStream = null;
+    this.mixNodes = [];
     this.chunks = [];
     this.blob = null;
   }
 
-  async start() {
-    this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  async start(backingStream) {
+    this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     this.chunks = [];
     this.blob = null;
+
+    let recordStream = this.micStream;
+    this.mixNodes = [];
+
+    if (backingStream) {
+      // 與 KaraokeEngine 共用同一個 AudioContext，才能把兩個來源混進同一個目的地。
+      const ctx = Tone.getContext().rawContext;
+      const dest = ctx.createMediaStreamDestination();
+      const micSource = ctx.createMediaStreamSource(this.micStream);
+      const backingSource = ctx.createMediaStreamSource(backingStream);
+      micSource.connect(dest);
+      backingSource.connect(dest);
+      this.mixNodes = [micSource, backingSource, dest];
+      recordStream = dest.stream;
+    }
+
     const mimeType = pickSupportedMimeType();
-    this.mediaRecorder = new MediaRecorder(this.stream, mimeType ? { mimeType } : undefined);
+    this.mediaRecorder = new MediaRecorder(recordStream, mimeType ? { mimeType } : undefined);
     this.mediaRecorder.ondataavailable = (event) => {
       if (event.data && event.data.size > 0) this.chunks.push(event.data);
     };
@@ -75,7 +98,11 @@ export class VocalRecorder {
   }
 
   _releaseStream() {
-    this.stream?.getTracks().forEach((track) => track.stop());
-    this.stream = null;
+    // 只停止麥克風的 track；backingStream 的 track 屬於 KaraokeEngine，
+    // 由它自己管理生命週期，這裡不能停用，否則會中斷播放器的錄音輸出。
+    this.micStream?.getTracks().forEach((track) => track.stop());
+    this.micStream = null;
+    this.mixNodes.forEach((node) => node.disconnect());
+    this.mixNodes = [];
   }
 }

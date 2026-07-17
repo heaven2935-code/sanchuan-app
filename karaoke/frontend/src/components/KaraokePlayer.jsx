@@ -93,7 +93,7 @@ export default function KaraokePlayer({ job, onReset }) {
       // 否則會被視為不是使用者手勢觸發而靜音。所以先啟動音訊，再要求錄音權限。
       await engine.play();
       try {
-        await recorder.start();
+        await recorder.start(engine.getBackingStream());
       } catch (err) {
         console.error(err);
         alert("無法取得麥克風權限，將僅播放歌曲不錄音。");
