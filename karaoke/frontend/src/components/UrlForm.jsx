@@ -1,19 +1,5 @@
 import { useState } from "react";
-
-const BAR_HEIGHTS = [
-  8, 14, 10, 20, 14, 28, 20, 38, 26, 48, 34, 60, 42, 74, 52, 88, 62, 98, 72, 100, 82, 100, 90, 100,
-  82, 100, 72, 100, 62, 98, 52, 88, 42, 74, 34, 60, 26, 48, 20, 38, 14, 28, 10, 20, 8, 14,
-];
-
-function Waveform() {
-  return (
-    <div className="waveform" aria-hidden="true">
-      {BAR_HEIGHTS.map((h, i) => (
-        <span key={i} className="waveform__bar" style={{ height: `${h}%` }} />
-      ))}
-    </div>
-  );
-}
+import heroImage from "../assets/hero-hooked.jpg";
 
 function LinkIcon() {
   return (
@@ -78,17 +64,7 @@ export default function UrlForm({ onSubmit, disabled }) {
   return (
     <div className="home">
       <div className="hero">
-        <div className="hero__rings" aria-hidden="true">
-          <span className="hero__ring hero__ring--1" />
-          <span className="hero__ring hero__ring--2" />
-          <span className="hero__ring hero__ring--3" />
-        </div>
-        <Waveform />
-        <h1 className="brand-logo">
-          HO<span className="brand-logo__o">O</span>KED
-        </h1>
-        <p className="brand-logo__sub">MUSIC</p>
-        <p className="tagline">HEAR YOURSELF AT YOUR BEST.</p>
+        <img className="hero-image" src={heroImage} alt="HOOKED MUSIC — Hear yourself at your best." />
       </div>
 
       <form className="input-card" onSubmit={handleSubmit}>
