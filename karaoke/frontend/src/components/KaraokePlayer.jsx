@@ -20,6 +20,8 @@ export default function KaraokePlayer({ job, onReset }) {
   const [loadError, setLoadError] = useState(null);
   const [mode, setMode] = useState("guide");
   const [semitones, setSemitones] = useState(0);
+  const [playbackVolume, setPlaybackVolume] = useState(100);
+  const [micVolume, setMicVolume] = useState(100);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(job.duration || 0);
   const [playState, setPlayState] = useState("ready"); // ready | singing | paused | reviewing
@@ -93,7 +95,7 @@ export default function KaraokePlayer({ job, onReset }) {
       // 否則會被視為不是使用者手勢觸發而靜音。所以先啟動音訊，再要求錄音權限。
       await engine.play();
       try {
-        await recorder.start(engine.getBackingStream());
+        await recorder.start(engine.getBackingStream(), micVolume / 100);
       } catch (err) {
         console.error(err);
         alert("無法取得麥克風權限，將僅播放歌曲不錄音。");
@@ -147,6 +149,18 @@ export default function KaraokePlayer({ job, onReset }) {
     const next = Math.max(-6, Math.min(6, semitones + delta));
     setSemitones(next);
     engineRef.current?.setSemitones(next);
+  }
+
+  function handlePlaybackVolumeChange(e) {
+    const value = Number(e.target.value);
+    setPlaybackVolume(value);
+    engineRef.current?.setPlaybackVolume(value / 100);
+  }
+
+  function handleMicVolumeChange(e) {
+    const value = Number(e.target.value);
+    setMicVolume(value);
+    recorderRef.current?.setMicVolume(value / 100);
   }
 
   function toggleReviewPlay() {
@@ -229,6 +243,35 @@ export default function KaraokePlayer({ job, onReset }) {
             <button className="key-button" onClick={() => handleSemitoneChange(1)} aria-label="升 Key">
               +
             </button>
+          </div>
+
+          <div className="volume-controls">
+            <div className="volume-row">
+              <span className="volume-icon" aria-hidden="true">🔊</span>
+              <input
+                className="volume-slider"
+                type="range"
+                min={0}
+                max={100}
+                value={playbackVolume}
+                onChange={handlePlaybackVolumeChange}
+                aria-label="播放音量"
+              />
+              <span className="volume-value">{playbackVolume}%</span>
+            </div>
+            <div className="volume-row">
+              <span className="volume-icon" aria-hidden="true">🎙️</span>
+              <input
+                className="volume-slider"
+                type="range"
+                min={0}
+                max={150}
+                value={micVolume}
+                onChange={handleMicVolumeChange}
+                aria-label="麥克風音量"
+              />
+              <span className="volume-value">{micVolume}%</span>
+            </div>
           </div>
 
           <div className="transport-controls">

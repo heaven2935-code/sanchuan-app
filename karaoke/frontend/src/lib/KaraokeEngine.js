@@ -13,14 +13,16 @@ export class KaraokeEngine {
     this.players = {};
     this.gains = {};
     this.pitchShift = null;
+    this.masterGain = null;
     this.mode = "guide";
+    this.playbackVolume = 1;
     this.duration = 0;
     this.loaded = false;
     this._disposed = false;
   }
 
   async load(urls) {
-    const pitchShift = new Tone.PitchShift({ pitch: 0 }).toDestination();
+    const pitchShift = new Tone.PitchShift({ pitch: 0 });
 
     const players = {};
     const gains = {};
@@ -56,13 +58,24 @@ export class KaraokeEngine {
     TRACKS.forEach((name) => this.players[name].sync().start(0));
     this.applyMode(this.mode);
 
-    // 額外把最終混音（含升降Key）接到一個 MediaStreamDestination，
+    // 主音量：獨立於原唱/伴奏/導唱各軌的相對比例之外，讓使用者可以整體
+    // 調整播放音量大小，同時影響「聽到的聲音」與「錄音時混進去的伴奏音量」。
+    this.masterGain = new Tone.Gain(this.playbackVolume ?? 1).toDestination();
+    this.pitchShift.connect(this.masterGain);
+
+    // 額外把最終混音（含升降Key、主音量）接到一個 MediaStreamDestination，
     // 供錄音時跟麥克風一起混音，讓錄下來的檔案聽起來像完整的 KTV 演唱
     // （而不是只有乾淨的人聲）。
     this._recordingDestination = Tone.getContext().rawContext.createMediaStreamDestination();
-    this.pitchShift.connect(this._recordingDestination);
+    this.masterGain.connect(this._recordingDestination);
 
     this.loaded = true;
+  }
+
+  /** 調整整體播放音量（0～1），同時影響監聽與錄音混音。 */
+  setPlaybackVolume(value) {
+    this.playbackVolume = value;
+    if (this.masterGain) this.masterGain.gain.value = value;
   }
 
   /** 目前播放器輸出（伴奏/導唱/原唱，依模式與音量而定）的 MediaStream，供錄音混音使用。 */
@@ -117,6 +130,7 @@ export class KaraokeEngine {
       this.gains[name]?.dispose();
     });
     this.pitchShift?.dispose();
+    this.masterGain?.dispose();
     this.players = {};
     this.gains = {};
     this.loaded = false;

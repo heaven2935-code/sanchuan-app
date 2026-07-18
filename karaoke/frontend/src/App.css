@@ -304,6 +304,38 @@
   font-weight: 600;
 }
 
+.volume-controls {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.volume-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.volume-icon {
+  font-size: 15px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.volume-slider {
+  flex: 1;
+}
+
+.volume-value {
+  min-width: 40px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
 .transport-controls {
   width: 100%;
   display: flex;

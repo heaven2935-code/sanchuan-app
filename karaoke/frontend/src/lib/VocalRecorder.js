@@ -19,37 +19,46 @@ export class VocalRecorder {
   constructor() {
     this.mediaRecorder = null;
     this.micStream = null;
+    this.micGain = null;
     this.mixNodes = [];
     this.chunks = [];
     this.blob = null;
   }
 
-  async start(backingStream) {
+  async start(backingStream, micVolume = 1) {
     this.micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     this.chunks = [];
     this.blob = null;
-
-    let recordStream = this.micStream;
     this.mixNodes = [];
 
+    // 一律經過同一個 AudioContext 混音，麥克風先過一個可調音量的 Gain 節點，
+    // 才能讓「麥克風音量」滑桿即時生效（包含錄音中途調整）。
+    const ctx = Tone.getContext().rawContext;
+    const dest = ctx.createMediaStreamDestination();
+    const micSource = ctx.createMediaStreamSource(this.micStream);
+    const micGain = ctx.createGain();
+    micGain.gain.value = micVolume;
+    micSource.connect(micGain).connect(dest);
+    this.micGain = micGain;
+    this.mixNodes = [micSource, micGain, dest];
+
     if (backingStream) {
-      // 與 KaraokeEngine 共用同一個 AudioContext，才能把兩個來源混進同一個目的地。
-      const ctx = Tone.getContext().rawContext;
-      const dest = ctx.createMediaStreamDestination();
-      const micSource = ctx.createMediaStreamSource(this.micStream);
       const backingSource = ctx.createMediaStreamSource(backingStream);
-      micSource.connect(dest);
       backingSource.connect(dest);
-      this.mixNodes = [micSource, backingSource, dest];
-      recordStream = dest.stream;
+      this.mixNodes.push(backingSource);
     }
 
     const mimeType = pickSupportedMimeType();
-    this.mediaRecorder = new MediaRecorder(recordStream, mimeType ? { mimeType } : undefined);
+    this.mediaRecorder = new MediaRecorder(dest.stream, mimeType ? { mimeType } : undefined);
     this.mediaRecorder.ondataavailable = (event) => {
       if (event.data && event.data.size > 0) this.chunks.push(event.data);
     };
     this.mediaRecorder.start();
+  }
+
+  /** 調整錄音中麥克風音量（0～可超過1做增益放大），錄音中途也能即時生效。 */
+  setMicVolume(value) {
+    if (this.micGain) this.micGain.gain.value = value;
   }
 
   pause() {
@@ -102,6 +111,7 @@ export class VocalRecorder {
     // 由它自己管理生命週期，這裡不能停用，否則會中斷播放器的錄音輸出。
     this.micStream?.getTracks().forEach((track) => track.stop());
     this.micStream = null;
+    this.micGain = null;
     this.mixNodes.forEach((node) => node.disconnect());
     this.mixNodes = [];
   }
