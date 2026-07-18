@@ -69,36 +69,36 @@ npm run dev
   （`createJob/getJob/trackUrl/thumbnailUrl`），由 `src/lib/apiProvider.js` 依
   `VITE_DEMO_MODE` 切換，其餘元件一律從 `apiProvider` import，不需要另外改動。
 
-## 部署
+## 部署（目前已上線的狀態）
 
-### 前端 Demo 版：GitHub Pages（已設定自動部署）
+### 後端：Render
 
-`.github/workflows/deploy-karaoke-demo.yml` 會在推送到本分支時自動建置 Demo 版前端並部署到
-GitHub Pages，網址為 `https://<github帳號>.github.io/<repo名稱>/karaoke/`。此工作流程使用
-`actions/configure-pages` 嘗試自動啟用 Pages；若 repo 尚未啟用過 Pages 且 Actions 權限不足，
-第一次執行可能需要到 repo 的 **Settings → Pages → Build and deployment → Source** 手動選擇
-「GitHub Actions」一次（僅需一次，之後每次 push 都會自動重新部署，不需要再操作）。
+真實後端已部署在 Render，服務網址：`https://karaoke-backend-mchf.onrender.com`
+（repo 根目錄的 `render.yaml` 是對應的 Blueprint 設定檔，`CORS_ORIGINS` 已設為
+GitHub Pages 前端的網域）。
 
-### 後端：Render（或其他支援 Docker 的平台）
+`backend/Dockerfile` 支援以下環境變數：
 
-`backend/Dockerfile` 已可直接建置容器，並支援以下環境變數：
-
-| 環境變數 | 說明 | 預設值 |
+| 環境變數 | 說明 | 目前設定 |
 |---|---|---|
-| `PORT` | 監聽埠（平台通常會自動注入） | `8001` |
-| `CORS_ORIGINS` | 允許呼叫 API 的前端網域，逗號分隔 | `http://localhost:5173,http://127.0.0.1:5173` |
+| `PORT` | 監聽埠（平台自動注入） | Render 自動指定 |
+| `CORS_ORIGINS` | 允許呼叫 API 的前端網域，逗號分隔 | `https://heaven2935-code.github.io` |
 | `CACHE_DIR` | 快取／工作資料目錄 | 容器內 `/app/data/cache` |
 
-repo 根目錄的 `render.yaml` 是 Render 的 Blueprint 設定檔，部署步驟：
+> ⚠️ Demucs + PyTorch 需要一定的記憶體，方案規格太小（例如最低階 512MB）處理歌曲時可能
+> OOM 當機，建議選擇記憶體至少 2GB 的方案；若處理常常失敗，先確認目前方案的記憶體大小。
 
-1. 用 GitHub 帳號登入 [Render](https://render.com)
-2. 選擇「New +」→「Blueprint」，連接 `sanchuan-app` 這個 repo、選這個分支
-3. Render 會讀到 `render.yaml` 自動建立 `karaoke-backend` 服務，按「Apply」部署
-4. 部署完成後把服務網址填入 `CORS_ORIGINS`（取代 `render.yaml` 裡的預留字串），並在前端
-   建置時設定 `VITE_API_BASE=https://你的後端網址`、`VITE_DEMO_MODE=false` 重新建置正式前端
+### 前端：GitHub Pages（已設定自動部署，接正式後端）
 
-> ⚠️ Demucs + PyTorch 需要一定的記憶體與運算資源，Render 部分方案的免費／最低規格可能不足
-> （記憶體不夠會導致處理時 OOM），請選擇有足夠記憶體（建議至少 2GB）的方案。
+`.github/workflows/deploy-karaoke-demo.yml` 會在推送到本分支時自動建置前端並部署到
+GitHub Pages：`https://heaven2935-code.github.io/sanchuan-app/karaoke/`，建置時已指定
+`VITE_API_BASE` 指向上面的 Render 後端網址，**不是 Demo 模式**，會真的呼叫後端下載/分離歌曲。
+
+若要切回 Demo／Fixture 模式（例如後端維護中暫時想展示 UI），把該 workflow 的建置步驟改回
+`npm run build:demo` 即可，不需要改動任何原始碼。
+
+首次啟用 Pages 若 repo 從未設定過，可能需要到 repo 的 **Settings → Pages → Build and
+deployment → Source** 手動選擇一次「GitHub Actions」（僅需一次）。
 
 ## 已知限制
 

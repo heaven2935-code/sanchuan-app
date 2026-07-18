@@ -7,4 +7,4 @@ services:
     healthCheckPath: /api/health
     envVars:
       - key: CORS_ORIGINS
-        value: "https://REPLACE-WITH-YOUR-FRONTEND-DOMAIN"
+        value: "https://heaven2935-code.github.io"
