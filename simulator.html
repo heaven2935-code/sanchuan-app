@@ -157,7 +157,8 @@ textarea::placeholder{color:var(--muted)}
 
 .stat{display:flex;align-items:center;gap:9px;padding:12px;border-radius:10px;
       background:var(--card2);font-size:12.5px;margin-top:12px;line-height:1.7}
-.stat.err{background:rgba(208,80,80,.1);color:#F0A0A0}
+.stat.err{background:rgba(208,80,80,.1);color:#F0A0A0;display:block;word-break:break-word}
+.stat a{color:var(--gold2);text-decoration:underline}
 .spin{width:15px;height:15px;border:2px solid var(--border2);border-top-color:var(--gold);
       border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -991,8 +992,16 @@ async function generate(){
     var tip = "";
     if(/API key not valid|API_KEY_INVALID/i.test(m)){
       tip = "<br>→ 金鑰字串不對。點右上角「設定金鑰」，按<b>「測試金鑰」</b>看實際原因。";
-    }else if(/quota|billing|RESOURCE_EXHAUSTED|free tier|not available on the free/i.test(m)){
-      tip = "<br>→ 這個模型需要專案綁定付款方式。可先改用下拉選單裡較便宜的模型，或到 Google Cloud 開啟計費。";
+    }else if(/limit:\s*0/i.test(m)){
+      tip = '<br><b>→ 免費方案對影像模型的額度是 0，必須先開啟計費才能生成。</b>' +
+            '<br>1. 開啟 <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">console.cloud.google.com/billing</a>，用同一個 Google 帳號建立帳單帳戶（綁信用卡）' +
+            '<br>2. 把帳單帳戶連結到金鑰所屬的專案' +
+            '<br>3. 回來重按「開始模擬」' +
+            '<br><span style="opacity:.75">一張圖約 US$0.03～0.13，依模型與解析度而定。</span>';
+    }else if(/quota|RESOURCE_EXHAUSTED|rate limit/i.test(m)){
+      tip = "<br>→ 短時間內請求太多，等 30～60 秒再按一次「開始模擬」。";
+    }else if(/billing|not available on the free/i.test(m)){
+      tip = '<br>→ 這個模型需要專案綁定付款方式，請到 <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">console.cloud.google.com/billing</a> 開啟計費。';
     }else if(/SERVICE_DISABLED|has not been used|PERMISSION_DENIED/i.test(m)){
       tip = "<br>→ 該專案尚未啟用 Generative Language API，錯誤訊息裡的連結可直接開啟啟用。";
     }
