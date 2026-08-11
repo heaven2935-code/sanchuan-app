@@ -176,6 +176,73 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .mo-c{background:transparent;color:var(--muted2)}
 .mo-s{background:var(--gold);color:#0D1117;border-color:var(--gold)}
 
+
+/* ── 色板庫 ── */
+.libtabs{display:flex;gap:7px;margin-bottom:11px}
+.libtab{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:8px;padding:8px;
+        cursor:pointer;color:var(--muted2);font-size:12px;font-weight:700;font-family:var(--font)}
+.libtab.on{background:var(--gold);border-color:var(--gold);color:#0D1117}
+.libgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;
+         max-height:44vh;overflow-y:auto}
+.libit{position:relative;background:var(--card2);border:1.5px solid var(--border2);border-radius:9px;
+       overflow:hidden;cursor:pointer;padding:0;font-family:var(--font);text-align:left}
+.libit:hover{border-color:var(--gold2)}
+.libit.on{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold-bg)}
+.libit .sw{height:62px;width:100%;display:block;object-fit:cover}
+.libit .nm{display:block;padding:5px 7px;font-size:11px;font-weight:600;color:var(--text);
+           line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.libit .del{position:absolute;top:4px;right:4px;background:rgba(13,17,23,.85);border:none;
+            border-radius:5px;color:#F0A0A0;font-size:11px;width:20px;height:20px;cursor:pointer;
+            font-family:var(--font);line-height:1}
+.libempty{grid-column:1/-1;text-align:center;color:var(--muted2);font-size:12px;padding:24px 8px;line-height:1.8}
+.libup{border:1.5px dashed var(--border2);border-radius:9px;display:flex;flex-direction:column;
+       align-items:center;justify-content:center;cursor:pointer;min-height:92px;color:var(--muted2);
+       font-size:11.5px;font-family:var(--font);background:none}
+.libup:hover{border-color:var(--gold);color:var(--gold2)}
+
+/* 已選色板 chip */
+.selsw{display:flex;align-items:center;gap:8px;background:var(--gold-bg);border:1px solid var(--gold);
+       border-radius:9px;padding:6px 9px;margin-bottom:9px}
+.selsw img{width:30px;height:30px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid var(--border2)}
+.selsw .t{flex:1;min-width:0;font-size:11.5px;line-height:1.4}
+.selsw .t b{color:var(--gold2)}
+.selsw .t span{display:block;color:var(--muted2);font-size:10.5px}
+.selsw button{background:none;border:none;color:var(--muted2);font-size:15px;cursor:pointer;
+              font-family:var(--font);padding:2px 5px}
+
+/* dock 動作列 */
+.actrow{display:flex;gap:6px;margin-bottom:9px}
+.act{flex:1;background:var(--card2);border:1px solid var(--border2);border-radius:9px;padding:8px 6px;
+     cursor:pointer;color:var(--muted2);font-size:11.5px;font-weight:600;font-family:var(--font)}
+.act:hover{border-color:var(--gold);color:var(--gold2)}
+.act.on{background:var(--gold);border-color:var(--gold);color:#0D1117}
+
+/* ── 模擬結果（含標註）── */
+.results{margin-top:18px;display:flex;flex-direction:column;gap:16px}
+.res-h{font-size:12.5px;font-weight:700;color:var(--gold2);margin-bottom:-4px}
+.res{background:var(--card);border:1px solid var(--border);border-radius:13px;overflow:hidden}
+.res-img{width:100%;height:auto;display:block;cursor:pointer;background:#000}
+.res-tag{display:flex;align-items:center;gap:10px;padding:10px 12px;border-top:1px solid var(--border)}
+.res-sw{width:44px;height:44px;border-radius:8px;flex-shrink:0;border:1px solid var(--border2);object-fit:cover}
+.res-tx{flex:1;min-width:0}
+.res-nm{font-size:13px;font-weight:700;color:var(--gold2);line-height:1.4}
+.res-ds{font-size:11px;color:var(--muted2);line-height:1.55;margin-top:1px}
+.res-no{font-size:10.5px;color:var(--muted);margin-top:2px}
+.res-bar{display:flex;gap:6px;padding:0 12px 11px;flex-wrap:wrap}
+.res-b{background:var(--card2);border:1px solid var(--border2);border-radius:7px;padding:6px 10px;
+       cursor:pointer;color:var(--muted2);font-size:11px;font-weight:600;font-family:var(--font)}
+.res-b:hover{border-color:var(--gold2);color:var(--gold2)}
+
+/* ── 配色建議 ── */
+.sug{background:var(--card2);border:1px solid var(--border2);border-radius:11px;padding:11px;margin-bottom:9px}
+.sug-t{font-size:13px;font-weight:700;color:var(--gold2)}
+.sug-d{font-size:11.5px;color:var(--muted2);line-height:1.65;margin:3px 0 8px}
+.sug-p{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--border)}
+.sug-a{font-size:11.5px;font-weight:700;min-width:52px;flex-shrink:0}
+.sug-m{font-size:11.5px;color:var(--muted2);flex:1;min-width:0;line-height:1.5}
+.sug-u{background:var(--gold);border:none;border-radius:7px;padding:5px 10px;cursor:pointer;
+       color:#0D1117;font-size:11px;font-weight:700;font-family:var(--font);flex-shrink:0}
+
 .hide{display:none !important}
 </style>
 </head>
@@ -198,6 +265,7 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 
   <!-- 上傳 -->
   <input type="file" id="f-photo" accept="image/*" class="hide">
+<input type="file" id="f-lib" accept="image/*" multiple class="hide">
   <div class="drop" id="d-photo">
     <div class="drop-i">📷</div>
     <div class="drop-t">上傳現況照片</div>
@@ -217,7 +285,8 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
     </div>
 
     <div id="state"></div>
-    <div class="thread" id="thread"></div>
+    <div id="sugbox"></div>
+    <div class="results" id="results"></div>
 
     <!-- 進階（預設收起）-->
     <div class="adv hide" id="adv">
@@ -251,13 +320,18 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 <!-- 底部輸入列 -->
 <div class="dock hide" id="dock">
   <div class="dock-in">
+    <div id="selsw-box"></div>
+    <div class="actrow">
+      <button class="act" id="a-lib" onclick="openLib()">🎨 色板庫</button>
+      <button class="act" onclick="askStyle()">💡 配色建議</button>
+      <button class="act" id="advtoggle2" onclick="toggleAdv()">⚙ 進階</button>
+    </div>
     <div class="qrow" id="qrow"></div>
     <div class="askrow">
       <textarea class="ask" id="ask" rows="1" placeholder="想怎麼改？例：把櫃體門片換成深胡桃木"
                 oninput="growAsk()" onkeydown="askKey(event)"></textarea>
       <button class="send" id="send" onclick="submitAsk()">↑</button>
     </div>
-    <button class="advtoggle" id="advtoggle" onclick="toggleAdv()">⚙ 進階：自己圈選範圍</button>
   </div>
 </div>
 
@@ -513,14 +587,29 @@ function refreshBar(){
   $("send").disabled = busy;
 }
 
+// 每一張模擬結果都帶著「用了哪個色板／材質」的標註，
+// 顏色相近時才分得出來哪張是哪張。
 function renderThread(){
-  $("thread").innerHTML = turns.map(function(t, i){
-    return '<div class="turn">' +
-      '<img src="' + t.url + '" onclick="revertTo(' + i + ')" title="點縮圖回到這一版">' +
-      '<div class="turn-b"><div class="turn-t">' + t.text + "</div>" +
-      '<div class="turn-s">第 ' + (i + 1) + " 次 · 點縮圖可回到這一版</div></div>" +
-    "</div>";
-  }).reverse().join("");
+  var el = $("results");
+  if(!turns.length){ el.innerHTML = ""; return; }
+  el.innerHTML = '<div class="res-h">模擬結果（共 ' + turns.length + " 張）</div>" +
+    turns.map(function(t, i){
+      var swHtml = t.swUrl
+        ? '<img class="res-sw" src="' + t.swUrl + '">'
+        : '<span class="res-sw" style="background:' + (t.swCss || "var(--card2)") + '"></span>';
+      return '<div class="res">' +
+        '<img class="res-img" src="' + t.url + '" onclick="revertTo(' + i + ')">' +
+        '<div class="res-tag">' + swHtml +
+          '<div class="res-tx">' +
+            '<div class="res-nm">' + (t.swName || "自訂描述") + "</div>" +
+            '<div class="res-ds">' + t.text + "</div>" +
+            '<div class="res-no">第 ' + (i + 1) + " 張 · " + t.at + "</div>" +
+          "</div></div>" +
+        '<div class="res-bar">' +
+          '<button class="res-b" onclick="downloadOne(' + i + ')">⤓ 下載（含標註）</button>' +
+          '<button class="res-b" onclick="revertTo(' + i + ')">設為目前</button>' +
+        "</div></div>";
+    }).reverse().join("");
 }
 
 function revertTo(i){
@@ -531,9 +620,64 @@ function revertTo(i){
     c.getContext("2d").drawImage(im, 0, 0, orig.w, orig.h);
     cur = c;
     redraw(); refreshBar();
-    toast("已回到第 " + (i + 1) + " 版");
+    toast("已設為目前這張（第 " + (i + 1) + " 張）");
   };
   im.src = turns[i].url;
+}
+
+// 把材質名稱與色板縮圖燒進圖片下緣，傳給業主時才不會弄混
+function annotate(srcCanvas, t){
+  return new Promise(function(resolve){
+    var w = srcCanvas.width;
+    var bar = Math.max(64, Math.round(w * 0.085));
+    var out = mkCanvas(w, srcCanvas.height + bar);
+    var x = out.getContext("2d");
+    x.drawImage(srcCanvas, 0, 0);
+    x.fillStyle = "#0D1117";
+    x.fillRect(0, srcCanvas.height, w, bar);
+
+    var pad = Math.round(bar * 0.18);
+    var box = bar - pad * 2;
+    var tx = pad;
+
+    function text(){
+      x.fillStyle = "#E8C97A";
+      x.font = "700 " + Math.round(bar * 0.34) + "px sans-serif";
+      x.fillText(t.swName || "自訂描述", tx, srcCanvas.height + pad + Math.round(bar * 0.34));
+      x.fillStyle = "#6A7E98";
+      x.font = "400 " + Math.round(bar * 0.24) + "px sans-serif";
+      var d = t.text.length > 34 ? t.text.slice(0, 34) + "…" : t.text;
+      x.fillText(d, tx, srcCanvas.height + pad + Math.round(bar * 0.68));
+      resolve(out);
+    }
+
+    if(t.swUrl){
+      var im = new Image();
+      im.onload = function(){
+        x.drawImage(im, pad, srcCanvas.height + pad, box, box);
+        tx = pad * 2 + box;
+        text();
+      };
+      im.onerror = function(){ text(); };
+      im.src = t.swUrl;
+    }else{
+      text();
+    }
+  });
+}
+
+async function downloadOne(i){
+  var t = turns[i];
+  var im = await new Promise(function(res){
+    var q = new Image(); q.onload = function(){ res(q); }; q.src = t.url;
+  });
+  var c = mkCanvas(im.width, im.height);
+  c.getContext("2d").drawImage(im, 0, 0);
+  var out = await annotate(c, t);
+  var a = document.createElement("a");
+  a.download = "施工模擬_" + (t.swName || "自訂") + "_" + (i + 1) + ".jpg";
+  a.href = out.toDataURL("image/jpeg", 0.95);
+  a.click();
 }
 
 function showOriginal(){
@@ -593,7 +737,8 @@ async function submitAsk(){
   if(busy) return;
   if(!API_KEY){ showKey(); return; }
   var text = $("ask").value.trim();
-  if(!text){ toast("先打一句話說要怎麼改"); return; }
+  if(!text && !sel){ toast("先打一句話說要怎麼改，或從色板庫選一個材質"); return; }
+  if(!text) text = "換成這個材質";
 
   // 已經自己圈好範圍 -> 直接生成，不用再問 AI 要改哪裡
   if(hasMask()){
@@ -773,6 +918,13 @@ function buildMarked(m){
 
 function buildPrompt(withMask){
   var want = pending.material || pending.text;
+  if(sel){
+    var swNo = withMask ? 3 : 2;
+    want = sel.url
+      ? "以【圖" + swNo + " 材質樣板】的顏色與紋理為準（樣板名稱：" + sel.name + "）" +
+        (pending.text ? "，並符合這句需求：" + pending.text : "")
+      : sel.desc + (pending.text && pending.text !== "換成這個材質" ? "，並符合：" + pending.text : "");
+  }
   var area = pending.area;
   var target = withMask
     ? "【圖2 標記圖】中洋紅色覆蓋到的區域" + (area ? "（該區域是：" + area + "）" : "")
@@ -816,6 +968,10 @@ async function runGenerate(){
       parts.push({ text: "【圖2】標記圖，洋紅色覆蓋處＝要更換的範圍：" });
       parts.push({ inline_data: { mime_type: mk.mime, data: mk.b64 } });
     }
+    if(sel && sel.url){
+      parts.push({ text: "【圖" + (withMask ? 3 : 2) + "】目標材質樣板（" + sel.name + "）：" });
+      parts.push({ inline_data: { mime_type: "image/jpeg", data: sel.url.split(",")[1] } });
+    }
     parts.push({ text: buildPrompt(withMask) });
 
     var res = await fetch(
@@ -852,7 +1008,14 @@ async function runGenerate(){
     stack.push(cloneCanvas(cur));
     cur = withMask ? composite(aiImg, m) : fitToBase(aiImg);
 
-    turns.push({ text: pending.text, url: cur.toDataURL("image/jpeg", 0.85) });
+    turns.push({
+      text:   pending.text,
+      url:    cur.toDataURL("image/jpeg", 0.85),
+      swName: sel ? sel.name : "",
+      swUrl:  sel ? sel.url : "",
+      swCss:  sel ? sel.css : "",
+      at:     new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })
+    });
     pending = null;
     mask = mkCanvas(orig.w, orig.h);   // 這一輪的範圍用完就清掉
     setMode("off");
@@ -1106,11 +1269,231 @@ function renderMats(){
 }
 function useMat(ci, ji){
   var m = MATERIALS[ci].items[ji];
+  pickSwatch({ id: "builtin:" + ci + ":" + ji, name: m.name, css: m.css, desc: m.desc });
+}
+
+
+// ============================================================
+// 色板庫：內建材質（文字描述）＋ 自己上傳的實拍色板（參考影像）
+// ============================================================
+var LIB_KEY = "sim_swatches";
+var myLib   = [];        // [{id,name,url}] 使用者上傳，url 為 dataURL
+var sel     = null;      // 目前選用 {id,name,url?,css?,desc?}
+var libTab  = "mine";
+
+function loadLib(){
+  try{ myLib = JSON.parse(localStorage.getItem(LIB_KEY) || "[]"); }
+  catch(e){ myLib = []; }
+}
+function saveLib(){
+  try{ localStorage.setItem(LIB_KEY, JSON.stringify(myLib)); }
+  catch(e){ toast("色板存不下了，請先刪掉幾張舊的"); }
+}
+
+function openLib(){
+  if($("libmo")) return;
+  var d = document.createElement("div");
+  d.id = "libmo";
+  d.innerHTML =
+    '<div class="ov" onclick="closeLib()"></div>' +
+    '<div class="mo" style="width:min(560px,94vw)">' +
+      '<div class="mo-t">色板庫</div>' +
+      '<div class="libtabs">' +
+        '<button class="libtab" id="lt-mine" onclick="setLibTab(\'mine\')">我的色板</button>' +
+        '<button class="libtab" id="lt-builtin" onclick="setLibTab(\'builtin\')">內建材質</button>' +
+      "</div>" +
+      '<div id="libcats"></div>' +
+      '<div class="libgrid" id="libgrid"></div>' +
+      '<div class="mo-r"><button class="mo-c" onclick="closeLib()">關閉</button></div>' +
+    "</div>";
+  document.body.appendChild(d);
+  setLibTab(libTab);
+}
+function closeLib(){ var m = $("libmo"); if(m) m.remove(); }
+
+function setLibTab(t){
+  libTab = t;
+  $("lt-mine").classList.toggle("on", t === "mine");
+  $("lt-builtin").classList.toggle("on", t === "builtin");
+  renderLib();
+}
+
+function renderLib(){
+  var cats = $("libcats"), grid = $("libgrid");
+  if(libTab === "builtin"){
+    cats.innerHTML = '<div class="cats">' + MATERIALS.map(function(g, i){
+      return '<button class="cat' + (i === curCat ? " on" : "") +
+             '" onclick="setCat(' + i + ');renderLib()">' + g.cat + "</button>";
+    }).join("") + "</div>";
+    grid.innerHTML = MATERIALS[curCat].items.map(function(m, j){
+      var id = "builtin:" + curCat + ":" + j;
+      return '<button class="libit' + (sel && sel.id === id ? " on" : "") +
+             '" onclick="useMat(' + curCat + "," + j + ');closeLib()">' +
+        '<span class="sw" style="background:' + m.css + '"></span>' +
+        '<span class="nm">' + m.name + "</span></button>";
+    }).join("");
+  }else{
+    cats.innerHTML = "";
+    var up = '<button class="libup" onclick="document.getElementById(\'f-lib\').click()">' +
+             "<div style=\"font-size:20px\">＋</div><div>上傳色板</div><div style=\"font-size:10px\">可一次多張</div></button>";
+    if(!myLib.length){
+      grid.innerHTML = up +
+        '<div class="libempty">還沒有色板。<br>把型錄上業主選的顏色拍起來，<br>一次全部上傳，模擬時點一下就能用。</div>';
+    }else{
+      grid.innerHTML = up + myLib.map(function(m){
+        return '<div class="libit' + (sel && sel.id === m.id ? " on" : "") +
+               '" onclick="pickMine(\'' + m.id + '\');closeLib()">' +
+          '<img class="sw" src="' + m.url + '">' +
+          '<span class="nm">' + m.name + "</span>" +
+          '<button class="del" onclick="event.stopPropagation();delMine(\'' + m.id + '\')">✕</button>' +
+        "</div>";
+      }).join("");
+    }
+  }
+}
+
+async function uploadLib(files){
+  var n = 0;
+  for(var i = 0; i < files.length; i++){
+    try{
+      var im = await fileToImage(files[i]);
+      var sc = Math.min(1, 512 / Math.max(im.width, im.height));
+      var c = mkCanvas(Math.round(im.width * sc), Math.round(im.height * sc));
+      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+      myLib.push({
+        id: "u" + Date.now() + "_" + i,
+        name: (files[i].name || "色板").replace(/\.[^.]+$/, "").slice(0, 14) || ("色板 " + (myLib.length + 1)),
+        url: c.toDataURL("image/jpeg", 0.82)
+      });
+      n++;
+    }catch(e){}
+  }
+  saveLib();
+  renderLib();
+  if(n) toast("已加入 " + n + " 張色板，點名稱可以改名");
+}
+
+function pickMine(id){
+  var m = myLib.filter(function(x){ return x.id === id; })[0];
+  if(m) pickSwatch({ id: m.id, name: m.name, url: m.url });
+}
+
+function delMine(id){
+  myLib = myLib.filter(function(x){ return x.id !== id; });
+  if(sel && sel.id === id) clearSel();
+  saveLib(); renderLib();
+}
+
+function pickSwatch(o){
+  sel = o;
+  renderSel();
   var el = $("ask");
-  var base = el.value.trim();
-  el.value = base ? base + "，" + m.desc : "換成 " + m.desc;
+  if(!el.value.trim()) el.value = "換成這個材質";
   growAsk(); el.focus();
-  toast("已帶入「" + m.name + "」");
+  toast("已選「" + o.name + "」");
+}
+
+function clearSel(){ sel = null; renderSel(); }
+
+function renderSel(){
+  var box = $("selsw-box");
+  if(!sel){ box.innerHTML = ""; $("a-lib").classList.remove("on"); return; }
+  $("a-lib").classList.add("on");
+  var img = sel.url
+    ? '<img src="' + sel.url + '">'
+    : '<span style="width:30px;height:30px;border-radius:6px;flex-shrink:0;background:' + sel.css + '"></span>';
+  box.innerHTML = '<div class="selsw">' + img +
+    '<div class="t"><b>' + sel.name + "</b>" +
+    "<span>" + (sel.url ? "會把這張色板當成材質參考" : "會依這個材質的描述生成") + "</span></div>" +
+    '<button onclick="clearSel()">✕</button></div>';
+}
+
+// ============================================================
+// AI 配色與風格建議
+// ============================================================
+async function askStyle(){
+  if(!cur){ toast("請先上傳現況照片"); return; }
+  if(!API_KEY){ showKey(); return; }
+  if(busy) return;
+
+  var style = prompt("業主想要什麼風格？（可留空，讓 AI 自己看照片建議）\n例：北歐風、日式侘寂、飯店風、無印風", "");
+  if(style === null) return;
+
+  busy = true; refreshBar();
+  working("正在看照片並想配色…");
+  $("sugbox").innerHTML = "";
+  try{
+    var p = jpegParts(cur, 0.9);
+    var ask = "這是一張室內裝修的現場照片。" +
+      (style.trim() ? "業主想要的風格是「" + style.trim() + "」。" : "請依照現場的採光、格局與既有元素判斷適合的風格。") +
+      "\n\n請提出 3 套完整的配色與材質搭配方案，只輸出 JSON 陣列，每個項目包含：\n" +
+      '- "name"：方案名稱（繁體中文，6 字內）\n' +
+      '- "desc"：一句話說明這套為什麼適合這個空間\n' +
+      '- "parts"：陣列，每項包含 "area"（部位，例如牆面／地板／櫃體）與 ' +
+      '"material"（具體材質描述，含顏色、紋理、光澤）\n\n' +
+      "規則：只針對照片中真的看得到的部位提建議；每套 2～4 個部位；材質描述要具體到可以直接照著做。";
+
+    var res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/" + SEG_MODEL + ":generateContent",
+      { method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [
+            { inline_data: { mime_type: p.mime, data: p.b64 } }, { text: ask }
+          ]}],
+          generationConfig: { responseMimeType: "application/json" }
+        }) }
+    );
+    var data = await res.json();
+    if(data.error) throw new Error(data.error.message || "API 錯誤");
+
+    var txt = "";
+    var ps = (data.candidates && data.candidates[0] && data.candidates[0].content &&
+              data.candidates[0].content.parts) || [];
+    for(var i = 0; i < ps.length; i++){ if(ps[i].text) txt += ps[i].text; }
+
+    var arr = parseJsonArr(txt);
+    if(!arr.length) throw new Error("沒有拿到建議，再按一次試試。");
+
+    $("sugbox").innerHTML = arr.map(function(g){
+      return '<div class="sug"><div class="sug-t">' + (g.name || "方案") + "</div>" +
+        '<div class="sug-d">' + (g.desc || "") + "</div>" +
+        (g.parts || []).map(function(pt){
+          var one = "把" + pt.area + "換成 " + pt.material;
+          return '<div class="sug-p">' +
+            '<span class="sug-a">' + pt.area + "</span>" +
+            '<span class="sug-m">' + pt.material + "</span>" +
+            '<button class="sug-u" onclick="useSug(' + JSON.stringify(one).replace(/"/g, "&quot;") + ')">套用</button>' +
+          "</div>";
+        }).join("") + "</div>";
+    }).join("");
+    setState("點各部位的「套用」會把描述帶進下面的輸入框，一次做一個部位。");
+  }catch(e){
+    setState(errText(e), "err");
+  }finally{
+    busy = false; refreshBar();
+  }
+}
+
+function useSug(text){
+  clearSel();
+  $("ask").value = text;
+  growAsk();
+  $("ask").focus();
+  $("ask").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function parseJsonArr(txt){
+  if(!txt) return [];
+  var s2 = txt.replace(/```json|```/g, "").trim();
+  var o;
+  try{ o = JSON.parse(s2); }
+  catch(e){
+    var a = s2.indexOf("["), b = s2.lastIndexOf("]");
+    if(a < 0 || b < a) return [];
+    try{ o = JSON.parse(s2.slice(a, b + 1)); }catch(e2){ return []; }
+  }
+  return Array.isArray(o) ? o : [o];
 }
 
 // ============================================================
@@ -1198,6 +1581,14 @@ function paintKeyState(){
   });
 })();
 
+loadLib();
+$("f-lib").onchange = function(){
+  // FileList 是即時清單，清空 input 會連帶清掉它；
+  // 非同步讀檔前先複製成陣列。
+  var fs = Array.prototype.slice.call(this.files || []);
+  this.value = "";
+  if(fs.length) uploadLib(fs);
+};
 renderCats();
 renderMats();
 paintKeyState();
