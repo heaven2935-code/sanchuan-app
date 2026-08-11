@@ -473,7 +473,7 @@ var MATERIALS = [
 // ============================================================
 // 狀態
 // ============================================================
-var BUILD      = "08/11 23:11";
+var BUILD      = "08/11 23:15";
 var MAX_EDGE   = 1536;
 var API_KEY    = localStorage.getItem("gemini_api_key") || "";
 
@@ -965,23 +965,46 @@ function cancelPending(){
 
 // 一次呼叫同時做：聽懂要改哪裡 + 要改成什麼 + 切出範圍
 
-// 辨識類呼叫的共用出口：自動挑模型，型號被下架時重挑一次再試
+// 辨識類呼叫的共用出口。
+// 不同世代的模型接受的參數不一樣（例如新一代不見得能關掉 thinking），
+// 所以被打回票時就逐步把「加速用」的選項拿掉重試，最後只留必要欄位。
+function trimBody(body, level){
+  var b = JSON.parse(JSON.stringify(body));
+  if(!b.generationConfig) return b;
+  if(level >= 1) delete b.generationConfig.thinkingConfig;
+  if(level >= 2) delete b.generationConfig.responseMimeType;
+  if(!Object.keys(b.generationConfig).length) delete b.generationConfig;
+  return b;
+}
+
+function isBadArg(m){
+  return /invalid argument|INVALID_ARGUMENT|Unknown name|not supported|unsupported/i.test(m || "");
+}
+
 async function segCall(body){
   var p = await resolveModels(false);
-  for(var attempt = 0; attempt < 2; attempt++){
-    var res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + p.seg + ":generateContent",
-      { method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
-        body: JSON.stringify(body) });
-    var data = await res.json();
-    if(!data.error) return data;
-    if(attempt === 0 && isStale(data.error.message)){
-      p = await resolveModels(true);   // 清快取重挑
-      continue;
+  var lastErr = "";
+
+  for(var level = 0; level <= 2; level++){
+    for(var attempt = 0; attempt < 2; attempt++){
+      var res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/" + p.seg + ":generateContent",
+        { method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+          body: JSON.stringify(trimBody(body, level)) });
+      var data = await res.json();
+      if(!data.error) return data;
+
+      lastErr = data.error.message || "API 錯誤";
+      if(attempt === 0 && isStale(lastErr)){
+        p = await resolveModels(true);   // 型號被下架 -> 重挑
+        continue;
+      }
+      break;                              // 換下一個 level 再試
     }
-    throw new Error(data.error.message || "API 錯誤");
+    if(!isBadArg(lastErr)) break;         // 不是參數問題就不用再削了
   }
+  throw new Error(lastErr + "（辨識模型：" + p.seg + "）");
 }
 
 async function understand(text){
@@ -1170,7 +1193,7 @@ async function runGenerate(){
         var np = await resolveModels(true);
         if(np.img){ mdl = np.img; continue; }
       }
-      throw new Error(data.error.message || "API 錯誤");
+      throw new Error((data.error.message || "API 錯誤") + "（生成模型：" + mdl + "）");
     }
 
     var rp = (data.candidates && data.candidates[0] && data.candidates[0].content &&
@@ -1229,6 +1252,9 @@ function errText(e){
           '<br>到 <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">console.cloud.google.com/billing</a> 建立帳單帳戶並連結到金鑰所屬的專案。';
   }else if(/quota|RESOURCE_EXHAUSTED|rate limit/i.test(m)){
     tip = "<br>→ 短時間內請求太多，等 30～60 秒再試一次。";
+  }else if(/invalid argument|INVALID_ARGUMENT/i.test(m)){
+    tip = "<br>→ 這個模型不接受某個參數。工具已自動嘗試簡化後重送仍失敗，" +
+          "請到設定改用另一個模型，或把訊息截圖回報。" + keyBtn;
   }else if(/SERVICE_DISABLED|has not been used|PERMISSION_DENIED/i.test(m)){
     tip = "<br>→ 該專案尚未啟用 Generative Language API。" + keyBtn;
   }else if(/沒有可用的辨識模型|模型清單/.test(m)){
