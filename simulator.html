@@ -3,177 +3,209 @@
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
-<!-- 允許雙指縮放：不要加 user-scalable=no -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>三川工方｜施工模擬</title>
 <style>
 :root{
-  --bg:#F4F6F9; --card:#FFFFFF; --line:#DFE4EC; --line2:#C6CEDC;
-  --text:#1B2331; --muted:#5C687C; --faint:#96A0B2;
-  --gold:#B8912E; --gold2:#8A6B14;
-  --shade:#E7EBF1; --red:#C0392B; --green:#2E9E5B;
-  --font:'PingFang TC','Noto Sans TC','Helvetica Neue',sans-serif;
+  --bg:#F7F8FA; --card:#FFFFFF; --line:#E4E8EF; --line2:#CFD6E2;
+  --ink:#161C26; --muted:#5B667A; --faint:#98A2B3;
+  --brand:#8A6B14; --brand2:#B8912E; --brandbg:#FBF6E9;
+  --shade:#EDF0F5; --red:#C0392B; --green:#2E9E5B;
+  --sans:'PingFang TC','Noto Sans TC','Helvetica Neue',-apple-system,sans-serif;
+  --shadow:0 1px 2px rgba(22,28,38,.05), 0 6px 18px rgba(22,28,38,.06);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.6}
-.wrap{max-width:640px;margin:0 auto;padding:0 16px 48px}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65;
+     -webkit-font-smoothing:antialiased}
 
-.hd{display:flex;align-items:center;gap:10px;padding:14px 0 16px}
-.hd-t{font-size:16px;font-weight:800;color:var(--gold2);letter-spacing:1px}
-.keybtn{margin-left:auto;display:flex;align-items:center;gap:6px;background:var(--card);
-        border:1px solid var(--line2);border-radius:9px;padding:8px 12px;cursor:pointer;
-        color:var(--text);font-size:12px;font-family:var(--font)}
-.kdot{width:8px;height:8px;border-radius:50%;background:#bbb;flex-shrink:0}
+/* ── 頁首 ── */
+.top{position:sticky;top:0;z-index:40;background:rgba(247,248,250,.88);
+     backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
+.top-in{max-width:720px;margin:0 auto;padding:13px 18px;display:flex;align-items:center;gap:12px}
+.logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,#C9A84C,#8A6B14);
+      display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;
+      letter-spacing:-.5px;flex-shrink:0}
+.brandname{font-size:15px;font-weight:750;letter-spacing:.2px}
+.brandsub{font-size:11px;color:var(--faint);letter-spacing:.4px;margin-top:-3px}
+.keybtn{margin-left:auto;display:flex;align-items:center;gap:7px;background:var(--card);
+        border:1px solid var(--line2);border-radius:999px;padding:7px 13px;cursor:pointer;
+        color:var(--muted);font-size:12px;font-family:var(--sans);font-weight:600}
+.keybtn:active{background:var(--shade)}
+.kdot{width:7px;height:7px;border-radius:50%;background:#C6CEDC}
 
-.block{margin-bottom:22px}
-.label{font-size:13px;font-weight:700;margin-bottom:8px}
+/* ── 對話 ── */
+.thread{max-width:720px;margin:0 auto;padding:20px 18px 8px;
+        min-height:calc(100vh - 260px)}
 
-.drop{border:2px dashed var(--line2);border-radius:14px;padding:48px 20px;text-align:center;
-      cursor:pointer;background:var(--card)}
-.drop:active{border-color:var(--gold)}
-.drop-i{font-size:36px;margin-bottom:10px}
-.drop-t{font-size:15px;font-weight:700}
-.drop-s{font-size:12.5px;color:var(--muted);margin-top:6px}
+.hello{text-align:center;padding:52px 20px 40px}
+.hello-i{width:60px;height:60px;border-radius:19px;background:var(--brandbg);border:1px solid #EBDFBC;
+         display:flex;align-items:center;justify-content:center;font-size:27px;margin:0 auto 18px}
+.hello-t{font-size:19px;font-weight:750;letter-spacing:.2px}
+.hello-d{font-size:13.5px;color:var(--muted);margin-top:9px;line-height:1.85}
+.hello-eg{display:inline-block;margin-top:20px;background:var(--card);border:1px solid var(--line);
+          border-radius:13px;padding:13px 16px;text-align:left;font-size:12.5px;color:var(--muted);
+          line-height:1.9;box-shadow:var(--shadow)}
+.hello-eg b{color:var(--ink);font-weight:650}
 
-.photo{width:100%;border-radius:14px;display:block;background:var(--shade);border:1px solid var(--line)}
-.pbar{display:flex;gap:8px;margin-top:9px}
-.pb{background:var(--card);border:1px solid var(--line2);border-radius:9px;padding:9px 14px;
-    cursor:pointer;color:var(--muted);font-size:12.5px;font-family:var(--font)}
-.pb:active{border-color:var(--gold);color:var(--gold2)}
+.turn{margin-bottom:22px}
 
-textarea{width:100%;background:var(--card);border:1px solid var(--line2);border-radius:12px;
-         color:var(--text);font-family:var(--font);font-size:15px;padding:13px;outline:none;
-         resize:none;min-height:96px;line-height:1.6}
-textarea:focus{border-color:var(--gold)}
-textarea::placeholder{color:var(--faint)}
+/* 使用者 */
+.me{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.me-imgs{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;max-width:88%}
+.me-img{position:relative;width:96px;height:96px;border-radius:13px;overflow:hidden;
+        border:1px solid var(--line2);box-shadow:var(--shadow)}
+.me-img img{width:100%;height:100%;object-fit:cover;display:block}
+.me-img span{position:absolute;left:5px;top:5px;background:rgba(22,28,38,.72);color:#fff;
+             font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.3px}
+.me-txt{background:var(--ink);color:#fff;border-radius:19px 19px 5px 19px;padding:11px 16px;
+        font-size:14.5px;max-width:88%;word-break:break-word;line-height:1.6}
 
-.refrow{display:flex;align-items:center;gap:12px;margin-top:10px}
-.refbtn{display:flex;align-items:center;gap:9px;background:var(--card);border:1.5px dashed var(--line2);
-        border-radius:11px;padding:11px 15px;cursor:pointer;color:var(--muted);font-size:13px;
-        font-family:var(--font)}
-.refbtn:active{border-color:var(--gold);color:var(--gold2)}
-.refimg{width:58px;height:58px;border-radius:11px;object-fit:cover;border:2px solid var(--gold);flex-shrink:0}
-.refx{background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;
-      font-family:var(--font);text-decoration:underline;padding:4px}
+/* AI */
+.ai{margin-top:14px}
+.ai-card{background:var(--card);border:1px solid var(--line);border-radius:17px;overflow:hidden;
+         box-shadow:var(--shadow)}
+.ai-card img{width:100%;display:block;background:var(--shade);cursor:zoom-in}
+.ai-bar{display:flex;gap:7px;padding:11px 12px;border-top:1px solid var(--line)}
+.ab{flex:1;background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:9px;
+    cursor:pointer;color:var(--muted);font-size:12.5px;font-weight:650;font-family:var(--sans)}
+.ab:active{background:var(--shade);color:var(--brand)}
+.ai-note{font-size:12px;color:var(--faint);margin-top:7px;padding-left:3px}
 
-.go{width:100%;background:var(--gold);border:none;border-radius:13px;padding:17px;cursor:pointer;
-    color:#1B1400;font-size:16px;font-weight:800;font-family:var(--font);letter-spacing:1px}
-.go:disabled{opacity:.4}
-
-.msg{padding:13px;border-radius:11px;background:var(--card);border:1px solid var(--line);
-     font-size:13px;margin-top:14px;line-height:1.75;display:flex;align-items:center;gap:10px}
-.msg.err{background:#FDF0EE;border-color:#F0C8C2;color:#8E2A1D;display:block;word-break:break-word}
-.msg a{color:var(--gold2)}
-.msg .fix{display:inline-block;margin-top:9px;background:var(--gold);border:none;border-radius:9px;
-          padding:9px 14px;cursor:pointer;color:#1B1400;font-size:13px;font-weight:700;font-family:var(--font)}
-.spin{width:17px;height:17px;border:2px solid var(--line2);border-top-color:var(--gold);
+.working{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);
+         border-radius:15px;padding:14px 16px;font-size:13.5px;color:var(--muted);box-shadow:var(--shadow)}
+.spin{width:17px;height:17px;border:2px solid var(--line2);border-top-color:var(--brand2);
       border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
+.err{background:#FDF1EF;border:1px solid #F1CDC6;color:#8E2A1D;border-radius:15px;padding:14px 16px;
+     font-size:13px;line-height:1.8;word-break:break-word}
+.err a{color:#8E2A1D}
+.err .fix{display:inline-block;margin-top:10px;background:var(--brand);border:none;border-radius:9px;
+          padding:9px 15px;cursor:pointer;color:#fff;font-size:12.5px;font-weight:700;font-family:var(--sans)}
 
-.res{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:16px}
-.res img{width:100%;display:block;background:var(--shade)}
-.res-b{padding:12px 14px;border-top:1px solid var(--line)}
-.res-t{font-size:14px;font-weight:700;line-height:1.5}
-.res-r{display:flex;align-items:center;gap:9px;margin-top:7px}
-.res-r img{width:34px;height:34px;border-radius:7px;object-fit:cover;border:1px solid var(--line2);flex-shrink:0}
-.res-s{font-size:11.5px;color:var(--faint)}
-.res-btns{display:flex;gap:8px;margin-top:11px}
-.rb{flex:1;background:var(--bg);border:1px solid var(--line2);border-radius:9px;padding:10px;
-    cursor:pointer;color:var(--muted);font-size:12.5px;font-weight:600;font-family:var(--font)}
-.rb:active{border-color:var(--gold);color:var(--gold2)}
+/* ── 輸入區 ── */
+.dock{position:sticky;bottom:0;z-index:30;background:linear-gradient(to bottom,rgba(247,248,250,0),var(--bg) 22%);
+      padding:14px 0 calc(14px + env(safe-area-inset-bottom,0px))}
+.dock-in{max-width:720px;margin:0 auto;padding:0 18px}
+.composer{background:var(--card);border:1px solid var(--line2);border-radius:22px;padding:9px;
+          box-shadow:0 2px 8px rgba(22,28,38,.06), 0 12px 28px rgba(22,28,38,.07)}
+.composer:focus-within{border-color:var(--brand2)}
 
-.ov{position:fixed;inset:0;background:rgba(27,35,49,.45);z-index:200}
+.att{display:flex;gap:7px;flex-wrap:wrap;padding:4px 4px 9px}
+.att-i{position:relative;width:62px;height:62px;border-radius:11px;overflow:hidden;border:1px solid var(--line2)}
+.att-i img{width:100%;height:100%;object-fit:cover;display:block}
+.att-i .no{position:absolute;left:4px;top:4px;background:rgba(22,28,38,.72);color:#fff;font-size:9.5px;
+           font-weight:700;padding:2px 6px;border-radius:5px}
+.att-i .x{position:absolute;right:3px;top:3px;width:19px;height:19px;border-radius:50%;border:none;
+          background:rgba(22,28,38,.72);color:#fff;font-size:11px;cursor:pointer;line-height:1;
+          font-family:var(--sans);padding:0}
+.att-i .mk{position:absolute;left:0;right:0;bottom:0;background:rgba(184,145,46,.92);color:#fff;
+           font-size:9.5px;font-weight:700;text-align:center;padding:2px}
+
+.cline{display:flex;align-items:flex-end;gap:8px}
+.plus{width:38px;height:38px;flex-shrink:0;border-radius:50%;border:none;background:var(--shade);
+      cursor:pointer;color:var(--muted);font-size:21px;font-weight:400;font-family:var(--sans);
+      line-height:1;padding:0 0 2px}
+.plus:active{background:var(--brandbg);color:var(--brand)}
+.ask{flex:1;min-width:0;border:none;outline:none;background:none;font-family:var(--sans);
+     font-size:15.5px;line-height:1.55;padding:8px 2px;resize:none;max-height:132px;color:var(--ink)}
+.ask::placeholder{color:var(--faint)}
+.send{width:38px;height:38px;flex-shrink:0;border-radius:50%;border:none;
+      background:var(--ink);cursor:pointer;color:#fff;font-size:17px;font-family:var(--sans);
+      line-height:1;padding:0 0 2px}
+.send:disabled{background:var(--line2);cursor:not-allowed}
+.hint{font-size:11px;color:var(--faint);text-align:center;margin-top:9px;line-height:1.6}
+
+/* ── 標記 ── */
+.marker{position:fixed;inset:0;z-index:300;background:#0F131A;display:flex;flex-direction:column}
+.mk-top{display:flex;align-items:center;gap:12px;padding:14px 16px;color:#fff;flex-shrink:0}
+.mk-top b{font-size:14px;font-weight:700}
+.mk-top .sub{font-size:11.5px;color:#93A0B4}
+.mk-x{margin-left:auto;background:none;border:none;color:#93A0B4;font-size:23px;cursor:pointer;
+      font-family:var(--sans);line-height:1;padding:0 4px}
+.mk-stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0 8px}
+.mk-stage canvas{max-width:100%;max-height:100%;touch-action:none;border-radius:10px}
+.mk-bot{padding:12px 16px calc(16px + env(safe-area-inset-bottom,0px));display:flex;gap:9px;
+        align-items:center;flex-shrink:0}
+.mk-b{background:#212936;border:1px solid #313C4D;border-radius:11px;padding:11px 15px;cursor:pointer;
+      color:#D7DEE9;font-size:13px;font-weight:650;font-family:var(--sans)}
+.mk-b.on{background:#B8912E;border-color:#B8912E;color:#1B1400}
+.mk-done{margin-left:auto;background:#B8912E;border:none;border-radius:11px;padding:12px 20px;
+         cursor:pointer;color:#1B1400;font-size:14px;font-weight:800;font-family:var(--sans)}
+
+/* ── 燈箱 ── */
+.box{position:fixed;inset:0;z-index:280;background:rgba(15,19,26,.94);display:flex;
+     align-items:center;justify-content:center;padding:16px}
+.box img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+.box .bx{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;background:none;
+         border:none;color:#93A0B4;font-size:26px;cursor:pointer;font-family:var(--sans)}
+
+/* ── 對話框 ── */
+.ov{position:fixed;inset:0;background:rgba(22,28,38,.5);z-index:200}
 .mo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:201;width:min(400px,92vw);
-    background:var(--card);border-radius:15px;padding:22px}
-.mo-t{font-size:16px;font-weight:800;color:var(--gold2);margin-bottom:9px}
-.mo-d{font-size:12.5px;color:var(--muted);margin-bottom:14px;line-height:1.75}
-.mo input{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:10px;
-          color:var(--text);font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:12px;outline:none}
-.kinfo{font-size:12px;color:var(--muted);margin-top:9px;line-height:1.6;word-break:break-word;min-height:1px}
+    background:var(--card);border-radius:19px;padding:24px;box-shadow:0 20px 50px rgba(22,28,38,.25)}
+.mo-t{font-size:16.5px;font-weight:750;margin-bottom:9px}
+.mo-d{font-size:12.5px;color:var(--muted);margin-bottom:15px;line-height:1.8}
+.mo input{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:11px;
+          color:var(--ink);font-family:ui-monospace,Menlo,monospace;font-size:12.5px;padding:12px;outline:none}
+.mo input:focus{border-color:var(--brand2)}
+.kinfo{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.65;word-break:break-word;min-height:1px}
 .kinfo.bad{color:var(--red)}
 .kinfo.ok{color:var(--green)}
-.mo-r{display:flex;gap:8px;margin-top:15px}
-.mo-r button{flex:1;border-radius:10px;padding:12px 6px;cursor:pointer;font-family:var(--font);
+.mo-r{display:flex;gap:8px;margin-top:16px}
+.mo-r button{flex:1;border-radius:11px;padding:12px 6px;cursor:pointer;font-family:var(--sans);
              font-size:13px;font-weight:700;border:1px solid var(--line2);background:transparent;color:var(--muted)}
-.mo-r .main{background:var(--gold);color:#1B1400;border-color:var(--gold)}
+.mo-r .main{background:var(--ink);color:#fff;border-color:var(--ink)}
 .hide{display:none !important}
 </style>
 </head>
 <body>
 
-<div class="wrap">
-
-  <div class="hd">
-    <div class="hd-t">三川工方 · 施工模擬</div>
+<div class="top">
+  <div class="top-in">
+    <div class="logo">三川</div>
+    <div>
+      <div class="brandname">施工模擬</div>
+      <div class="brandsub">SANCHUAN VISUALISER</div>
+    </div>
     <button class="keybtn" onclick="showKey()">
-      <span class="kdot" id="kdot"></span><span>金鑰</span>
+      <span class="kdot" id="kdot"></span>金鑰
     </button>
   </div>
+</div>
 
-  <!-- 1. 照片 -->
-  <div class="block">
-    <input type="file" id="f-photo" accept="image/*" class="hide">
-    <div class="drop" id="drop" onclick="document.getElementById('f-photo').click()">
-      <div class="drop-i">📷</div>
-      <div class="drop-t">上傳現況照片</div>
-      <div class="drop-s">點這裡選照片或拍照</div>
-    </div>
-    <div class="hide" id="photobox">
-      <img class="photo" id="photo" alt="現況照片">
-      <div class="pbar">
-        <button class="pb" onclick="document.getElementById('f-photo').click()">換一張照片</button>
+<div class="thread" id="thread"></div>
+
+<div class="dock">
+  <div class="dock-in">
+    <div class="composer">
+      <div class="att" id="att"></div>
+      <div class="cline">
+        <input type="file" id="f" accept="image/*" multiple class="hide">
+        <button class="plus" onclick="document.getElementById('f').click()" title="加照片">＋</button>
+        <textarea class="ask" id="ask" rows="1" placeholder="加照片，然後說要改什麼…"></textarea>
+        <button class="send" id="send" onclick="send()">↑</button>
       </div>
     </div>
+    <div class="hint" id="hint">可以一次加多張，用「圖1」「圖2」指定</div>
   </div>
-
-  <!-- 2. 描述 -->
-  <div class="block">
-    <div class="label">想改成什麼樣子？</div>
-    <textarea id="ask" placeholder="例：把系統櫃門片換成深胡桃木，霧面不要反光"></textarea>
-    <div class="refrow" id="refrow"></div>
-    <input type="file" id="f-ref" accept="image/*" class="hide">
-  </div>
-
-  <!-- 3. 開始 -->
-  <div class="block">
-    <button class="go" id="go" onclick="run()">開始模擬</button>
-    <div id="msg"></div>
-  </div>
-
-  <!-- 結果 -->
-  <div id="results"></div>
-
 </div>
 
 <script>
 "use strict";
 
-var BUILD    = "08/12 02:40";
+var BUILD    = "08/12 03:10";
 var API_KEY  = localStorage.getItem("gemini_api_key") || "";
-var MAX_EDGE = 1536;
+var MAX_EDGE = 1408;
 
-var photo = null;    // {url, b64}
-var ref   = null;    // {name, url, b64}
-var busy  = false;
-var results = [];
+var atts    = [];   // 這一則要送出的圖 [{url,b64,marked}]
+var turns   = [];   // 畫面上的對話
+var convo   = [];   // 送給 API 的上下文
+var busy    = false;
 
 function $(id){ return document.getElementById(id); }
+function esc(s){ return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
-function setMsg(html, kind){
-  $("msg").innerHTML = html ? '<div class="msg' + (kind ? " " + kind : "") + '">' + html + "</div>" : "";
-}
-
-function refreshGo(){
-  var b = $("go");
-  var described = !!($("ask").value.trim() || ref);
-  b.disabled = busy || !photo || !described;
-  b.textContent = busy ? "模擬中…"
-                : !photo ? "請先上傳現況照片"
-                : !described ? "請描述想改成什麼樣子"
-                : "開始模擬";
-}
-
-// 讀圖並縮到合理大小
+// ── 讀圖 ──
 function readImage(file, maxEdge){
   return new Promise(function(resolve, reject){
     var fr = new FileReader();
@@ -196,46 +228,97 @@ function readImage(file, maxEdge){
   });
 }
 
-$("f-photo").onchange = async function(){
-  var f = this.files && this.files[0];
+$("f").onchange = async function(){
+  var fs = Array.prototype.slice.call(this.files || []);
   this.value = "";
-  if(!f) return;
-  try{
-    photo = await readImage(f, MAX_EDGE);
-    $("photo").src = photo.url;
-    $("drop").classList.add("hide");
-    $("photobox").classList.remove("hide");
-    setMsg("");
-    refreshGo();
-  }catch(e){ setMsg("照片載入失敗：" + e.message, "err"); }
+  for(var i = 0; i < fs.length; i++){
+    if(atts.length >= 6){ break; }
+    try{ atts.push(await readImage(fs[i], MAX_EDGE)); }catch(e){}
+  }
+  renderAtt(); refreshSend();
 };
 
-$("f-ref").onchange = async function(){
-  var f = this.files && this.files[0];
-  var nm = f ? (f.name || "參考圖").replace(/\.[^.]+$/, "").slice(0, 16) : "";
-  this.value = "";
-  if(!f) return;
-  try{
-    var r = await readImage(f, 768);
-    ref = { name: nm || "參考圖", url: r.url, b64: r.b64 };
-    renderRef();
-    refreshGo();
-  }catch(e){ setMsg("參考圖載入失敗：" + e.message, "err"); }
-};
-
-function renderRef(){
-  $("refrow").innerHTML = ref
-    ? '<img class="refimg" src="' + ref.url + '">' +
-      '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">' + ref.name + "</div>" +
-      '<div style="font-size:11.5px;color:var(--faint)">AI 會照這張的顏色與紋理做</div></div>' +
-      '<button class="refx" onclick="clearRef()">移除</button>'
-    : '<button class="refbtn" onclick="document.getElementById(\'f-ref\').click()">' +
-      '<span style="font-size:17px">＋</span> 加一張顏色參考圖</button>';
+function renderAtt(){
+  $("att").innerHTML = atts.map(function(a, i){
+    return '<div class="att-i">' +
+      '<img src="' + a.url + '" onclick="markImage(' + i + ')">' +
+      '<span class="no">圖' + (i + 1) + "</span>" +
+      '<button class="x" onclick="dropAtt(' + i + ')">✕</button>' +
+      (a.marked ? '<span class="mk">已標記</span>' : "") +
+    "</div>";
+  }).join("");
 }
 
-function clearRef(){ ref = null; renderRef(); refreshGo(); }
+function dropAtt(i){ atts.splice(i, 1); renderAtt(); refreshSend(); }
 
-// 不寫死型號：問這把金鑰有哪些影像模型可用
+function refreshSend(){
+  $("send").disabled = busy || (!$("ask").value.trim() && !atts.length);
+  $("hint").textContent = atts.length
+    ? "點縮圖可以在上面標記要改的地方"
+    : "可以一次加多張，用「圖1」「圖2」指定";
+}
+
+$("ask").oninput = function(){
+  this.style.height = "auto";
+  this.style.height = Math.min(132, this.scrollHeight) + "px";
+  refreshSend();
+};
+
+// ── 對話 ──
+function renderThread(){
+  if(!turns.length){
+    $("thread").innerHTML =
+      '<div class="hello"><div class="hello-i">🏠</div>' +
+      '<div class="hello-t">上傳照片，說一句話就好</div>' +
+      '<div class="hello-d">跟平常傳照片給 AI 一樣。<br>可以一次加現況照和色板照，用「圖1」「圖2」指。</div>' +
+      '<div class="hello-eg"><b>例：</b>這座衣櫃的外觀顏色改成圖2的深灰<br>' +
+      '<b>例：</b>模擬成這張清水模的照片<br>' +
+      '<b>例：</b>顏色再深一階，壓條改成玫瑰金</div></div>';
+    return;
+  }
+  $("thread").innerHTML = turns.map(function(t, i){
+    if(t.role === "me"){
+      return '<div class="turn"><div class="me">' +
+        (t.imgs && t.imgs.length
+          ? '<div class="me-imgs">' + t.imgs.map(function(u, j){
+              return '<div class="me-img"><img src="' + u + '" onclick="lightbox(\'' + j + '_' + i + '\')">' +
+                     "<span>圖" + (j + 1) + "</span></div>";
+            }).join("") + "</div>"
+          : "") +
+        (t.text ? '<div class="me-txt">' + esc(t.text) + "</div>" : "") +
+      "</div></div>";
+    }
+    if(t.role === "ai"){
+      return '<div class="turn"><div class="ai"><div class="ai-card">' +
+        '<img src="' + t.url + '" onclick="lightbox(\'ai' + i + '\')">' +
+        '<div class="ai-bar">' +
+          '<button class="ab" onclick="markResult(' + i + ')">✏️ 標記再改</button>' +
+          '<button class="ab" onclick="useAsBase(' + i + ')">接著改這張</button>' +
+          '<button class="ab" onclick="shareTurn(' + i + ')">分享</button>' +
+        "</div></div>" +
+        (t.note ? '<div class="ai-note">' + esc(t.note) + "</div>" : "") +
+      "</div></div>";
+    }
+    if(t.role === "busy")
+      return '<div class="turn"><div class="working"><span class="spin"></span>' + esc(t.text) + "</div></div>";
+    return '<div class="turn"><div class="err">' + t.html + "</div></div>";
+  }).join("");
+  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+}
+
+function lightbox(key){
+  var url = "";
+  var m = String(key).match(/^ai(\d+)$/);
+  if(m) url = turns[+m[1]].url;
+  else { var p = String(key).split("_"); url = turns[+p[1]].imgs[+p[0]]; }
+  var d = document.createElement("div");
+  d.className = "box";
+  d.innerHTML = '<button class="bx">✕</button><img src="' + url + '">';
+  d.onclick = function(){ d.remove(); };
+  document.body.appendChild(d);
+}
+
+// ── 模型 ──
 var MODEL_KEY = "sim_img_model";
 var imgModel = localStorage.getItem(MODEL_KEY) || "";
 
@@ -245,17 +328,15 @@ async function pickModel(force){
                       { headers: { "x-goog-api-key": API_KEY } });
   var d = await r.json();
   if(d.error) throw new Error(d.error.message);
-
-  var best = null, bestScore = -1;
+  var best = null, bs = -1;
   (d.models || []).forEach(function(m){
     var n = String(m.name).replace(/^models\//, "");
     var meth = m.supportedGenerationMethods || m.supported_generation_methods || [];
     if(meth.indexOf("generateContent") < 0) return;
-    if(!/gemini/i.test(n) || !/image/i.test(n)) return;
-    if(/imagen|veo|embedding/i.test(n)) return;
-    var v = (n.match(/gemini-(\d+(?:\.\d+)?)/i) || [0, 0])[1];
-    var sc = parseFloat(v) * 100 + (/flash/i.test(n) ? 20 : 0);
-    if(sc > bestScore){ bestScore = sc; best = n; }
+    if(!/gemini/i.test(n) || !/image/i.test(n) || /imagen|veo/i.test(n)) return;
+    var v = parseFloat((n.match(/gemini-(\d+(?:\.\d+)?)/i) || [0, 0])[1]) || 0;
+    var sc = v * 100 + (/flash/i.test(n) ? 20 : 0);
+    if(sc > bs){ bs = sc; best = n; }
   });
   if(!best) throw new Error("這把金鑰沒有可用的影像模型。");
   imgModel = best;
@@ -263,54 +344,52 @@ async function pickModel(force){
   return best;
 }
 
-function buildPrompt(){
-  var text = $("ask").value.trim() || "換成這張參考圖的材質";
-  var lines = [
-    "你是室內裝修的照片級視覺化工具。以【圖1 現況照片】為基底，輸出一張同尺寸、同視角、同構圖的寫實照片。",
-    "",
-    "使用者的要求：「" + text + "」",
-    ""
-  ];
-  if(ref) lines.push("顏色與紋理請以【圖2 參考圖】為準。", "");
-  lines.push(
-    "任務：依照上面這句話修改照片中對應的部位。你要自己判斷他指的是畫面中的哪個東西、範圍到哪裡，只改那個部位，其餘完全保持原樣。",
-    "",
-    "必須遵守：",
-    "1. 完整保留原照片的光影、明暗、陰影與反光，換材質後仍要符合現場光線。",
-    "2. 保留原本的透視、板材分割線、縫隙、門片邊界與五金位置。",
-    "3. 若為木紋，紋理方向順著原本板材的長邊延伸，比例符合實際尺度。",
-    "4. 除了指定的部位以外，其他所有內容必須與原圖完全一致。",
-    "5. 邊界要貼合物件的真實輪廓，不可溢出到相鄰的面。",
-    "6. 不要加入文字、浮水印或邊框。",
-    "",
-    "輸出：僅一張寫實的模擬照片。"
-  );
-  return lines.join("\n");
-}
+var SYSTEM =
+  "你是室內裝修的照片級視覺化工具，服務對象是工班師傅與他的業主。\n" +
+  "使用者會給你現場照片，有時再附上建材型錄或色板的照片，並用「圖1」「圖2」指涉它們。\n" +
+  "請照他的話修改現場照片，輸出一張同尺寸、同視角、同構圖的寫實照片。\n\n" +
+  "規則：\n" +
+  "1. 完整保留原照片的光影、明暗、陰影與反光，換材質後仍要符合現場光線。\n" +
+  "2. 保留原本的透視、板材分割線、縫隙、門片邊界與五金位置。\n" +
+  "3. 若為木紋，紋理方向順著原本板材的長邊延伸，比例符合實際尺度。\n" +
+  "4. 只改他指定的部位，其餘所有內容與原圖完全一致。\n" +
+  "5. 邊界貼合物件的真實輪廓，不可溢出到相鄰的面。\n" +
+  "6. 若照片上有半透明的螢光色塗抹，那是使用者標出來要改的範圍：只改那塊，" +
+  "且輸出畫面中不可出現那個螢光色本身。\n" +
+  "7. 不要加入文字、浮水印或邊框。輸出僅一張寫實照片。";
 
-async function run(){
+async function send(){
   if(busy) return;
   if(!API_KEY){ showKey(); return; }
-  if(!photo){ setMsg("請先上傳現況照片", "err"); return; }
-
-  busy = true; refreshGo();
-  setMsg('<span class="spin"></span><span>模擬中，約 10～30 秒…</span>');
-
   var text = $("ask").value.trim();
+  if(!text && !atts.length) return;
+
+  var mine = { role: "me", text: text, imgs: atts.map(function(a){ return a.url; }) };
+  turns.push(mine);
+
+  var parts = [];
+  atts.forEach(function(a, i){
+    parts.push({ text: "【圖" + (i + 1) + "】" + (a.marked ? "（螢光色塗抹處＝要改的範圍）" : "") + "：" });
+    parts.push({ inline_data: { mime_type: "image/jpeg", data: a.b64 } });
+  });
+  parts.push({ text: text || "照上面的圖做。" });
+
+  var sentAtts = atts.slice();
+  atts = []; renderAtt();
+  $("ask").value = ""; $("ask").style.height = "auto";
+
+  busy = true; refreshSend();
+  turns.push({ role: "busy", text: "模擬中，約 10～30 秒…" });
+  renderThread();
+
   try{
     var model = await pickModel(false);
-    var parts = [
-      { text: "【圖1】現況照片：" },
-      { inline_data: { mime_type: "image/jpeg", data: photo.b64 } }
-    ];
-    if(ref){
-      parts.push({ text: "【圖2】顏色參考圖：" });
-      parts.push({ inline_data: { mime_type: "image/jpeg", data: ref.b64 } });
-    }
-    parts.push({ text: buildPrompt() });
-
-    var body = { contents: [{ role: "user", parts: parts }],
-                 generationConfig: { responseModalities: ["IMAGE"] } };
+    var contents = convo.slice(-10).concat([{ role: "user", parts: parts }]);
+    var body = {
+      contents: contents,
+      systemInstruction: { parts: [{ text: SYSTEM }] },
+      generationConfig: { responseModalities: ["IMAGE"] }
+    };
 
     var data = null;
     for(var att = 0; att < 2; att++){
@@ -321,12 +400,11 @@ async function run(){
           body: JSON.stringify(body) });
       data = await res.json();
       if(!data.error) break;
-      // 型號被下架就重挑一次
       if(att === 0 && /no longer available|not found|NOT_FOUND|does not exist/i.test(data.error.message)){
         model = await pickModel(true);
         continue;
       }
-      throw new Error(data.error.message + "（模型：" + model + "）");
+      throw new Error(data.error.message);
     }
 
     var ps = (data.candidates && data.candidates[0] && data.candidates[0].content &&
@@ -341,108 +419,156 @@ async function run(){
       throw new Error("模型沒有回傳圖片" + (why ? "（" + why + "）" : "") + "，換句話說說看再試一次。");
     }
 
-    results.unshift({
-      url: "data:" + (img.mimeType || img.mime_type || "image/png") + ";base64," + img.data,
-      text: text || "照參考圖的材質",
-      refUrl: ref ? ref.url : "",
-      refName: ref ? ref.name : "",
-      at: new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })
-    });
-    renderResults();
-    setMsg("");
-    $("results").scrollIntoView({ behavior: "smooth", block: "start" });
+    var mime = img.mimeType || img.mime_type || "image/png";
+    var url = "data:" + mime + ";base64," + img.data;
+
+    convo.push({ role: "user", parts: parts });
+    convo.push({ role: "model", parts: [{ inline_data: { mime_type: mime, data: img.data } }] });
+
+    turns.pop();
+    turns.push({ role: "ai", url: url, b64: img.data, mime: mime,
+                 note: text ? "依照：" + text : "" });
   }catch(e){
-    setMsg(errText(e.message || ""), "err");
+    turns.pop();
+    turns.push({ role: "err", html: errHtml(e.message || "") });
+    atts = sentAtts; renderAtt();
+    $("ask").value = mine.text;
   }finally{
-    busy = false; refreshGo();
+    busy = false; refreshSend(); renderThread();
   }
 }
 
-function errText(m){
+function errHtml(m){
   var fix = '<br><button class="fix" onclick="showKey()">開啟金鑰設定</button>';
-  if(/API key not valid|API_KEY_INVALID/i.test(m))
-    return "金鑰不對或已被刪除。" + fix;
+  if(/API key not valid|API_KEY_INVALID/i.test(m)) return "金鑰不對或已被刪除。" + fix;
   if(/limit:\s*0/i.test(m))
-    return "<b>免費方案對影像模型的額度是 0，要先開啟計費。</b><br>" +
-           '到 <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">console.cloud.google.com/billing</a> ' +
-           "建立帳單帳戶並連結到金鑰所屬的專案。";
-  if(/quota|RESOURCE_EXHAUSTED|rate limit/i.test(m))
-    return "短時間內請求太多，等 30～60 秒再試一次。";
+    return "<b>免費方案對影像模型的額度是 0，要先開啟計費。</b><br>到 " +
+           '<a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">console.cloud.google.com/billing</a>' +
+           " 建立帳單帳戶並連結到金鑰所屬的專案。";
+  if(/quota|RESOURCE_EXHAUSTED|rate limit/i.test(m)) return "短時間內請求太多，等 30～60 秒再試一次。";
   if(/SERVICE_DISABLED|has not been used|PERMISSION_DENIED/i.test(m))
     return "這個專案還沒啟用 Generative Language API。" + fix;
-  return m;
+  return esc(m);
 }
 
-function renderResults(){
-  $("results").innerHTML = results.map(function(r, i){
-    return '<div class="res">' +
-      '<img src="' + r.url + '">' +
-      '<div class="res-b">' +
-        '<div class="res-t">' + r.text + "</div>" +
-        (r.refUrl ? '<div class="res-r"><img src="' + r.refUrl + '">' +
-                    '<span class="res-s">參考：' + r.refName + "</span></div>" : "") +
-        '<div class="res-s" style="margin-top:5px">' + r.at + "</div>" +
-        '<div class="res-btns">' +
-          '<button class="rb" onclick="share(' + i + ')">分享</button>' +
-          '<button class="rb" onclick="save(' + i + ')">下載</button>' +
-        "</div>" +
-      "</div></div>";
-  }).join("");
+// 把某張結果放回輸入區，接著改
+function useAsBase(i){
+  var t = turns[i];
+  atts.push({ url: t.url, b64: t.b64, marked: false });
+  renderAtt(); refreshSend();
+  $("ask").focus();
+  window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
 }
 
-// 下載／分享的圖，下緣燒上這是哪一個顏色，之後才不會分不出來
-function labelled(r){
-  return new Promise(function(resolve){
-    var im = new Image();
-    im.onload = function(){
-      var bar = Math.max(60, Math.round(im.width * 0.08));
-      var c = document.createElement("canvas");
-      c.width = im.width; c.height = im.height + bar;
-      var x = c.getContext("2d");
-      x.drawImage(im, 0, 0);
-      x.fillStyle = "#FFFFFF"; x.fillRect(0, im.height, c.width, bar);
-      x.fillStyle = "#DFE4EC"; x.fillRect(0, im.height, c.width, 2);
-      var pad = Math.round(bar * 0.18), box = bar - pad * 2, tx = pad;
+// ── 標記：在圖上塗要改的地方 ──
+var mkState = null;
 
-      function txt(){
-        x.fillStyle = "#8A6B14";
-        x.font = "700 " + Math.round(bar * 0.34) + "px sans-serif";
-        x.fillText(r.refName || "模擬方案", tx, im.height + pad + Math.round(bar * 0.34));
-        x.fillStyle = "#5C687C";
-        x.font = "400 " + Math.round(bar * 0.24) + "px sans-serif";
-        var d = r.text.length > 32 ? r.text.slice(0, 32) + "…" : r.text;
-        x.fillText(d, tx, im.height + pad + Math.round(bar * 0.7));
-        resolve(c);
-      }
-      if(r.refUrl){
-        var ri = new Image();
-        ri.onload = function(){ x.drawImage(ri, pad, im.height + pad, box, box); tx = pad * 2 + box; txt(); };
-        ri.onerror = txt;
-        ri.src = r.refUrl;
-      }else txt();
+function markResult(i){ openMarker(turns[i].url, function(o){ atts.push(o); renderAtt(); refreshSend(); }); }
+function markImage(i){
+  openMarker(atts[i].url, function(o){ atts[i] = o; renderAtt(); refreshSend(); });
+}
+
+function openMarker(url, done){
+  var d = document.createElement("div");
+  d.className = "marker";
+  d.id = "marker";
+  d.innerHTML =
+    '<div class="mk-top"><div><b>標記要改的地方</b>' +
+      '<div class="sub">用手指塗，塗到的地方 AI 才會動</div></div>' +
+      '<button class="mk-x" onclick="closeMarker()">✕</button></div>' +
+    '<div class="mk-stage"><canvas id="mkcv"></canvas></div>' +
+    '<div class="mk-bot">' +
+      '<button class="mk-b on" id="mk-paint" onclick="mkMode(1)">塗抹</button>' +
+      '<button class="mk-b" id="mk-erase" onclick="mkMode(0)">擦除</button>' +
+      '<button class="mk-b" onclick="mkClear()">清除</button>' +
+      '<button class="mk-done" onclick="mkDone()">完成</button>' +
+    "</div>";
+  document.body.appendChild(d);
+
+  var im = new Image();
+  im.onload = function(){
+    var cv = $("mkcv");
+    cv.width = im.width; cv.height = im.height;
+    var ctx = cv.getContext("2d");
+    var layer = document.createElement("canvas");
+    layer.width = im.width; layer.height = im.height;
+
+    mkState = { im: im, cv: cv, ctx: ctx, layer: layer, paint: true,
+                brush: Math.max(26, Math.round(im.width * 0.05)), done: done, drawing: false, last: null };
+    mkDraw();
+
+    function pt(e){
+      var r = cv.getBoundingClientRect();
+      return { x: (e.clientX - r.left) * (im.width / r.width),
+               y: (e.clientY - r.top)  * (im.height / r.height) };
+    }
+    cv.onpointerdown = function(e){
+      e.preventDefault(); cv.setPointerCapture(e.pointerId);
+      mkState.drawing = true; mkState.last = null; mkStroke(pt(e));
     };
-    im.src = r.url;
-  });
+    cv.onpointermove = function(e){ if(mkState.drawing){ e.preventDefault(); mkStroke(pt(e)); } };
+    cv.onpointerup = cv.onpointercancel = function(e){
+      mkState.drawing = false; mkState.last = null;
+      try{ cv.releasePointerCapture(e.pointerId); }catch(err){}
+    };
+  };
+  im.src = url;
 }
 
-async function save(i){
-  var c = await labelled(results[i]);
-  var a = document.createElement("a");
-  a.download = "施工模擬_" + (results[i].refName || "方案") + ".jpg";
-  a.href = c.toDataURL("image/jpeg", 0.95);
-  a.click();
+function mkStroke(p){
+  var s = mkState, x = s.layer.getContext("2d");
+  x.globalCompositeOperation = s.paint ? "source-over" : "destination-out";
+  x.strokeStyle = "#FF00E5"; x.fillStyle = "#FF00E5";
+  x.lineCap = "round"; x.lineJoin = "round"; x.lineWidth = s.brush;
+  if(s.last){ x.beginPath(); x.moveTo(s.last.x, s.last.y); x.lineTo(p.x, p.y); x.stroke(); }
+  else { x.beginPath(); x.arc(p.x, p.y, s.brush / 2, 0, Math.PI * 2); x.fill(); }
+  x.globalCompositeOperation = "source-over";
+  s.last = p;
+  mkDraw();
 }
 
-async function share(i){
-  var r = results[i];
-  var c = await labelled(r);
-  var blob = await new Promise(function(res){ c.toBlob(res, "image/jpeg", 0.92); });
-  var f = new File([blob], "施工模擬.jpg", { type: "image/jpeg" });
+function mkDraw(){
+  var s = mkState;
+  s.ctx.clearRect(0, 0, s.cv.width, s.cv.height);
+  s.ctx.drawImage(s.im, 0, 0);
+  s.ctx.globalAlpha = 0.45;
+  s.ctx.drawImage(s.layer, 0, 0);
+  s.ctx.globalAlpha = 1;
+}
+
+function mkMode(paint){
+  mkState.paint = !!paint;
+  $("mk-paint").classList.toggle("on", !!paint);
+  $("mk-erase").classList.toggle("on", !paint);
+}
+
+function mkClear(){
+  mkState.layer.getContext("2d").clearRect(0, 0, mkState.layer.width, mkState.layer.height);
+  mkDraw();
+}
+
+function closeMarker(){ var m = $("marker"); if(m) m.remove(); mkState = null; }
+
+function mkDone(){
+  var s = mkState;
+  var url = s.cv.toDataURL("image/jpeg", 0.92);
+  var out = { url: url, b64: url.split(",")[1], marked: true };
+  var cb = s.done;
+  closeMarker();
+  cb(out);
+}
+
+// ── 分享 ──
+async function shareTurn(i){
+  var t = turns[i];
+  var blob = await (await fetch(t.url)).blob();
+  var f = new File([blob], "施工模擬.jpg", { type: blob.type || "image/jpeg" });
   if(navigator.canShare && navigator.canShare({ files: [f] })){
-    try{ await navigator.share({ files: [f], text: r.text }); return; }
+    try{ await navigator.share({ files: [f], text: t.note || "施工模擬" }); return; }
     catch(e){ if(e && e.name === "AbortError") return; }
   }
-  save(i);
+  var a = document.createElement("a");
+  a.download = "施工模擬.jpg"; a.href = t.url; a.click();
 }
 
 // ── 金鑰 ──
@@ -452,18 +578,15 @@ function showKey(){
   d.id = "keymo";
   d.innerHTML =
     '<div class="ov" onclick="closeKey()"></div>' +
-    '<div class="mo">' +
-      '<div class="mo-t">Google Gemini 金鑰</div>' +
-      '<div class="mo-d">到 <b>aistudio.google.com/apikey</b> 申請，貼進來按「測試」確認。' +
-      '金鑰只存在這台手機的瀏覽器。<br><span style="color:var(--faint)">版本 ' + BUILD + "</span></div>" +
-      '<input id="keyin" type="text" placeholder="AIza..." autocomplete="off" spellcheck="false" ' +
-        'autocapitalize="off" autocorrect="off" value="' + API_KEY + '">' +
-      '<div class="kinfo" id="kinfo"></div>' +
-      '<div class="mo-r">' +
-        '<button onclick="closeKey()">取消</button>' +
-        '<button onclick="testKey()">測試</button>' +
-        '<button class="main" onclick="saveKey()">儲存</button>' +
-      "</div></div>";
+    '<div class="mo"><div class="mo-t">Google Gemini 金鑰</div>' +
+    '<div class="mo-d">到 <b>aistudio.google.com/apikey</b> 申請，貼進來按「測試」確認。' +
+    '金鑰只存在這台裝置的瀏覽器。<br><span style="color:var(--faint)">版本 ' + BUILD + "</span></div>" +
+    '<input id="keyin" type="text" placeholder="AIza..." autocomplete="off" spellcheck="false" ' +
+      'autocapitalize="off" autocorrect="off" value="' + API_KEY + '">' +
+    '<div class="kinfo" id="kinfo"></div>' +
+    '<div class="mo-r"><button onclick="closeKey()">取消</button>' +
+    '<button onclick="testKey()">測試</button>' +
+    '<button class="main" onclick="saveKey()">儲存</button></div></div>';
   document.body.appendChild(d);
 }
 function closeKey(){ var m = $("keymo"); if(m) m.remove(); }
@@ -492,17 +615,15 @@ function saveKey(){
   if(v) localStorage.setItem("gemini_api_key", v);
   else localStorage.removeItem("gemini_api_key");
   imgModel = ""; localStorage.removeItem(MODEL_KEY);
-  closeKey(); paintKey(); refreshGo();
+  closeKey(); paintKey(); refreshSend();
 }
 
-function paintKey(){
-  $("kdot").style.background = API_KEY ? "var(--green)" : "#bbb";
-}
+function paintKey(){ $("kdot").style.background = API_KEY ? "var(--green)" : "#C6CEDC"; }
 
-$("ask").oninput = refreshGo;
 paintKey();
-renderRef();
-refreshGo();
+renderAtt();
+renderThread();
+refreshSend();
 </script>
 
 </body>
