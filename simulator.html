@@ -76,6 +76,32 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .hint{background:var(--gold-bg);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;
       padding:9px 12px;font-size:11.5px;color:var(--gold2);margin-top:12px;line-height:1.65}
 
+/* ── AI 自動框選 ── */
+.autosel{background:var(--card2);border:1px solid var(--border2);border-radius:12px;
+         padding:13px;margin-bottom:14px}
+.autosel-t{font-size:12.5px;font-weight:700;color:var(--gold2);margin-bottom:8px}
+.autorow{display:flex;gap:8px;flex-wrap:wrap}
+.autorow input[type=text]{flex:1;min-width:150px}
+.gobtn{background:var(--gold);border:1px solid var(--gold);border-radius:8px;padding:8px 14px;
+       cursor:pointer;color:#0D1117;font-size:12.5px;font-weight:700;font-family:var(--font);
+       white-space:nowrap;transition:all .15s}
+.gobtn:hover:not(:disabled){background:var(--gold2)}
+.gobtn:disabled{opacity:.45;cursor:wait}
+.qchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.qchip{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:5px 12px;
+       cursor:pointer;color:var(--muted2);font-size:11.5px;font-family:var(--font);transition:all .15s}
+.qchip:hover{border-color:var(--gold);color:var(--gold2)}
+
+#seg-list{margin-top:11px}
+.segrow{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:8px;
+        background:var(--card);border:1px solid var(--border2);margin-bottom:6px;cursor:pointer}
+.segrow input{accent-color:var(--gold);width:16px;height:16px;flex-shrink:0}
+.segdot{width:13px;height:13px;border-radius:4px;flex-shrink:0}
+.segnm{font-size:12.5px;flex:1;min-width:0}
+.segpc{font-size:10.5px;color:var(--muted2);font-variant-numeric:tabular-nums}
+.segmsg{font-size:11.5px;color:var(--muted2);margin-top:8px;line-height:1.65}
+.segmsg.err{color:#F0A0A0}
+
 /* ── 材質分類 ── */
 .cats{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;
       scrollbar-width:none;-webkit-overflow-scrolling:touch}
@@ -233,6 +259,28 @@ textarea::placeholder{color:var(--muted)}
     </div>
 
     <div class="hide" id="photo-box">
+
+      <div class="autosel">
+        <div class="autosel-t">✨ 用講的圈選 — 說出部位，AI 幫你框</div>
+        <div class="autorow">
+          <input type="text" id="seg-q" placeholder="例：牆面、地板、系統櫃門片"
+                 autocomplete="off" oninput="refreshGo()" onkeydown="if(event.key==='Enter')autoSelect()">
+          <button class="gobtn" id="seg-btn" onclick="autoSelect()">AI 自動框選</button>
+        </div>
+        <div class="qchips">
+          <button class="qchip" onclick="segQuick('牆面')">牆面</button>
+          <button class="qchip" onclick="segQuick('地板')">地板</button>
+          <button class="qchip" onclick="segQuick('天花板')">天花板</button>
+          <button class="qchip" onclick="segQuick('櫃體')">櫃體</button>
+          <button class="qchip" onclick="segQuick('門片')">門片</button>
+          <button class="qchip" onclick="segQuick('檯面')">檯面</button>
+          <button class="qchip" onclick="segQuick('窗框')">窗框</button>
+          <button class="qchip" onclick="segQuick('踢腳板')">踢腳板</button>
+        </div>
+        <div id="seg-status"></div>
+        <div id="seg-list"></div>
+      </div>
+
       <div class="stage"><canvas id="cv"></canvas></div>
 
       <div class="tools">
@@ -297,7 +345,7 @@ textarea::placeholder{color:var(--muted)}
         </div>
         <div class="fld">
           <label>指定部位 <span class="opt">選填，講越清楚越準</span></label>
-          <input type="text" id="part" placeholder="例：電視牆造型木作、系統櫃門片">
+          <input type="text" id="part" placeholder="例：電視牆造型木作、系統櫃門片" oninput="refreshGo()">
         </div>
       </div>
     </div>
@@ -316,6 +364,7 @@ textarea::placeholder{color:var(--muted)}
         <span>鎖定未選取區域（保證照片其他地方一個像素都不變）</span>
       </label>
     </div>
+    <div id="lock-note"></div>
     <div id="status"></div>
   </div>
 
@@ -568,6 +617,33 @@ function redraw(preview){
   ctx.drawImage(tintC, 0, 0);
   ctx.globalAlpha = 1;
 
+  // AI 自動框選的候選範圍（尚未套用）
+  if(segRegions.length){
+    var fs = Math.max(13, Math.round(photo.w * 0.026));
+    segRegions.forEach(function(r){
+      if(!r.on) return;
+      tintX.clearRect(0, 0, photo.w, photo.h);
+      tintX.drawImage(r.canvas, 0, 0);
+      tintX.globalCompositeOperation = "source-in";
+      tintX.fillStyle = r.color;
+      tintX.fillRect(0, 0, photo.w, photo.h);
+      tintX.globalCompositeOperation = "source-over";
+
+      ctx.globalAlpha = 0.5;
+      ctx.drawImage(tintC, 0, 0);
+      ctx.globalAlpha = 1;
+
+      ctx.font = "700 " + fs + "px sans-serif";
+      var tw = ctx.measureText(r.label).width;
+      var lx = Math.min(Math.max(4, r.box.x0), photo.w - tw - 16);
+      var ly = Math.min(Math.max(4, r.box.y0), photo.h - fs - 12);
+      ctx.fillStyle = "rgba(13,17,23,0.82)";
+      ctx.fillRect(lx, ly, tw + 14, fs + 10);
+      ctx.fillStyle = r.color;
+      ctx.fillText(r.label, lx + 7, ly + fs + 1);
+    });
+  }
+
   if(preview) preview(ctx);
 }
 
@@ -748,6 +824,221 @@ function bindCanvas(){
   };
 }
 
+// ============================================================
+// AI 自動框選（Gemini image segmentation）
+// ============================================================
+var SEG_MODEL  = "gemini-2.5-flash";
+var SEG_COLORS = ["#4A8CD0","#4AB87A","#E07B39","#9B6BC6","#3AAFA9","#D05050","#C9A84C","#D4A017"];
+var segRegions = [];   // [{label, canvas, color, on, pct}]
+
+function segQuick(t){
+  $("seg-q").value = t;
+  autoSelect();
+}
+
+function segMsg(html, err){
+  $("seg-status").innerHTML = html
+    ? '<div class="segmsg' + (err ? " err" : "") + '">' + html + "</div>" : "";
+}
+
+async function autoSelect(){
+  if(!photo){ toast("請先上傳現況照片"); return; }
+  var q = $("seg-q").value.trim();
+  if(!q){ toast("請先輸入或點選要模擬的部位"); return; }
+  if(!API_KEY){ showKey(); return; }
+
+  var btn = $("seg-btn");
+  btn.disabled = true;
+  btn.textContent = "辨識中…";
+  segMsg('<span class="spin" style="display:inline-block;vertical-align:-3px"></span> 正在辨識「' + q + '」的範圍，約 5～15 秒…');
+  $("seg-list").innerHTML = "";
+  segRegions = [];
+  redraw();
+
+  try{
+    var basePart = canvasToParts(photo.canvas, 0.9);
+    var prompt =
+      "這是一張室內裝修的現場照片。請找出畫面中所有屬於「" + q + "」的區域。\n\n" +
+      "輸出一個 JSON 陣列，每個項目包含：\n" +
+      '- "box_2d"：該區域的邊界框 [ymin, xmin, ymax, xmax]，數值正規化到 0-1000\n' +
+      '- "mask"：該邊界框內的分割遮罩，base64 PNG\n' +
+      '- "label"：繁體中文標籤\n\n' +
+      "規則：\n" +
+      "1. 只輸出畫面中真實存在的區域，沒有就回傳空陣列 []。\n" +
+      "2. 嚴格貼合物件的真實輪廓，不要把相鄰的牆面、地板、天花板或家具一起圈進來。\n" +
+      "3. 同一類若有多塊分開的面（例如多片門片、兩面牆），請分開列出。\n" +
+      "4. 最多 10 個項目。";
+
+    var body = {
+      contents: [{
+        role: "user",
+        parts: [
+          { inline_data: { mime_type: basePart.mime, data: basePart.b64 } },
+          { text: prompt }
+        ]
+      }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingBudget: 0 }
+      }
+    };
+
+    var res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/" + SEG_MODEL + ":generateContent",
+      { method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+        body: JSON.stringify(body) }
+    );
+    var data = await res.json();
+    if(data.error) throw new Error(data.error.message || "API 錯誤");
+
+    var txt = "";
+    var ps = (data.candidates && data.candidates[0] && data.candidates[0].content &&
+              data.candidates[0].content.parts) || [];
+    for(var i = 0; i < ps.length; i++){ if(ps[i].text) txt += ps[i].text; }
+
+    var items = parseSegJson(txt);
+    if(!items.length){
+      segMsg("找不到「" + q + "」。換個說法試試（例如「主牆」「木作櫃」），或直接用下面的工具手動框選。", true);
+      return;
+    }
+
+    var regions = [];
+    for(var j = 0; j < items.length; j++){
+      var r = await regionFromItem(items[j], j);
+      if(r) regions.push(r);
+    }
+    if(!regions.length){
+      segMsg("有偵測到範圍，但遮罩無法解析。請改用下面的工具手動框選。", true);
+      return;
+    }
+
+    segRegions = regions;
+    renderSegList();
+    redraw();
+    segMsg("點下面的清單可以開關個別範圍，確認後按「套用」。不夠精準的話，套用後還能用塗抹／擦除修。");
+  }catch(e){
+    var m = e.message || "";
+    var tip = "";
+    if(/limit:\s*0|quota|RESOURCE_EXHAUSTED/i.test(m)) tip = "（辨識用的是文字模型，額度與生成分開計算）";
+    segMsg("自動框選失敗：" + m + tip, true);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "AI 自動框選";
+  }
+}
+
+function parseSegJson(txt){
+  if(!txt) return [];
+  var s = txt.replace(/```json|```/g, "").trim();
+  var out;
+  try{ out = JSON.parse(s); }
+  catch(e){
+    var a = s.indexOf("["), b = s.lastIndexOf("]");
+    if(a < 0 || b < a) return [];
+    try{ out = JSON.parse(s.slice(a, b + 1)); }catch(e2){ return []; }
+  }
+  if(!Array.isArray(out)) out = [out];
+  return out.filter(function(o){ return o && o.box_2d && o.mask; });
+}
+
+// box_2d 是 0-1000 正規化的 [ymin,xmin,ymax,xmax]；mask 是該框內的機率圖
+function regionFromItem(item, idx){
+  return new Promise(function(resolve){
+    var b = item.box_2d;
+    var y0 = Math.round(b[0] / 1000 * photo.h);
+    var x0 = Math.round(b[1] / 1000 * photo.w);
+    var y1 = Math.round(b[2] / 1000 * photo.h);
+    var x1 = Math.round(b[3] / 1000 * photo.w);
+    var bw = Math.max(1, x1 - x0), bh = Math.max(1, y1 - y0);
+    if(bw < 2 || bh < 2){ resolve(null); return; }
+
+    var src = String(item.mask);
+    if(src.indexOf("data:") !== 0) src = "data:image/png;base64," + src;
+
+    var im = new Image();
+    im.onload = function(){
+      var t = mkCanvas(bw, bh);
+      var tx = t.getContext("2d");
+      tx.drawImage(im, 0, 0, bw, bh);
+
+      // 機率圖 -> 二值 alpha
+      var d = tx.getImageData(0, 0, bw, bh);
+      var p = d.data, on = 0;
+      for(var i = 0; i < p.length; i += 4){
+        // 灰階不透明（官方格式）看灰階值；若形狀存在 alpha 則看 alpha
+        var v = (p[i + 3] < 250) ? p[i + 3] : p[i];
+        if(v > 127){ p[i] = p[i+1] = p[i+2] = 255; p[i+3] = 255; on++; }
+        else { p[i+3] = 0; }
+      }
+      tx.putImageData(d, 0, 0);
+      if(!on){ resolve(null); return; }
+
+      var full = mkCanvas(photo.w, photo.h);
+      full.getContext("2d").drawImage(t, x0, y0);
+
+      resolve({
+        label: item.label || ("範圍 " + (idx + 1)),
+        canvas: full,
+        color: SEG_COLORS[idx % SEG_COLORS.length],
+        on: true,
+        pct: (on / (photo.w * photo.h) * 100),
+        box: { x0: x0, y0: y0 }
+      });
+    };
+    im.onerror = function(){ resolve(null); };
+    im.src = src;
+  });
+}
+
+function renderSegList(){
+  if(!segRegions.length){ $("seg-list").innerHTML = ""; return; }
+  var rows = segRegions.map(function(r, i){
+    return '<label class="segrow">' +
+      '<input type="checkbox"' + (r.on ? " checked" : "") + ' onchange="toggleSeg(' + i + ',this.checked)">' +
+      '<span class="segdot" style="background:' + r.color + '"></span>' +
+      '<span class="segnm">' + r.label + '</span>' +
+      '<span class="segpc">' + r.pct.toFixed(1) + "%</span>" +
+    "</label>";
+  }).join("");
+  $("seg-list").innerHTML = rows +
+    '<div class="tools" style="margin-top:9px">' +
+      '<button class="gobtn" onclick="applySeg()">✓ 套用為選取範圍</button>' +
+      '<button class="tbtn" onclick="addSeg()">＋ 加到現有選取</button>' +
+      '<button class="tbtn" onclick="clearSeg()">✕ 取消</button>' +
+    "</div>";
+}
+
+function toggleSeg(i, on){
+  segRegions[i].on = on;
+  redraw();
+}
+
+function writeSeg(replace){
+  var chosen = segRegions.filter(function(r){ return r.on; });
+  if(!chosen.length){ toast("請至少勾選一個範圍"); return; }
+  pushUndo();
+  var mx = mask.getContext("2d");
+  if(replace) mx.clearRect(0, 0, photo.w, photo.h);
+  mx.globalCompositeOperation = "source-over";
+  chosen.forEach(function(r){ mx.drawImage(r.canvas, 0, 0); });
+  segRegions = [];
+  $("seg-list").innerHTML = "";
+  segMsg("已套用。範圍不夠精準的話，可以用下面的「塗抹」補、「擦除」修。");
+  redraw();
+  refreshGo();
+}
+
+function applySeg(){ writeSeg(true); }
+function addSeg(){ writeSeg(false); }
+
+function clearSeg(){
+  segRegions = [];
+  $("seg-list").innerHTML = "";
+  segMsg("");
+  redraw();
+}
+
 function maskHasPixels(){
   if(!mask) return false;
   var s = 96;
@@ -865,14 +1156,32 @@ function syncStep2(){
 // ============================================================
 // STEP 3 — 生成
 // ============================================================
+// 沒圈選時，要靠文字講清楚改哪裡
+function areaText(){
+  return $("part").value.trim() || (photo ? $("seg-q").value.trim() : "");
+}
+
 function refreshGo(){
   var hasTarget = !!(picked || swatch || descText());
-  var hasMask   = maskHasPixels();
-  $("go").disabled = !(photo && hasMask && hasTarget);
-  $("go").textContent = !photo     ? "請先上傳現況照片"
-                      : !hasMask   ? "請在照片上圈選要模擬的範圍"
-                      : !hasTarget ? "請選擇材質、輸入文字或上傳色板"
-                      : "開始模擬";
+  var hasMask   = photo && maskHasPixels();
+  var hasArea   = !!areaText();
+
+  $("go").disabled = !(photo && hasTarget && (hasMask || hasArea));
+  $("go").textContent =
+      !photo                  ? "請先上傳現況照片"
+    : !hasTarget              ? "請選擇材質、輸入文字或上傳色板"
+    : (!hasMask && !hasArea)  ? "請圈選範圍，或在「指定部位」寫要改哪裡"
+    : hasMask                 ? "開始模擬"
+                              : "開始模擬（依文字判斷範圍）";
+
+  // 沒有遮罩就無法鎖定未選取區域
+  var lock = $("lock");
+  lock.disabled = !hasMask;
+  $("lock-note").innerHTML = hasMask
+    ? ""
+    : '<div class="segmsg err" style="margin-top:6px">未圈選範圍時無法鎖定 — AI 會依「' +
+      (hasArea ? areaText() : "文字") + '」自行判斷改哪裡，畫面其他地方有可能一併被調整。' +
+      '建議先用上面的<b>「AI 自動框選」</b>把範圍框出來。</div>';
 }
 
 function buildMarked(){
@@ -893,27 +1202,32 @@ function buildMarked(){
   return c;
 }
 
-function buildPrompt(hasSwatch){
+function buildPrompt(hasSwatch, hasMask){
   var extra = descText();
-  var part  = $("part").value.trim();
+  var area  = areaText();
 
   var wants = [];
-  if(hasSwatch) wants.push("以【圖3 材質樣板】的顏色與紋理為準");
+  if(hasSwatch) wants.push("以【圖" + (hasMask ? 3 : 2) + " 材質樣板】的顏色與紋理為準");
   if(picked)    wants.push(picked.desc);
   if(extra)     wants.push(extra);
+
+  var target = hasMask
+    ? "【圖2 標記圖】中洋紅色覆蓋到的區域" + (area ? "（該區域是：" + area + "）" : "")
+    : "照片中「" + area + "」的部分（請自行判斷它的完整範圍與邊界）";
 
   var lines = [
     "你是室內裝修的照片級視覺化工具。請以【圖1 現況照片】為基底，輸出一張同尺寸、同視角、同構圖的寫實照片。",
     "",
-    "任務：只把【圖2 標記圖】中洋紅色覆蓋到的區域" + (part ? "（該區域是：" + part + "）" : "") +
-      "，材質換成以下條件：" + wants.join("；") + "。",
+    "任務：只把" + target + "，材質換成以下條件：" + wants.join("；") + "。",
     "",
     "必須遵守：",
     "1. 完整保留原照片的光影、明暗漸層、陰影、反光與強度，換材質後仍要符合現場光線。",
     "2. 保留原本的透視、板材分割線、縫隙、門片邊界與五金位置。",
     "3. 若為木紋，紋理方向順著原本板材的長邊延伸，紋理比例符合實際尺度。",
-    "4. 標記區域以外的所有內容（牆面、地板、天花、家具、窗戶、燈具、人物）必須與原圖完全一致，不得更動。",
-    "5. 輸出畫面中不可出現洋紅色標記本身。",
+    hasMask
+      ? "4. 標記區域以外的所有內容（牆面、地板、天花、家具、窗戶、燈具、人物）必須與原圖完全一致，不得更動。"
+      : "4. 除了上述部位以外，其他所有內容（牆面、地板、天花、家具、窗戶、燈具、人物）必須與原圖完全一致，不得更動。",
+    hasMask ? "5. 輸出畫面中不可出現洋紅色標記本身。" : "5. 邊界要貼合物件的真實輪廓，不可溢出到相鄰的面。",
     "6. 不要加入文字、浮水印、邊框或前後對比拼接。",
     "",
     "輸出：僅一張寫實的模擬照片。"
@@ -931,20 +1245,23 @@ async function generate(){
   setStatus('<span class="spin"></span><span>AI 模擬中，約需 10～30 秒…</span>');
 
   try{
-    var basePart   = canvasToParts(photo.canvas, 0.94);
-    var markedPart = canvasToParts(buildMarked(), 0.94);
+    var hasMask  = maskHasPixels();
+    var basePart = canvasToParts(photo.canvas, 0.94);
 
     var parts = [
       { text: "【圖1】現況照片：" },
-      { inline_data: { mime_type: basePart.mime, data: basePart.b64 } },
-      { text: "【圖2】標記圖，洋紅色覆蓋處＝要更換材質的範圍：" },
-      { inline_data: { mime_type: markedPart.mime, data: markedPart.b64 } }
+      { inline_data: { mime_type: basePart.mime, data: basePart.b64 } }
     ];
+    if(hasMask){
+      var markedPart = canvasToParts(buildMarked(), 0.94);
+      parts.push({ text: "【圖2】標記圖，洋紅色覆蓋處＝要更換材質的範圍：" });
+      parts.push({ inline_data: { mime_type: markedPart.mime, data: markedPart.b64 } });
+    }
     if(swatch){
-      parts.push({ text: "【圖3】目標材質樣板：" });
+      parts.push({ text: "【圖" + (hasMask ? 3 : 2) + "】目標材質樣板：" });
       parts.push({ inline_data: { mime_type: swatch.mime, data: swatch.b64 } });
     }
-    parts.push({ text: buildPrompt(!!swatch) });
+    parts.push({ text: buildPrompt(!!swatch, hasMask) });
 
     var body = {
       contents: [{ role: "user", parts: parts }],
@@ -984,7 +1301,7 @@ async function generate(){
       im.src = "data:" + mime + ";base64," + imgPart.data;
     });
 
-    result = $("lock").checked ? compositeWithMask(aiImg) : fitToBase(aiImg);
+    result = (hasMask && $("lock").checked) ? compositeWithMask(aiImg) : fitToBase(aiImg);
     showResult();
     setStatus("");
   }catch(e){
