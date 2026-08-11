@@ -138,10 +138,14 @@ textarea::placeholder{color:var(--muted)}
 .mo-t{font-size:15px;font-weight:800;color:var(--gold);margin-bottom:8px}
 .mo-d{font-size:12px;color:var(--muted2);margin-bottom:14px;line-height:1.7}
 .mo input{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:9px;
-          color:var(--text);font-family:var(--font);font-size:13px;padding:11px;outline:none}
+          color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+          font-size:12px;padding:11px;outline:none}
 .mo input:focus{border-color:var(--gold)}
-.mo-r{display:flex;gap:9px;margin-top:14px}
-.mo-r button{flex:1;border-radius:9px;padding:11px;cursor:pointer;font-family:var(--font);
+.keyinfo{font-size:11.5px;color:var(--muted2);margin-top:9px;line-height:1.65;word-break:break-word;min-height:1px}
+.keyinfo.warn{color:#F0A0A0}
+.keyinfo.ok{color:var(--green)}
+.mo-r{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.mo-r button{flex:1;min-width:82px;border-radius:9px;padding:11px 8px;cursor:pointer;font-family:var(--font);
              font-size:13px;font-weight:700;border:1px solid var(--border2)}
 .mo-c{background:transparent;color:var(--muted2)}
 .mo-s{background:var(--gold);color:#0D1117;border-color:var(--gold)}
@@ -766,7 +770,16 @@ async function generate(){
     showResult();
     setStatus("");
   }catch(e){
-    setStatus("生成失敗：" + e.message, "err");
+    var m = e.message || "";
+    var tip = "";
+    if(/API key not valid|API_KEY_INVALID|INVALID_ARGUMENT.*key/i.test(m)){
+      tip = "<br>→ 金鑰字串不對。點右上角「設定金鑰」，按<b>「測試金鑰」</b>看實際原因（常見是複製到金鑰名稱、或沒複製完整）。";
+    }else if(/quota|billing|RESOURCE_EXHAUSTED|free tier|not available on the free/i.test(m)){
+      tip = "<br>→ 這個模型需要專案綁定付款方式。可先改用下拉選單裡較便宜的模型，或到 Google Cloud 開啟計費。";
+    }else if(/SERVICE_DISABLED|has not been used|PERMISSION_DENIED/i.test(m)){
+      tip = "<br>→ 該專案尚未啟用 Generative Language API，錯誤訊息裡的連結可直接開啟啟用。";
+    }
+    setStatus("生成失敗：" + m + tip, "err");
   }finally{
     btn.classList.remove("busy");
     refreshGo();
@@ -857,16 +870,69 @@ function showKey(){
     '<div class="ov" onclick="closeKey()"></div>' +
     '<div class="mo">' +
       '<div class="mo-t">設定 Google Gemini API 金鑰</div>' +
-      '<div class="mo-d">到 <b>aistudio.google.com/apikey</b> 免費申請，貼進來即可使用。' +
+      '<div class="mo-d">到 <b>aistudio.google.com/apikey</b> 申請，貼進來後先按「測試金鑰」確認。' +
       '金鑰只存在這台裝置的瀏覽器（localStorage），不會上傳到任何伺服器。</div>' +
-      '<input id="keyin" type="password" placeholder="AIza..." autocomplete="off" value="' + API_KEY + '">' +
+      '<input id="keyin" type="text" placeholder="AIza..." autocomplete="off" ' +
+        'spellcheck="false" autocapitalize="off" autocorrect="off" value="' + API_KEY + '">' +
+      '<div class="keyinfo" id="keyinfo"></div>' +
       '<div class="mo-r">' +
         '<button class="mo-c" onclick="closeKey()">取消</button>' +
+        '<button class="mo-c" onclick="testKey()">測試金鑰</button>' +
         '<button class="mo-s" onclick="saveKey()">儲存啟用</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(d);
-  $("keyin").focus();
+  $("keyin").oninput = showKeyInfo;
+  showKeyInfo();
+}
+
+// 金鑰只要去掉所有空白／換行（手機貼上常夾到）
+function cleanKey(s){ return (s || "").replace(/\s+/g, ""); }
+
+function showKeyInfo(){
+  var el = $("keyinfo");
+  if(!el) return;
+  var raw = $("keyin").value;
+  var v = cleanKey(raw);
+  if(!v){ el.textContent = ""; el.className = "keyinfo"; return; }
+
+  var msgs = ["長度 " + v.length + " 字元"];
+  var bad = false;
+  if(raw !== v){ msgs.push("已自動清掉空白／換行"); }
+  if(v.indexOf("AIza") !== 0){
+    msgs.push("⚠ 金鑰應該以 AIza 開頭 — 你可能複製到金鑰的「名稱」而不是金鑰本身");
+    bad = true;
+  }else if(v.length < 35){
+    msgs.push("⚠ 看起來太短，可能沒複製完整");
+    bad = true;
+  }
+  el.textContent = msgs.join("　·　");
+  el.className = "keyinfo" + (bad ? " warn" : "");
+}
+
+// 實際打一次 Google 的 API，把真正的錯誤訊息秀出來
+async function testKey(){
+  var el = $("keyinfo");
+  var v = cleanKey($("keyin").value);
+  if(!v){ el.textContent = "請先貼上金鑰"; el.className = "keyinfo warn"; return; }
+
+  el.textContent = "測試中…";
+  el.className = "keyinfo";
+  try{
+    var res = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1",
+                          { headers: { "x-goog-api-key": v } });
+    var data = await res.json();
+    if(data.error){
+      el.textContent = "✕ " + (data.error.status || res.status) + "：" + data.error.message;
+      el.className = "keyinfo warn";
+    }else{
+      el.textContent = "✓ 金鑰有效，可以按「儲存啟用」";
+      el.className = "keyinfo ok";
+    }
+  }catch(e){
+    el.textContent = "✕ 連線失敗：" + e.message;
+    el.className = "keyinfo warn";
+  }
 }
 
 function closeKey(){
@@ -875,7 +941,7 @@ function closeKey(){
 }
 
 function saveKey(){
-  var v = $("keyin").value.trim();
+  var v = cleanKey($("keyin").value);
   API_KEY = v;
   if(v) localStorage.setItem("gemini_api_key", v);
   else   localStorage.removeItem("gemini_api_key");
