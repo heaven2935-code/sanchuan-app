@@ -7,26 +7,26 @@
 <title>三川工方｜施工模擬</title>
 <style>
 :root{
-  --bg:#F7F8FA; --card:#FFFFFF; --line:#E4E8EF; --line2:#CFD6E2;
-  --ink:#161C26; --muted:#5B667A; --faint:#98A2B3;
-  --brand:#8A6B14; --brand2:#B8912E; --brandbg:#FBF6E9;
-  --shade:#EDF0F5; --red:#C0392B; --green:#2E9E5B;
+  --bg:#FAF9F7; --card:#FFFFFF; --line:#EAE7E1; --line2:#DAD5CC;
+  --ink:#1F1E1C; --muted:#6E6A62; --faint:#A6A199;
+  --brand:#8C6A2B; --brand2:#A8823A; --brandbg:#F6F1E6;
+  --shade:#F1EEE9; --red:#B4442F; --green:#3F8F5B;
   --sans:'PingFang TC','Noto Sans TC','Helvetica Neue',-apple-system,sans-serif;
-  --shadow:0 1px 2px rgba(22,28,38,.05), 0 6px 18px rgba(22,28,38,.06);
+  --shadow:0 1px 2px rgba(31,30,28,.04), 0 2px 10px rgba(31,30,28,.05);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65;
      -webkit-font-smoothing:antialiased}
 
 /* ── 頁首 ── */
-.top{position:sticky;top:0;z-index:40;background:rgba(247,248,250,.88);
+.top{position:sticky;top:0;z-index:40;background:rgba(250,249,247,.86);
      backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
 .top-in{max-width:720px;margin:0 auto;padding:13px 18px;display:flex;align-items:center;gap:12px}
-.logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,#C9A84C,#8A6B14);
-      display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:800;
-      letter-spacing:-.5px;flex-shrink:0}
-.brandname{font-size:15px;font-weight:750;letter-spacing:.2px}
-.brandsub{font-size:11px;color:var(--faint);letter-spacing:.4px;margin-top:-3px}
+.logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(145deg,#B08A3C,#7C5D22);
+      display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;
+      box-shadow:0 1px 3px rgba(31,30,28,.18)}
+.brandname{font-size:15px;font-weight:700;letter-spacing:.3px;line-height:1.3}
+.brandsub{font-size:10px;color:var(--faint);letter-spacing:1.2px;line-height:1.3}
 .keybtn{margin-left:auto;display:flex;align-items:center;gap:7px;background:var(--card);
         border:1px solid var(--line2);border-radius:999px;padding:7px 13px;cursor:pointer;
         color:var(--muted);font-size:12px;font-family:var(--sans);font-weight:600}
@@ -37,39 +37,42 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15p
 .thread{max-width:720px;margin:0 auto;padding:20px 18px 8px;
         min-height:calc(100vh - 260px)}
 
-.hello{text-align:center;padding:52px 20px 40px}
-.hello-i{width:60px;height:60px;border-radius:19px;background:var(--brandbg);border:1px solid #EBDFBC;
-         display:flex;align-items:center;justify-content:center;font-size:27px;margin:0 auto 18px}
-.hello-t{font-size:19px;font-weight:750;letter-spacing:.2px}
-.hello-d{font-size:13.5px;color:var(--muted);margin-top:9px;line-height:1.85}
+.hello{text-align:center;padding:16vh 24px 40px}
+.hello-i{width:66px;height:66px;border-radius:21px;background:var(--card);border:1px solid var(--line);
+         display:flex;align-items:center;justify-content:center;margin:0 auto 22px;
+         color:var(--brand);box-shadow:var(--shadow)}
+.hello-t{font-size:20px;font-weight:650;letter-spacing:.4px}
+.hello-d{font-size:13.5px;color:var(--faint);margin-top:10px;line-height:2}
 .hello-eg{display:inline-block;margin-top:20px;background:var(--card);border:1px solid var(--line);
           border-radius:13px;padding:13px 16px;text-align:left;font-size:12.5px;color:var(--muted);
           line-height:1.9;box-shadow:var(--shadow)}
 .hello-eg b{color:var(--ink);font-weight:650}
 
-.turn{margin-bottom:22px}
+.turn{margin-bottom:26px}
 
 /* 使用者 */
 .me{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .me-imgs{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end;max-width:88%}
-.me-img{position:relative;width:96px;height:96px;border-radius:13px;overflow:hidden;
-        border:1px solid var(--line2);box-shadow:var(--shadow)}
+.me-img{position:relative;width:92px;height:92px;border-radius:14px;overflow:hidden;
+        border:1px solid var(--line);box-shadow:var(--shadow)}
 .me-img img{width:100%;height:100%;object-fit:cover;display:block}
-.me-img span{position:absolute;left:5px;top:5px;background:rgba(22,28,38,.72);color:#fff;
-             font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.3px}
-.me-txt{background:var(--ink);color:#fff;border-radius:19px 19px 5px 19px;padding:11px 16px;
-        font-size:14.5px;max-width:88%;word-break:break-word;line-height:1.6}
+.me-img span{position:absolute;left:6px;top:6px;background:rgba(31,30,28,.62);color:#fff;
+             font-size:10px;font-weight:600;padding:2.5px 7px;border-radius:7px;
+             letter-spacing:.5px;backdrop-filter:blur(4px)}
+.me-txt{background:var(--ink);color:#F7F5F2;border-radius:18px 18px 6px 18px;padding:11px 16px;
+        font-size:14.5px;max-width:86%;word-break:break-word;line-height:1.65;letter-spacing:.2px}
 
 /* AI */
 .ai{margin-top:14px}
-.ai-card{background:var(--card);border:1px solid var(--line);border-radius:17px;overflow:hidden;
+.ai-card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;
          box-shadow:var(--shadow)}
 .ai-card img{width:100%;display:block;background:var(--shade);cursor:zoom-in}
-.ai-bar{display:flex;gap:7px;padding:11px 12px;border-top:1px solid var(--line)}
-.ab{flex:1;background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:9px;
-    cursor:pointer;color:var(--muted);font-size:12.5px;font-weight:650;font-family:var(--sans)}
-.ab:active{background:var(--shade);color:var(--brand)}
-.ai-note{font-size:12px;color:var(--faint);margin-top:7px;padding-left:3px}
+.ai-bar{display:flex;padding:4px;border-top:1px solid var(--line)}
+.ab{flex:1;background:none;border:none;border-radius:11px;padding:11px 4px;cursor:pointer;
+    color:var(--muted);font-size:12.5px;font-weight:600;font-family:var(--sans);letter-spacing:.2px}
+.ab+.ab{box-shadow:inset 1px 0 0 var(--line)}
+.ab:active{background:var(--shade);color:var(--brand);box-shadow:none}
+.ai-note{font-size:11.5px;color:var(--faint);margin-top:9px;padding-left:4px;letter-spacing:.2px}
 
 .working{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);
          border-radius:15px;padding:14px 16px;font-size:13.5px;color:var(--muted);box-shadow:var(--shadow)}
@@ -83,37 +86,37 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15p
           padding:9px 15px;cursor:pointer;color:#fff;font-size:12.5px;font-weight:700;font-family:var(--sans)}
 
 /* ── 輸入區 ── */
-.dock{position:sticky;bottom:0;z-index:30;background:linear-gradient(to bottom,rgba(247,248,250,0),var(--bg) 22%);
+.dock{position:sticky;bottom:0;z-index:30;background:linear-gradient(to bottom,rgba(250,249,247,0),var(--bg) 20%);
       padding:14px 0 calc(14px + env(safe-area-inset-bottom,0px))}
 .dock-in{max-width:720px;margin:0 auto;padding:0 18px}
-.composer{background:var(--card);border:1px solid var(--line2);border-radius:22px;padding:9px;
-          box-shadow:0 2px 8px rgba(22,28,38,.06), 0 12px 28px rgba(22,28,38,.07)}
-.composer:focus-within{border-color:var(--brand2)}
+.composer{background:var(--card);border:1px solid var(--line2);border-radius:24px;padding:8px;
+          box-shadow:0 1px 3px rgba(31,30,28,.05), 0 8px 24px rgba(31,30,28,.06)}
+.composer:focus-within{border-color:var(--line2);box-shadow:0 1px 3px rgba(31,30,28,.05),0 10px 28px rgba(31,30,28,.09)}
 
 .att{display:flex;gap:7px;flex-wrap:wrap;padding:4px 4px 9px}
-.att-i{position:relative;width:62px;height:62px;border-radius:11px;overflow:hidden;border:1px solid var(--line2)}
+.att-i{position:relative;width:60px;height:60px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
 .att-i img{width:100%;height:100%;object-fit:cover;display:block}
-.att-i .no{position:absolute;left:4px;top:4px;background:rgba(22,28,38,.72);color:#fff;font-size:9.5px;
+.att-i .no{position:absolute;left:4px;top:4px;background:rgba(31,30,28,.66);color:#fff;font-size:9.5px;
            font-weight:700;padding:2px 6px;border-radius:5px}
 .att-i .x{position:absolute;right:3px;top:3px;width:19px;height:19px;border-radius:50%;border:none;
-          background:rgba(22,28,38,.72);color:#fff;font-size:11px;cursor:pointer;line-height:1;
-          font-family:var(--sans);padding:0}
-.att-i .mk{position:absolute;left:0;right:0;bottom:0;background:rgba(184,145,46,.92);color:#fff;
+          background:rgba(31,30,28,.62);color:#fff;cursor:pointer;padding:0;
+          display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.att-i .mk{position:absolute;left:0;right:0;bottom:0;background:rgba(140,106,43,.92);color:#fff;
            font-size:9.5px;font-weight:700;text-align:center;padding:2px}
 
 .cline{display:flex;align-items:flex-end;gap:8px}
-.plus{width:38px;height:38px;flex-shrink:0;border-radius:50%;border:none;background:var(--shade);
-      cursor:pointer;color:var(--muted);font-size:21px;font-weight:400;font-family:var(--sans);
-      line-height:1;padding:0 0 2px}
+.plus{width:36px;height:36px;flex-shrink:0;border-radius:50%;border:none;background:var(--shade);
+      cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;padding:0}
 .plus:active{background:var(--brandbg);color:var(--brand)}
 .ask{flex:1;min-width:0;border:none;outline:none;background:none;font-family:var(--sans);
-     font-size:15.5px;line-height:1.55;padding:8px 2px;resize:none;max-height:132px;color:var(--ink)}
+     font-size:16px;line-height:1.55;padding:8px 4px;resize:none;max-height:132px;color:var(--ink)}
 .ask::placeholder{color:var(--faint)}
-.send{width:38px;height:38px;flex-shrink:0;border-radius:50%;border:none;
-      background:var(--ink);cursor:pointer;color:#fff;font-size:17px;font-family:var(--sans);
-      line-height:1;padding:0 0 2px}
+.send{width:36px;height:36px;flex-shrink:0;border-radius:50%;border:none;background:var(--ink);
+      cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;padding:0;
+      transition:background .15s}
 .send:disabled{background:var(--line2);cursor:not-allowed}
-.hint{font-size:11px;color:var(--faint);text-align:center;margin-top:9px;line-height:1.6}
+.send:disabled svg{opacity:.7}
+.hint{font-size:11px;color:var(--faint);text-align:center;margin-top:10px;line-height:1.6;min-height:1px}
 
 /* ── 標記 ── */
 .marker{position:fixed;inset:0;z-index:300;background:#0F131A;display:flex;flex-direction:column}
@@ -140,9 +143,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15p
          border:none;color:#93A0B4;font-size:26px;cursor:pointer;font-family:var(--sans)}
 
 /* ── 對話框 ── */
-.ov{position:fixed;inset:0;background:rgba(22,28,38,.5);z-index:200}
+.ov{position:fixed;inset:0;background:rgba(31,30,28,.42);z-index:200}
 .mo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:201;width:min(400px,92vw);
-    background:var(--card);border-radius:19px;padding:24px;box-shadow:0 20px 50px rgba(22,28,38,.25)}
+    background:var(--card);border-radius:19px;padding:24px;box-shadow:0 18px 44px rgba(31,30,28,.18)}
 .mo-t{font-size:16.5px;font-weight:750;margin-bottom:9px}
 .mo-d{font-size:12.5px;color:var(--muted);margin-bottom:15px;line-height:1.8}
 .mo input{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:11px;
@@ -162,7 +165,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15p
 
 <div class="top">
   <div class="top-in">
-    <div class="logo">三川</div>
+    <div class="logo"><svg viewBox="0 0 24 24" width="17" height="17" fill="none"
+     stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+     <path d="M5 5v14M12 3v18M19 7v10"/></svg></div>
     <div>
       <div class="brandname">施工模擬</div>
       <div class="brandsub">SANCHUAN VISUALISER</div>
@@ -181,19 +186,26 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15p
       <div class="att" id="att"></div>
       <div class="cline">
         <input type="file" id="f" accept="image/*" multiple class="hide">
-        <button class="plus" onclick="document.getElementById('f').click()" title="加照片">＋</button>
-        <textarea class="ask" id="ask" rows="1" placeholder="加照片，然後說要改什麼…"></textarea>
-        <button class="send" id="send" onclick="send()">↑</button>
+        <button class="plus" onclick="document.getElementById('f').click()" title="加照片">
+        <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+             stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+        <textarea class="ask" id="ask" rows="1" placeholder="輸入訊息"></textarea>
+        <button class="send" id="send" onclick="send()" title="送出">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V5M6 11l6-6 6 6"/></svg>
+      </button>
       </div>
     </div>
-    <div class="hint" id="hint">可以一次加多張，用「圖1」「圖2」指定</div>
+    <div class="hint" id="hint"></div>
   </div>
 </div>
 
 <script>
 "use strict";
 
-var BUILD    = "08/12 03:10";
+var BUILD    = "08/12 02:41";
 var API_KEY  = localStorage.getItem("gemini_api_key") || "";
 var MAX_EDGE = 1408;
 
@@ -243,7 +255,7 @@ function renderAtt(){
     return '<div class="att-i">' +
       '<img src="' + a.url + '" onclick="markImage(' + i + ')">' +
       '<span class="no">圖' + (i + 1) + "</span>" +
-      '<button class="x" onclick="dropAtt(' + i + ')">✕</button>' +
+      '<button class="x" onclick="dropAtt(' + i + ')"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
       (a.marked ? '<span class="mk">已標記</span>' : "") +
     "</div>";
   }).join("");
@@ -253,9 +265,7 @@ function dropAtt(i){ atts.splice(i, 1); renderAtt(); refreshSend(); }
 
 function refreshSend(){
   $("send").disabled = busy || (!$("ask").value.trim() && !atts.length);
-  $("hint").textContent = atts.length
-    ? "點縮圖可以在上面標記要改的地方"
-    : "可以一次加多張，用「圖1」「圖2」指定";
+  $("hint").textContent = atts.length ? "點縮圖可在上面標記要改的地方" : "";
 }
 
 $("ask").oninput = function(){
@@ -268,12 +278,13 @@ $("ask").oninput = function(){
 function renderThread(){
   if(!turns.length){
     $("thread").innerHTML =
-      '<div class="hello"><div class="hello-i">🏠</div>' +
-      '<div class="hello-t">上傳照片，說一句話就好</div>' +
-      '<div class="hello-d">跟平常傳照片給 AI 一樣。<br>可以一次加現況照和色板照，用「圖1」「圖2」指。</div>' +
-      '<div class="hello-eg"><b>例：</b>這座衣櫃的外觀顏色改成圖2的深灰<br>' +
-      '<b>例：</b>模擬成這張清水模的照片<br>' +
-      '<b>例：</b>顏色再深一階，壓條改成玫瑰金</div></div>';
+      '<div class="hello"><div class="hello-i">' +
+        '<svg viewBox="0 0 40 40" width="30" height="30" fill="none" stroke="currentColor" ' +
+        'stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+        '<path d="M4 32V13l16-9 16 9v19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>' +
+        '<path d="M15 34V21h10v13"/><path d="M20 4v9"/></svg></div>' +
+      '<div class="hello-t">加照片，說一句話</div>' +
+      '<div class="hello-d">可以一次加現況照與色板照<br>再用「圖1」「圖2」指定</div></div>';
     return;
   }
   $("thread").innerHTML = turns.map(function(t, i){
@@ -292,7 +303,7 @@ function renderThread(){
       return '<div class="turn"><div class="ai"><div class="ai-card">' +
         '<img src="' + t.url + '" onclick="lightbox(\'ai' + i + '\')">' +
         '<div class="ai-bar">' +
-          '<button class="ab" onclick="markResult(' + i + ')">✏️ 標記再改</button>' +
+          '<button class="ab" onclick="markResult(' + i + ')">標記再改</button>' +
           '<button class="ab" onclick="useAsBase(' + i + ')">接著改這張</button>' +
           '<button class="ab" onclick="shareTurn(' + i + ')">分享</button>' +
         "</div></div>" +
