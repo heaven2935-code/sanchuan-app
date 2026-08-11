@@ -290,6 +290,27 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .cdot{width:7px;height:7px;border-radius:50%;background:var(--border2)}
 .cdot.on{background:var(--gold);width:18px;border-radius:4px}
 
+
+/* ── 建材行 ── */
+.suprow{display:flex;align-items:center;gap:9px;background:var(--card2);border:1px solid var(--border2);
+        border-radius:9px;padding:9px 11px;margin-bottom:7px}
+.sup-b{flex:1;min-width:0}
+.sup-n{font-size:12.5px;font-weight:700;line-height:1.4}
+.sup-u{font-size:10.5px;color:var(--muted);line-height:1.4;white-space:nowrap;
+       overflow:hidden;text-overflow:ellipsis}
+.sup-o{background:var(--gold);border:none;border-radius:7px;padding:7px 12px;cursor:pointer;
+       color:#0D1117;font-size:11.5px;font-weight:700;font-family:var(--font);flex-shrink:0;
+       text-decoration:none;display:inline-block}
+.sup-x{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;
+       font-family:var(--font);padding:2px 4px;flex-shrink:0}
+.sup-x:hover{color:var(--red)}
+.howto{background:var(--gold-bg);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;
+       padding:10px 12px;font-size:11.5px;color:var(--gold2);line-height:1.8;margin-bottom:11px}
+.pastebtn{width:100%;background:var(--card2);border:1.5px dashed var(--border2);border-radius:9px;
+          padding:11px;cursor:pointer;color:var(--muted2);font-size:12.5px;font-weight:600;
+          font-family:var(--font);margin-bottom:9px}
+.pastebtn:hover{border-color:var(--gold);color:var(--gold2)}
+
 .hide{display:none !important}
 </style>
 </head>
@@ -1526,6 +1547,7 @@ function openLib(){
       '<div class="mo-t">色板庫</div>' +
       '<div class="libtabs">' +
         '<button class="libtab" id="lt-mine" onclick="setLibTab(\'mine\')">我的色板</button>' +
+        '<button class="libtab" id="lt-sup" onclick="setLibTab(\'sup\')">建材行型錄</button>' +
         '<button class="libtab" id="lt-builtin" onclick="setLibTab(\'builtin\')">內建材質</button>' +
       "</div>" +
       '<div id="libcats"></div>' +
@@ -1539,8 +1561,9 @@ function closeLib(){ var m = $("libmo"); if(m) m.remove(); }
 
 function setLibTab(t){
   libTab = t;
-  $("lt-mine").classList.toggle("on", t === "mine");
-  $("lt-builtin").classList.toggle("on", t === "builtin");
+  ["mine","sup","builtin"].forEach(function(k){
+    $("lt-" + k).classList.toggle("on", t === k);
+  });
   renderLib();
 }
 
@@ -1558,13 +1581,34 @@ function renderLib(){
         '<span class="sw" style="background:' + m.css + '"></span>' +
         '<span class="nm">' + m.name + "</span></button>";
     }).join("");
+  }else if(libTab === "sup"){
+    cats.innerHTML =
+      '<div class="howto"><b>怎麼從電子型錄拿顏色</b><br>' +
+      "1. 點「開啟型錄」（會開新分頁）<br>" +
+      "2. 在型錄上<b>長按你要的顏色 → 拷貝</b><br>" +
+      "3. 回到這裡按<b>「📋 從剪貼簿貼上」</b>，就直接進色板庫</div>" +
+      '<button class="pastebtn" onclick="pasteSwatch()">📋 從剪貼簿貼上剛剛拷貝的圖</button>' +
+      suppliers.map(function(p){
+        return '<div class="suprow"><div class="sup-b">' +
+          '<div class="sup-n">' + p.name + "</div>" +
+          '<div class="sup-u">' + p.url + "</div></div>" +
+          '<a class="sup-o" href="' + p.url + '" target="_blank" rel="noopener">開啟型錄</a>' +
+          '<button class="sup-x" onclick="delSup(\'' + p.id + '\')">✕</button></div>';
+      }).join("") +
+      '<div class="tools" style="margin-top:4px">' +
+        '<button class="tbtn" onclick="addSup()">＋ 新增建材行</button>' +
+        '<button class="tbtn" onclick="importSups()">📥 貼上整份清單</button>' +
+      "</div>";
+    grid.innerHTML = "";
   }else{
     cats.innerHTML = "";
     var up = '<button class="libup" onclick="document.getElementById(\'f-lib\').click()">' +
-             "<div style=\"font-size:20px\">＋</div><div>上傳色板</div><div style=\"font-size:10px\">可一次多張</div></button>";
+             "<div style=\"font-size:20px\">＋</div><div>上傳色板</div><div style=\"font-size:10px\">可一次多張</div></button>" +
+             '<button class="libup" onclick="pasteSwatch()">' +
+             "<div style=\"font-size:20px\">📋</div><div>從剪貼簿貼上</div><div style=\"font-size:10px\">型錄長按拷貝後</div></button>";
     if(!myLib.length){
       grid.innerHTML = up +
-        '<div class="libempty">還沒有色板。<br>把型錄上業主選的顏色拍起來，<br>一次全部上傳，模擬時點一下就能用。</div>';
+        '<div class="libempty">還沒有色板。<br>可以直接拍型錄上傳，<br>或到「建材行型錄」分頁從電子型錄拷貝過來。</div>';
     }else{
       grid.innerHTML = up + myLib.map(function(m){
         return '<div class="libit' + (sel && sel.id === m.id ? " on" : "") +
@@ -1578,21 +1622,21 @@ function renderLib(){
   }
 }
 
+// File 與 Blob 共用；Blob（剪貼簿）沒有檔名，另外給。
+async function addSwatchBlob(blob, fallbackName){
+  var im = await fileToImage(blob);
+  var sc = Math.min(1, 512 / Math.max(im.width, im.height));
+  var c = mkCanvas(Math.round(im.width * sc), Math.round(im.height * sc));
+  c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+  var nm = (blob.name || "").replace(/\.[^.]+$/, "").slice(0, 14) || fallbackName;
+  myLib.push({ id: "u" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+               name: nm, url: c.toDataURL("image/jpeg", 0.82) });
+}
+
 async function uploadLib(files){
   var n = 0;
   for(var i = 0; i < files.length; i++){
-    try{
-      var im = await fileToImage(files[i]);
-      var sc = Math.min(1, 512 / Math.max(im.width, im.height));
-      var c = mkCanvas(Math.round(im.width * sc), Math.round(im.height * sc));
-      c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
-      myLib.push({
-        id: "u" + Date.now() + "_" + i,
-        name: (files[i].name || "色板").replace(/\.[^.]+$/, "").slice(0, 14) || ("色板 " + (myLib.length + 1)),
-        url: c.toDataURL("image/jpeg", 0.82)
-      });
-      n++;
-    }catch(e){}
+    try{ await addSwatchBlob(files[i], "色板 " + (myLib.length + 1)); n++; }catch(e){}
   }
   saveLib();
   renderLib();
@@ -1633,6 +1677,100 @@ function renderSel(){
     "<span>" + (sel.url ? "會把這張色板當成材質參考" : "會依這個材質的描述生成") + "</span></div>" +
     '<button onclick="clearSel()">✕</button></div>';
 }
+
+
+// ============================================================
+// 建材行電子型錄
+//   受同源政策限制，網頁無法直接讀取別的網站上的圖，
+//   因此改成：開啟型錄 -> 長按拷貝 -> 回來貼上。
+// ============================================================
+var SUP_KEY = "sim_suppliers";
+var suppliers = [];
+
+function loadSups(){
+  try{ suppliers = JSON.parse(localStorage.getItem(SUP_KEY) || "[]"); }
+  catch(e){ suppliers = []; }
+}
+function saveSups(){
+  try{ localStorage.setItem(SUP_KEY, JSON.stringify(suppliers)); }catch(e){}
+}
+
+function normUrl(u){
+  u = (u || "").trim();
+  if(!u) return "";
+  if(!/^https?:\/\//i.test(u)) u = "https://" + u;
+  return u;
+}
+
+function addSup(){
+  var name = prompt("建材行名稱？");
+  if(!name || !name.trim()) return;
+  var url = normUrl(prompt("電子型錄網址？", "https://"));
+  if(!url) return;
+  suppliers.push({ id: "s" + Date.now(), name: name.trim(), url: url });
+  saveSups(); renderLib();
+}
+
+function delSup(id){
+  suppliers = suppliers.filter(function(p){ return p.id !== id; });
+  saveSups(); renderLib();
+}
+
+// 一次貼上整份清單：每行「名稱 網址」或「名稱,網址」
+function importSups(){
+  var txt = prompt("每行一間，格式：名稱 空格或逗號 網址\n例：\n大公建材 https://example.com/catalog\n三洋木業, https://foo.com/e-book");
+  if(!txt) return;
+  var n = 0;
+  txt.split(/\r?\n/).forEach(function(line){
+    line = line.trim();
+    if(!line) return;
+    var m = line.match(/^(.*?)[\s,，]+((?:https?:\/\/)?\S+\.\S+)$/);
+    if(!m) return;
+    var name = m[1].trim(), url = normUrl(m[2]);
+    if(!name || !url) return;
+    suppliers.push({ id: "s" + Date.now() + "_" + n, name: name, url: url });
+    n++;
+  });
+  saveSups(); renderLib();
+  toast(n ? "已加入 " + n + " 間建材行" : "沒有解析到資料，檢查一下格式");
+}
+
+// ── 從剪貼簿貼上圖片 ──
+async function pasteSwatch(){
+  try{
+    if(!navigator.clipboard || !navigator.clipboard.read){
+      toast("這個瀏覽器不支援讀剪貼簿，<br>請改用「上傳色板」");
+      return;
+    }
+    var items = await navigator.clipboard.read();
+    var got = 0;
+    for(var i = 0; i < items.length; i++){
+      var type = items[i].types.filter(function(t){ return t.indexOf("image/") === 0; })[0];
+      if(!type) continue;
+      var blob = await items[i].getType(type);
+      await addSwatchBlob(blob, "型錄色板 " + (myLib.length + 1));
+      got++;
+    }
+    if(!got){ toast("剪貼簿裡沒有圖片。<br>先在型錄上長按圖片選「拷貝」"); return; }
+    saveLib(); renderLib();
+    toast("已從剪貼簿加入 " + got + " 張，點名稱可改名");
+  }catch(e){
+    toast("讀不到剪貼簿（可能被拒絕權限）<br>可改用「上傳色板」");
+  }
+}
+
+// 桌機：直接在頁面上 Ctrl/Cmd+V
+document.addEventListener("paste", async function(e){
+  if(!e.clipboardData) return;
+  var items = e.clipboardData.items, got = 0;
+  for(var i = 0; i < items.length; i++){
+    if(items[i].type && items[i].type.indexOf("image/") === 0){
+      var blob = items[i].getAsFile();
+      if(blob){ await addSwatchBlob(blob, "貼上色板 " + (myLib.length + 1)); got++; }
+    }
+  }
+  if(got){ saveLib(); if($("libmo")) renderLib(); toast("已貼上 " + got + " 張色板"); }
+});
 
 // ============================================================
 // AI 配色與風格建議
@@ -1808,6 +1946,7 @@ function paintKeyState(){
 })();
 
 loadLib();
+loadSups();
 $("f-lib").onchange = function(){
   // FileList 是即時清單，清空 input 會連帶清掉它；
   // 非同步讀檔前先複製成陣列。
