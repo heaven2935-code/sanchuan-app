@@ -2,6 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>三川工方｜施工前後模擬</title>
 <style>
@@ -472,6 +473,7 @@ var MATERIALS = [
 // ============================================================
 // 狀態
 // ============================================================
+var BUILD      = "08/11 23:10";
 var MAX_EDGE   = 1536;
 var API_KEY    = localStorage.getItem("gemini_api_key") || "";
 
@@ -1974,7 +1976,8 @@ function parseJsonArr(txt){
 // API Key
 // ============================================================
 function showKey(){
-  if($("keymo")) return;
+  var stale = $("keymo");
+  if(stale) stale.remove();   // 殘留的舊視窗會讓按鈕像沒反應
   var d = document.createElement("div");
   d.id = "keymo";
   d.innerHTML =
@@ -1982,7 +1985,8 @@ function showKey(){
     '<div class="mo">' +
       '<div class="mo-t">設定 Google Gemini API 金鑰</div>' +
       '<div class="mo-d">到 <b>aistudio.google.com/apikey</b> 申請，貼進來後先按「測試金鑰」確認。' +
-      '金鑰只存在這台裝置的瀏覽器，不會上傳到任何伺服器。</div>' +
+      '金鑰只存在這台裝置的瀏覽器，不會上傳到任何伺服器。<br>' +
+      '<span style="color:var(--muted)">版本 ' + BUILD + '</span></div>' +
       '<input id="keyin" type="text" placeholder="AIza..." autocomplete="off" ' +
         'spellcheck="false" autocapitalize="off" autocorrect="off" value="' + API_KEY + '">' +
       '<div class="keyinfo" id="keyinfo"></div>' +
