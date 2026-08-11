@@ -82,6 +82,20 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .sw-side{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px}
 .fld label{display:block;font-size:11px;color:var(--muted2);margin-bottom:4px}
 .fld input[type=text]{width:100%}
+.opt{font-size:10px;color:var(--muted);font-weight:400}
+.note{font-size:11.5px;color:var(--muted2);line-height:1.7}
+
+textarea{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:9px;
+         color:var(--text);font-family:var(--font);font-size:13px;padding:11px;outline:none;
+         resize:vertical;min-height:84px;line-height:1.65}
+textarea:focus{border-color:var(--gold)}
+textarea::placeholder{color:var(--muted)}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.chip-g{font-size:10px;color:var(--muted);letter-spacing:1px;margin-right:2px;flex-shrink:0}
+.chip{background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:5px 11px;
+      cursor:pointer;color:var(--muted2);font-size:11.5px;font-family:var(--font);transition:all .15s}
+.chip:hover{border-color:var(--gold);color:var(--gold2)}
 
 /* go */
 .go{width:100%;background:var(--gold);border:none;border-radius:11px;padding:15px;cursor:pointer;
@@ -206,23 +220,58 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
   <div class="step" id="s2">
     <div class="step-h">
       <div class="step-n">2</div>
-      <div class="step-t">上傳木皮／材質色板</div>
-      <div class="step-d" id="s2d">尚未上傳</div>
+      <div class="step-t">描述想要的樣子</div>
+      <div class="step-d" id="s2d">文字描述、色板圖片，至少給一項</div>
     </div>
+
+    <div class="fld" style="margin-bottom:14px">
+      <label>想要的效果（文字描述）</label>
+      <textarea id="desc" oninput="onDesc()"
+        placeholder="例：換成淺色橡木，霧面不要反光，直紋垂直走向，顏色比原本淺兩階，整體要像北歐風的系統櫃"></textarea>
+      <div class="chips">
+        <span class="chip-g">木種</span>
+        <button class="chip" onclick="addChip('淺色橡木')">淺色橡木</button>
+        <button class="chip" onclick="addChip('白橡木')">白橡木</button>
+        <button class="chip" onclick="addChip('深胡桃木')">深胡桃木</button>
+        <button class="chip" onclick="addChip('柚木')">柚木</button>
+        <button class="chip" onclick="addChip('梧桐木')">梧桐木</button>
+        <button class="chip" onclick="addChip('黑檀木')">黑檀木</button>
+        <button class="chip" onclick="addChip('梣木')">梣木</button>
+      </div>
+      <div class="chips">
+        <span class="chip-g">質感</span>
+        <button class="chip" onclick="addChip('霧面')">霧面</button>
+        <button class="chip" onclick="addChip('半霧面')">半霧面</button>
+        <button class="chip" onclick="addChip('鋼刷紋')">鋼刷紋</button>
+        <button class="chip" onclick="addChip('直紋')">直紋</button>
+        <button class="chip" onclick="addChip('山形紋')">山形紋</button>
+        <button class="chip" onclick="addChip('木紋垂直走向')">木紋垂直</button>
+        <button class="chip" onclick="addChip('木紋水平走向')">木紋水平</button>
+      </div>
+      <div class="chips">
+        <span class="chip-g">深淺</span>
+        <button class="chip" onclick="addChip('顏色再淺一階')">再淺一階</button>
+        <button class="chip" onclick="addChip('顏色再深一階')">再深一階</button>
+        <button class="chip" onclick="addChip('偏暖色調')">偏暖</button>
+        <button class="chip" onclick="addChip('偏冷色調')">偏冷</button>
+      </div>
+    </div>
+
     <div class="sw-row">
       <input type="file" id="f-swatch" accept="image/*" class="hide">
       <img class="sw-prev hide" id="sw-prev" alt="色板預覽">
-      <div class="drop hide" id="d-swatch" style="width:104px;height:104px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+      <div class="drop" id="d-swatch" style="width:104px;height:104px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
         <div class="drop-i" style="margin:0">🪵</div>
         <div class="drop-s" style="margin-top:2px">選色板</div>
       </div>
       <div class="sw-side">
         <div class="fld">
-          <label>材質補充描述（選填）</label>
-          <input type="text" id="desc" placeholder="例：霧面、直紋、木紋垂直、深胡桃">
+          <label>木皮色板圖片 <span class="opt">選填</span></label>
+          <div class="note">左邊點一下上傳實際的木皮樣板照片。有色板時 AI 會直接抓它的顏色與紋理，再套用你的文字描述；沒有色板就純粹依文字生成。</div>
+          <button class="tbtn hide" id="sw-clear" onclick="clearSwatch()" style="margin-top:8px">✕ 移除色板</button>
         </div>
         <div class="fld">
-          <label>指定部位（選填，講越清楚越準）</label>
+          <label>指定部位 <span class="opt">選填，講越清楚越準</span></label>
           <input type="text" id="part" placeholder="例：電視牆造型木作、系統櫃門片">
         </div>
       </div>
@@ -545,23 +594,58 @@ async function loadSwatch(file){
     prev.src = r.dataUrl;
     prev.classList.remove("hide");
     $("d-swatch").classList.add("hide");
-    $("s2").classList.add("done");
-    $("s2d").textContent = "已選擇";
-    refreshGo();
+    $("sw-clear").classList.remove("hide");
+    syncStep2();
   }catch(e){
     setStatus("色板載入失敗：" + e.message, "err");
   }
+}
+
+function clearSwatch(){
+  swatch = null;
+  $("sw-prev").classList.add("hide");
+  $("sw-prev").removeAttribute("src");
+  $("d-swatch").classList.remove("hide");
+  $("sw-clear").classList.add("hide");
+  syncStep2();
+}
+
+// 快捷詞：附加到文字描述後面
+function addChip(t){
+  var el = $("desc");
+  var v = el.value.trim();
+  if(v.indexOf(t) >= 0){ el.focus(); return; }   // 已經有了就不重複加
+  el.value = v ? v + "、" + t : t;
+  onDesc();
+  el.focus();
+}
+
+function onDesc(){ syncStep2(); }
+
+function descText(){ return $("desc").value.trim(); }
+
+function syncStep2(){
+  var d = descText();
+  var ok = !!(swatch || d);
+  $("s2").classList.toggle("done", ok);
+  $("s2d").textContent =
+      (swatch && d) ? "色板 + 文字描述"
+    : swatch        ? "已選色板"
+    : d             ? "已輸入文字描述"
+    : "文字描述、色板圖片，至少給一項";
+  refreshGo();
 }
 
 // ============================================================
 // STEP 3 — 生成
 // ============================================================
 function refreshGo(){
-  var ok = !!(photo && swatch && maskHasPixels());
-  $("go").disabled = !ok;
-  $("go").textContent = !photo   ? "請先上傳現況照片"
-                      : !maskHasPixels() ? "請在照片上塗抹要模擬的範圍"
-                      : !swatch  ? "請上傳木皮色板"
+  var hasTarget = !!(swatch || descText());
+  var hasMask   = maskHasPixels();
+  $("go").disabled = !(photo && hasMask && hasTarget);
+  $("go").textContent = !photo     ? "請先上傳現況照片"
+                      : !hasMask   ? "請在照片上塗抹要模擬的範圍"
+                      : !hasTarget ? "請輸入文字描述或上傳色板"
                       : "開始模擬";
 }
 
@@ -584,13 +668,23 @@ function buildMarked(){
   return c;
 }
 
-function buildPrompt(){
-  var desc = $("desc").value.trim();
+function buildPrompt(hasSwatch){
+  var desc = descText();
   var part = $("part").value.trim();
+
+  var target;
+  if(hasSwatch && desc){
+    target = "換成【圖3 木皮樣板】的顏色與紋理，並同時滿足這個需求：" + desc;
+  }else if(hasSwatch){
+    target = "換成【圖3 木皮樣板】的顏色與紋理";
+  }else{
+    target = "換成以下描述的樣子：" + desc;
+  }
+
   var lines = [
     "你是室內裝修的照片級視覺化工具。請以【圖1 現況照片】為基底，輸出一張同尺寸、同視角、同構圖的寫實照片。",
     "",
-    "任務：只把【圖2 標記圖】中洋紅色覆蓋到的區域" + (part ? "（該區域是：" + part + "）" : "") + "，其材質換成【圖3 木皮樣板】的顏色與紋理。",
+    "任務：只把【圖2 標記圖】中洋紅色覆蓋到的區域" + (part ? "（該區域是：" + part + "）" : "") + "，其材質" + target + "。",
     "",
     "必須遵守：",
     "1. 完整保留原照片的光影、明暗漸層、陰影、反光位置與強度，換材質後仍要符合現場光線。",
@@ -598,10 +692,10 @@ function buildPrompt(){
     "3. 木紋方向順著原本板材的長邊延伸，紋理比例符合實際尺度。",
     "4. 標記區域以外的所有內容（牆面、地板、天花、家具、窗戶、燈具、人物）必須與原圖完全一致，不得更動。",
     "5. 輸出畫面中不可出現洋紅色標記本身。",
-    "6. 不要加入文字、浮水印、邊框或前後對比拼接。"
+    "6. 不要加入文字、浮水印、邊框或前後對比拼接。",
+    "",
+    "輸出：僅一張寫實的模擬照片。"
   ];
-  if(desc) lines.push("7. 材質補充需求：" + desc + "。");
-  lines.push("", "輸出：僅一張寫實的模擬照片。");
   return lines.join("\n");
 }
 
@@ -618,19 +712,20 @@ async function generate(){
     var basePart   = canvasToParts(photo.canvas, 0.94);
     var markedPart = canvasToParts(buildMarked(), 0.94);
 
+    var parts = [
+      { text: "【圖1】現況照片：" },
+      { inline_data: { mime_type: basePart.mime, data: basePart.b64 } },
+      { text: "【圖2】標記圖，洋紅色覆蓋處＝要更換材質的範圍：" },
+      { inline_data: { mime_type: markedPart.mime, data: markedPart.b64 } }
+    ];
+    if(swatch){
+      parts.push({ text: "【圖3】目標木皮樣板：" });
+      parts.push({ inline_data: { mime_type: swatch.mime, data: swatch.b64 } });
+    }
+    parts.push({ text: buildPrompt(!!swatch) });
+
     var body = {
-      contents: [{
-        role: "user",
-        parts: [
-          { text: "【圖1】現況照片：" },
-          { inline_data: { mime_type: basePart.mime, data: basePart.b64 } },
-          { text: "【圖2】標記圖，洋紅色覆蓋處＝要更換材質的範圍：" },
-          { inline_data: { mime_type: markedPart.mime, data: markedPart.b64 } },
-          { text: "【圖3】目標木皮樣板：" },
-          { inline_data: { mime_type: swatch.mime, data: swatch.b64 } },
-          { text: buildPrompt() }
-        ]
-      }],
+      contents: [{ role: "user", parts: parts }],
       generationConfig: { responseModalities: ["IMAGE"] }
     };
 
@@ -801,7 +896,7 @@ bindDrop("d-swatch", "f-swatch", loadSwatch);
 $("sw-prev").onclick = function(){ $("f-swatch").click(); };
 paintKeyState();
 onBrush();
-refreshGo();
+syncStep2();
 </script>
 
 </body>
