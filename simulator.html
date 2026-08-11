@@ -497,7 +497,7 @@ var MATERIALS = [
 // ============================================================
 // 狀態
 // ============================================================
-var BUILD      = "08/12 02:16";
+var BUILD      = "08/12 02:26";
 var MAX_EDGE   = 1536;
 var API_KEY    = localStorage.getItem("gemini_api_key") || "";
 
@@ -933,40 +933,11 @@ async function nextInQueue(){
   var text = (row.text || "").trim() || "換成這張參考圖的材質";
   rowImg = row.img || null;
 
-  // 自己圈好範圍時直接生成，不用再問 AI 要改哪裡
-  if(hasMask()){
-    pending = { text: text, area: "", material: text, regions: null };
-    await runGenerate();
-    return;
-  }
-
-  busy = true; refreshBar();
-  working("正在理解需求並找出範圍…" + qLabel());
-  try{
-    var r = await understand(text);
-    if(!r.regions.length){
-      // 找不到明確範圍 -> 直接整張交給模型判斷
-      pending = { text: text, area: r.area, material: r.material, regions: null };
-      setState("找不到明確的範圍，這次會讓 AI 自己判斷要改哪裡。" +
-        '<div class="confirm-r">' +
-          '<button class="cbtn" onclick="runGenerate()">直接開始模擬</button>' +
-          '<button class="cbtn alt" onclick="cancelPending();toggleAdv()">我自己圈</button>' +
-        "</div>", "ask");
-    }else{
-      pending = { text: text, area: r.area, material: r.material, regions: r.regions };
-      redraw();
-      if(qTotal > 1){
-        busy = false;              // 多條件時不逐一確認，直接接著跑
-        await runGenerate();
-        return;
-      }
-      showConfirm();
-    }
-  }catch(e){
-    setState(errText(e), "err");
-  }finally{
-    busy = false; refreshBar();
-  }
+  // 直接交給生圖模型。它本來就看得懂「櫃體門片」是哪裡，
+  // 不需要我們先另外叫一個模型去框範圍再教它。
+  // 只有在使用者自己用進階工具圈了範圍時，才附上標記圖並鎖住其餘區域。
+  pending = { text: text, area: "", material: text, regions: null };
+  await runGenerate();
 }
 
 function showConfirm(){
@@ -1162,14 +1133,18 @@ function buildPrompt(withMask){
   }
   var area = pending.area;
   var target = withMask
-    ? "【圖2 標記圖】中洋紅色覆蓋到的區域" + (area ? "（該區域是：" + area + "）" : "")
-    : "照片中「" + (area || pending.text) + "」的部分（請自行判斷完整範圍與邊界）";
+    ? "【圖2 標記圖】中洋紅色覆蓋到的區域"
+    : "使用者指定的部位";
 
   return [
     "你是室內裝修的照片級視覺化工具。請以【圖1 現況照片】為基底，輸出一張同尺寸、同視角、同構圖的寫實照片。",
     "",
-    "使用者的原話：「" + pending.text + "」",
-    "任務：只把" + target + "改成：" + want + "。",
+    "使用者的要求：「" + pending.text + "」",
+    "",
+    "任務：依照上面這句話修改" + (withMask ? "【圖2 標記圖】中洋紅色覆蓋到的區域" : "照片中對應的部位") +
+      "。你要自己判斷他講的是畫面中的哪個東西、範圍到哪裡，" +
+      "只改那個部位，其餘完全保持原樣。" +
+      (want && want !== pending.text ? "\n材質條件：" + want + "。" : ""),
     "",
     "必須遵守：",
     "1. 完整保留原照片的光影、明暗漸層、陰影、反光與強度，換材質後仍要符合現場光線。",
