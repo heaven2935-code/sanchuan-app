@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>三川工方｜施工前後模擬</title>
+<style>
+:root{
+  --bg:#0D1117; --sb:#131920; --card:#1A2230; --card2:#1E2840;
+  --border:#243040; --border2:#2E3D52;
+  --gold:#C9A84C; --gold2:#E8C97A; --gold-bg:rgba(201,168,76,0.08);
+  --text:#E8EDF5; --muted:#4A5E78; --muted2:#6A7E98;
+  --green:#4AB87A; --red:#D05050; --blue:#4A8CD0;
+  --font:'PingFang TC','Noto Sans TC','Helvetica Neue',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6}
+
+.wrap{max-width:820px;margin:0 auto;padding:0 16px 64px}
+
+/* header */
+.hd{position:sticky;top:0;z-index:50;background:rgba(13,17,23,0.92);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);margin:0 -16px 20px;padding:14px 16px;
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hd-t{font-size:15px;font-weight:800;color:var(--gold);letter-spacing:1px}
+.hd-s{font-size:10px;color:var(--muted2);letter-spacing:.5px}
+.hd-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+.keybtn{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border2);
+        border-radius:8px;padding:7px 11px;cursor:pointer;color:var(--text);font-size:12px;font-family:var(--font)}
+.keybtn:hover{border-color:var(--gold)}
+.kdot{width:7px;height:7px;border-radius:50%;background:#555;flex-shrink:0}
+
+select,input[type=text]{background:var(--card);border:1px solid var(--border2);border-radius:8px;
+        color:var(--text);font-family:var(--font);font-size:12px;padding:7px 10px;outline:none}
+select:focus,input[type=text]:focus{border-color:var(--gold)}
+
+/* step card */
+.step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+.step-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.step-n{width:24px;height:24px;border-radius:7px;background:var(--gold-bg);border:1px solid var(--gold);
+        color:var(--gold);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-t{font-size:14px;font-weight:700}
+.step-d{font-size:11px;color:var(--muted2);margin-left:auto;text-align:right}
+.step.done .step-n{background:var(--green);border-color:var(--green);color:#0D1117}
+
+/* drop zone */
+.drop{border:1.5px dashed var(--border2);border-radius:12px;padding:26px 16px;text-align:center;
+      cursor:pointer;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--gold);background:var(--gold-bg)}
+.drop-i{font-size:26px;margin-bottom:6px;opacity:.7}
+.drop-t{font-size:13px;font-weight:600}
+.drop-s{font-size:11px;color:var(--muted2);margin-top:3px}
+
+/* canvas stage */
+.stage{position:relative;border-radius:12px;overflow:hidden;background:#000;border:1px solid var(--border2);
+       line-height:0;touch-action:none}
+.stage canvas{width:100%;height:auto;display:block;cursor:crosshair}
+
+/* toolbar */
+.tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tbtn{display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border2);
+      border-radius:8px;padding:8px 12px;cursor:pointer;color:var(--text);font-size:12px;
+      font-family:var(--font);font-weight:600;transition:all .15s}
+.tbtn:hover{border-color:var(--gold2)}
+.tbtn.on{background:var(--gold);border-color:var(--gold);color:#0D1117}
+.tbtn:disabled{opacity:.35;cursor:not-allowed}
+.tsep{width:1px;height:22px;background:var(--border2)}
+.brush{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--border2);
+       border-radius:8px;padding:6px 12px;flex:1;min-width:180px}
+.brush label{font-size:11px;color:var(--muted2);white-space:nowrap}
+.brush input[type=range]{flex:1;accent-color:var(--gold);min-width:60px}
+.brush .bv{font-size:11px;color:var(--gold);min-width:30px;text-align:right;font-variant-numeric:tabular-nums}
+
+.hint{background:var(--gold-bg);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;
+      padding:9px 12px;font-size:11.5px;color:var(--gold2);margin-top:12px;line-height:1.65}
+
+/* swatch */
+.sw-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.sw-prev{width:104px;height:104px;border-radius:10px;border:1px solid var(--border2);
+         object-fit:cover;flex-shrink:0;background:var(--card2)}
+.sw-side{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px}
+.fld label{display:block;font-size:11px;color:var(--muted2);margin-bottom:4px}
+.fld input[type=text]{width:100%}
+.opt{font-size:10px;color:var(--muted);font-weight:400}
+.note{font-size:11.5px;color:var(--muted2);line-height:1.7}
+
+textarea{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:9px;
+         color:var(--text);font-family:var(--font);font-size:13px;padding:11px;outline:none;
+         resize:vertical;min-height:84px;line-height:1.65}
+textarea:focus{border-color:var(--gold)}
+textarea::placeholder{color:var(--muted)}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.chip-g{font-size:10px;color:var(--muted);letter-spacing:1px;margin-right:2px;flex-shrink:0}
+.chip{background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:5px 11px;
+      cursor:pointer;color:var(--muted2);font-size:11.5px;font-family:var(--font);transition:all .15s}
+.chip:hover{border-color:var(--gold);color:var(--gold2)}
+
+/* go */
+.go{width:100%;background:var(--gold);border:none;border-radius:11px;padding:15px;cursor:pointer;
+    color:#0D1117;font-size:15px;font-weight:800;font-family:var(--font);letter-spacing:1px;transition:all .15s}
+.go:hover:not(:disabled){background:var(--gold2)}
+.go:disabled{opacity:.4;cursor:not-allowed}
+.go.busy{opacity:.7;cursor:wait}
+
+/* compare */
+.cmp{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--border2);
+     background:#000;line-height:0;touch-action:none;user-select:none}
+.cmp img{width:100%;height:auto;display:block}
+.cmp .after{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.cmp-bar{position:absolute;top:0;bottom:0;width:2px;background:var(--gold);pointer-events:none;
+         box-shadow:0 0 10px rgba(201,168,76,.7)}
+.cmp-knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;
+          border-radius:50%;background:var(--gold);border:2px solid #0D1117;display:flex;
+          align-items:center;justify-content:center;color:#0D1117;font-size:13px;font-weight:800}
+.cmp-tag{position:absolute;top:10px;padding:3px 9px;border-radius:6px;background:rgba(13,17,23,.8);
+         font-size:10px;font-weight:700;letter-spacing:1px;line-height:1.8}
+.cmp-tag.l{left:10px;color:var(--muted2)}
+.cmp-tag.r{right:10px;color:var(--gold)}
+
+.opts{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.chk{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted2);cursor:pointer}
+.chk input{accent-color:var(--gold);width:15px;height:15px}
+
+/* status */
+.stat{display:flex;align-items:center;gap:9px;padding:12px;border-radius:10px;
+      background:var(--card2);font-size:12.5px;margin-top:12px}
+.stat.err{background:rgba(208,80,80,.1);color:#F0A0A0}
+.spin{width:15px;height:15px;border:2px solid var(--border2);border-top-color:var(--gold);
+      border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200}
+.mo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:201;width:min(420px,92vw);
+    background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:22px}
+.mo-t{font-size:15px;font-weight:800;color:var(--gold);margin-bottom:8px}
+.mo-d{font-size:12px;color:var(--muted2);margin-bottom:14px;line-height:1.7}
+.mo input{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:9px;
+          color:var(--text);font-family:var(--font);font-size:13px;padding:11px;outline:none}
+.mo input:focus{border-color:var(--gold)}
+.mo-r{display:flex;gap:9px;margin-top:14px}
+.mo-r button{flex:1;border-radius:9px;padding:11px;cursor:pointer;font-family:var(--font);
+             font-size:13px;font-weight:700;border:1px solid var(--border2)}
+.mo-c{background:transparent;color:var(--muted2)}
+.mo-s{background:var(--gold);color:#0D1117;border-color:var(--gold)}
+
+.hide{display:none !important}
+@media(max-width:520px){
+  .step{padding:13px}
+  .tbtn{padding:9px 11px}
+  .hd-s{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hd">
+    <div>
+      <div class="hd-t">三川工方</div>
+      <div class="hd-s">施工前後模擬 · Material Simulator</div>
+    </div>
+    <div class="hd-r">
+      <select id="model" title="生成模型">
+        <option value="gemini-3-pro-image-preview">Nano Banana Pro（畫質最好）</option>
+        <option value="gemini-3.1-flash-image-preview" selected>Nano Banana 2（快 · 便宜）</option>
+        <option value="gemini-2.5-flash-image">Nano Banana（舊版）</option>
+      </select>
+      <button class="keybtn" onclick="showKey()">
+        <span class="kdot" id="kdot"></span><span id="klabel">設定金鑰</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="step" id="s1">
+    <div class="step-h">
+      <div class="step-n">1</div>
+      <div class="step-t">上傳現況照片</div>
+      <div class="step-d" id="s1d">尚未上傳</div>
+    </div>
+    <input type="file" id="f-photo" accept="image/*" class="hide">
+    <div class="drop" id="d-photo">
+      <div class="drop-i">📷</div>
+      <div class="drop-t">點擊或拖曳現況照片</div>
+      <div class="drop-s">工地現場照 · 建議正對牆面拍攝、光線平均</div>
+    </div>
+    <div class="hide" id="photo-box">
+      <div class="stage"><canvas id="cv"></canvas></div>
+
+      <div class="tools">
+        <button class="tbtn on" id="t-paint" onclick="setMode('paint')">🖌 塗抹選取</button>
+        <button class="tbtn" id="t-erase" onclick="setMode('erase')">🧽 擦除</button>
+        <div class="tsep"></div>
+        <button class="tbtn" id="t-undo" onclick="undo()" disabled>↶ 復原</button>
+        <button class="tbtn" onclick="clearMask()">✕ 清除</button>
+        <button class="tbtn" onclick="selectAll()">▣ 全選</button>
+        <div class="tsep"></div>
+        <button class="tbtn" onclick="resetPhoto()">↺ 換照片</button>
+      </div>
+
+      <div class="tools">
+        <div class="brush">
+          <label>筆刷粗細</label>
+          <input type="range" id="bsize" min="8" max="160" value="48" oninput="onBrush()">
+          <span class="bv" id="bval">48</span>
+        </div>
+      </div>
+
+      <div class="hint">
+        用手指或滑鼠<b>直接在照片上塗抹</b>要更換材質的區域（例如櫃體門片、牆板）。塗到的地方會顯示金色。塗過頭就切「擦除」修掉，只有<b>金色範圍</b>會被改色，其餘完全保留原狀。
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="step" id="s2">
+    <div class="step-h">
+      <div class="step-n">2</div>
+      <div class="step-t">描述想要的樣子</div>
+      <div class="step-d" id="s2d">文字描述、色板圖片，至少給一項</div>
+    </div>
+
+    <div class="fld" style="margin-bottom:14px">
+      <label>想要的效果（文字描述）</label>
+      <textarea id="desc" oninput="onDesc()"
+        placeholder="例：換成淺色橡木，霧面不要反光，直紋垂直走向，顏色比原本淺兩階，整體要像北歐風的系統櫃"></textarea>
+      <div class="chips">
+        <span class="chip-g">木種</span>
+        <button class="chip" onclick="addChip('淺色橡木')">淺色橡木</button>
+        <button class="chip" onclick="addChip('白橡木')">白橡木</button>
+        <button class="chip" onclick="addChip('深胡桃木')">深胡桃木</button>
+        <button class="chip" onclick="addChip('柚木')">柚木</button>
+        <button class="chip" onclick="addChip('梧桐木')">梧桐木</button>
+        <button class="chip" onclick="addChip('黑檀木')">黑檀木</button>
+        <button class="chip" onclick="addChip('梣木')">梣木</button>
+      </div>
+      <div class="chips">
+        <span class="chip-g">質感</span>
+        <button class="chip" onclick="addChip('霧面')">霧面</button>
+        <button class="chip" onclick="addChip('半霧面')">半霧面</button>
+        <button class="chip" onclick="addChip('鋼刷紋')">鋼刷紋</button>
+        <button class="chip" onclick="addChip('直紋')">直紋</button>
+        <button class="chip" onclick="addChip('山形紋')">山形紋</button>
+        <button class="chip" onclick="addChip('木紋垂直走向')">木紋垂直</button>
+        <button class="chip" onclick="addChip('木紋水平走向')">木紋水平</button>
+      </div>
+      <div class="chips">
+        <span class="chip-g">深淺</span>
+        <button class="chip" onclick="addChip('顏色再淺一階')">再淺一階</button>
+        <button class="chip" onclick="addChip('顏色再深一階')">再深一階</button>
+        <button class="chip" onclick="addChip('偏暖色調')">偏暖</button>
+        <button class="chip" onclick="addChip('偏冷色調')">偏冷</button>
+      </div>
+    </div>
+
+    <div class="sw-row">
+      <input type="file" id="f-swatch" accept="image/*" class="hide">
+      <img class="sw-prev hide" id="sw-prev" alt="色板預覽">
+      <div class="drop" id="d-swatch" style="width:104px;height:104px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+        <div class="drop-i" style="margin:0">🪵</div>
+        <div class="drop-s" style="margin-top:2px">選色板</div>
+      </div>
+      <div class="sw-side">
+        <div class="fld">
+          <label>木皮色板圖片 <span class="opt">選填</span></label>
+          <div class="note">左邊點一下上傳實際的木皮樣板照片。有色板時 AI 會直接抓它的顏色與紋理，再套用你的文字描述；沒有色板就純粹依文字生成。</div>
+          <button class="tbtn hide" id="sw-clear" onclick="clearSwatch()" style="margin-top:8px">✕ 移除色板</button>
+        </div>
+        <div class="fld">
+          <label>指定部位 <span class="opt">選填，講越清楚越準</span></label>
+          <input type="text" id="part" placeholder="例：電視牆造型木作、系統櫃門片">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="step" id="s3">
+    <div class="step-h">
+      <div class="step-n">3</div>
+      <div class="step-t">生成模擬圖</div>
+    </div>
+    <button class="go" id="go" onclick="generate()" disabled>開始模擬</button>
+    <div class="opts">
+      <label class="chk">
+        <input type="checkbox" id="lock" checked>
+        <span>鎖定未選取區域（保證照片其他地方一個像素都不變）</span>
+      </label>
+    </div>
+    <div id="status"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="step hide" id="s4">
+    <div class="step-h">
+      <div class="step-n">✓</div>
+      <div class="step-t">前後對比</div>
+      <div class="step-d">拖曳中間滑桿比較</div>
+    </div>
+    <div class="cmp" id="cmp">
+      <img id="im-before" alt="施工前">
+      <img id="im-after" class="after" alt="模擬後" style="clip-path:inset(0 0 0 50%)">
+      <div class="cmp-tag l">施工前</div>
+      <div class="cmp-tag r">模擬後</div>
+      <div class="cmp-bar" id="cbar" style="left:50%"><div class="cmp-knob">⇄</div></div>
+    </div>
+    <div class="tools">
+      <button class="tbtn" onclick="download()">⤓ 下載模擬圖</button>
+      <button class="tbtn" onclick="generate()">↻ 重新生成</button>
+      <button class="tbtn" onclick="document.getElementById('s1').scrollIntoView({behavior:'smooth'})">✎ 調整選取範圍</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+// ============================================================
+// 狀態
+// ============================================================
+var MAX_EDGE = 1536;          // 工作解析度上限（省流量 / 省記憶體）
+var API_KEY  = localStorage.getItem("gemini_api_key") || "";
+
+var photo   = null;   // {canvas, w, h}
+var mask    = null;   // 遮罩 canvas（白色不透明 = 選取）
+var swatch  = null;   // {dataUrl, mime, b64}
+var result  = null;   // 合成後的 canvas
+var cv, ctx;          // 顯示用
+var tintC, tintX;     // 遮罩上色暫存
+
+var mode = "paint";
+var brush = 48;
+var drawing = false;
+var lastPt = null;
+var undoStack = [];
+
+// ============================================================
+// 工具
+// ============================================================
+function $(id){ return document.getElementById(id); }
+
+function mkCanvas(w,h){
+  var c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  return c;
+}
+
+function setStatus(html, kind){
+  var el = $("status");
+  if(!html){ el.innerHTML = ""; return; }
+  el.innerHTML = '<div class="stat' + (kind === "err" ? " err" : "") + '">' + html + "</div>";
+}
+
+function fileToImage(file){
+  return new Promise(function(resolve, reject){
+    var fr = new FileReader();
+    fr.onload = function(){
+      var img = new Image();
+      img.onload  = function(){ resolve({ img: img, dataUrl: fr.result }); };
+      img.onerror = function(){ reject(new Error("圖片讀取失敗")); };
+      img.src = fr.result;
+    };
+    fr.onerror = function(){ reject(new Error("檔案讀取失敗")); };
+    fr.readAsDataURL(file);
+  });
+}
+
+function canvasToParts(canvas, quality){
+  var url = canvas.toDataURL("image/jpeg", quality || 0.92);
+  return { mime: "image/jpeg", b64: url.split(",")[1] };
+}
+
+// ============================================================
+// 拖放 / 選檔
+// ============================================================
+function bindDrop(dropId, inputId, handler){
+  var drop  = $(dropId);
+  var input = $(inputId);
+  drop.onclick = function(){ input.click(); };
+  input.onchange = function(){ if(input.files[0]) handler(input.files[0]); input.value = ""; };
+  ["dragenter","dragover"].forEach(function(ev){
+    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add("over"); });
+  });
+  ["dragleave","drop"].forEach(function(ev){
+    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove("over"); });
+  });
+  drop.addEventListener("drop", function(e){
+    var f = e.dataTransfer.files[0];
+    if(f && f.type.indexOf("image/") === 0) handler(f);
+  });
+}
+
+// ============================================================
+// STEP 1 — 現況照片 + 遮罩畫布
+// ============================================================
+async function loadPhoto(file){
+  try{
+    var r = await fileToImage(file);
+    var img = r.img;
+
+    // 等比縮到工作解析度
+    var scale = Math.min(1, MAX_EDGE / Math.max(img.width, img.height));
+    var w = Math.round(img.width  * scale);
+    var h = Math.round(img.height * scale);
+
+    var base = mkCanvas(w, h);
+    base.getContext("2d").drawImage(img, 0, 0, w, h);
+    photo = { canvas: base, w: w, h: h };
+
+    mask  = mkCanvas(w, h);            // 全透明 = 未選取
+    tintC = mkCanvas(w, h);
+    tintX = tintC.getContext("2d");
+    undoStack = [];
+
+    cv = $("cv"); cv.width = w; cv.height = h;
+    ctx = cv.getContext("2d");
+    bindCanvas();
+    redraw();
+
+    $("d-photo").classList.add("hide");
+    $("photo-box").classList.remove("hide");
+    $("s1").classList.add("done");
+    $("s1d").textContent = w + " × " + h;
+    refreshGo();
+  }catch(e){
+    setStatus("照片載入失敗：" + e.message, "err");
+  }
+}
+
+function resetPhoto(){
+  photo = null; mask = null; result = null;
+  $("d-photo").classList.remove("hide");
+  $("photo-box").classList.add("hide");
+  $("s1").classList.remove("done");
+  $("s1d").textContent = "尚未上傳";
+  $("s4").classList.add("hide");
+  setStatus("");
+  refreshGo();
+}
+
+// 畫面重繪：底圖 + 金色遮罩
+function redraw(){
+  if(!photo) return;
+  ctx.clearRect(0, 0, photo.w, photo.h);
+  ctx.drawImage(photo.canvas, 0, 0);
+
+  tintX.clearRect(0, 0, photo.w, photo.h);
+  tintX.drawImage(mask, 0, 0);
+  tintX.globalCompositeOperation = "source-in";
+  tintX.fillStyle = "#C9A84C";
+  tintX.fillRect(0, 0, photo.w, photo.h);
+  tintX.globalCompositeOperation = "source-over";
+
+  ctx.globalAlpha = 0.45;
+  ctx.drawImage(tintC, 0, 0);
+  ctx.globalAlpha = 1;
+}
+
+// ---- 筆刷 ----
+function setMode(m){
+  mode = m;
+  $("t-paint").classList.toggle("on", m === "paint");
+  $("t-erase").classList.toggle("on", m === "erase");
+}
+
+function onBrush(){
+  brush = parseInt($("bsize").value, 10);
+  $("bval").textContent = brush;
+}
+
+function pushUndo(){
+  var snap = mkCanvas(photo.w, photo.h);
+  snap.getContext("2d").drawImage(mask, 0, 0);
+  undoStack.push(snap);
+  if(undoStack.length > 20) undoStack.shift();
+  $("t-undo").disabled = false;
+}
+
+function undo(){
+  if(!undoStack.length) return;
+  var snap = undoStack.pop();
+  var mx = mask.getContext("2d");
+  mx.clearRect(0, 0, photo.w, photo.h);
+  mx.drawImage(snap, 0, 0);
+  $("t-undo").disabled = undoStack.length === 0;
+  redraw(); refreshGo();
+}
+
+function clearMask(){
+  if(!photo) return;
+  pushUndo();
+  mask.getContext("2d").clearRect(0, 0, photo.w, photo.h);
+  redraw(); refreshGo();
+}
+
+function selectAll(){
+  if(!photo) return;
+  pushUndo();
+  var mx = mask.getContext("2d");
+  mx.globalCompositeOperation = "source-over";
+  mx.fillStyle = "#fff";
+  mx.fillRect(0, 0, photo.w, photo.h);
+  redraw(); refreshGo();
+}
+
+// 觸控 / 滑鼠座標 -> 畫布原生座標
+function toCanvasPt(e){
+  var r = cv.getBoundingClientRect();
+  return {
+    x: (e.clientX - r.left) * (photo.w / r.width),
+    y: (e.clientY - r.top)  * (photo.h / r.height)
+  };
+}
+
+function paintAt(p){
+  var mx = mask.getContext("2d");
+  mx.globalCompositeOperation = (mode === "erase") ? "destination-out" : "source-over";
+  mx.strokeStyle = "#fff";
+  mx.fillStyle   = "#fff";
+  mx.lineCap = "round";
+  mx.lineJoin = "round";
+  mx.lineWidth = brush;
+
+  if(lastPt){
+    mx.beginPath();
+    mx.moveTo(lastPt.x, lastPt.y);
+    mx.lineTo(p.x, p.y);
+    mx.stroke();
+  }else{
+    mx.beginPath();
+    mx.arc(p.x, p.y, brush / 2, 0, Math.PI * 2);
+    mx.fill();
+  }
+  mx.globalCompositeOperation = "source-over";
+  lastPt = p;
+}
+
+function bindCanvas(){
+  cv.onpointerdown = function(e){
+    e.preventDefault();
+    cv.setPointerCapture(e.pointerId);
+    pushUndo();
+    drawing = true; lastPt = null;
+    paintAt(toCanvasPt(e));
+    redraw();
+  };
+  cv.onpointermove = function(e){
+    if(!drawing) return;
+    e.preventDefault();
+    paintAt(toCanvasPt(e));
+    redraw();
+  };
+  cv.onpointerup = cv.onpointercancel = function(e){
+    if(!drawing) return;
+    drawing = false; lastPt = null;
+    cv.releasePointerCapture(e.pointerId);
+    refreshGo();
+  };
+}
+
+// 遮罩是否有內容
+function maskHasPixels(){
+  if(!mask) return false;
+  var s = 96;
+  var t = mkCanvas(s, s);
+  var tx = t.getContext("2d");
+  tx.drawImage(mask, 0, 0, s, s);
+  var d = tx.getImageData(0, 0, s, s).data;
+  for(var i = 3; i < d.length; i += 4){ if(d[i] > 12) return true; }
+  return false;
+}
+
+// ============================================================
+// STEP 2 — 色板
+// ============================================================
+async function loadSwatch(file){
+  try{
+    var r = await fileToImage(file);
+    var img = r.img;
+
+    var scale = Math.min(1, 768 / Math.max(img.width, img.height));
+    var c = mkCanvas(Math.round(img.width * scale), Math.round(img.height * scale));
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+
+    var p = canvasToParts(c, 0.95);
+    swatch = { dataUrl: r.dataUrl, mime: p.mime, b64: p.b64 };
+
+    var prev = $("sw-prev");
+    prev.src = r.dataUrl;
+    prev.classList.remove("hide");
+    $("d-swatch").classList.add("hide");
+    $("sw-clear").classList.remove("hide");
+    syncStep2();
+  }catch(e){
+    setStatus("色板載入失敗：" + e.message, "err");
+  }
+}
+
+function clearSwatch(){
+  swatch = null;
+  $("sw-prev").classList.add("hide");
+  $("sw-prev").removeAttribute("src");
+  $("d-swatch").classList.remove("hide");
+  $("sw-clear").classList.add("hide");
+  syncStep2();
+}
+
+// 快捷詞：附加到文字描述後面
+function addChip(t){
+  var el = $("desc");
+  var v = el.value.trim();
+  if(v.indexOf(t) >= 0){ el.focus(); return; }   // 已經有了就不重複加
+  el.value = v ? v + "、" + t : t;
+  onDesc();
+  el.focus();
+}
+
+function onDesc(){ syncStep2(); }
+
+function descText(){ return $("desc").value.trim(); }
+
+function syncStep2(){
+  var d = descText();
+  var ok = !!(swatch || d);
+  $("s2").classList.toggle("done", ok);
+  $("s2d").textContent =
+      (swatch && d) ? "色板 + 文字描述"
+    : swatch        ? "已選色板"
+    : d             ? "已輸入文字描述"
+    : "文字描述、色板圖片，至少給一項";
+  refreshGo();
+}
+
+// ============================================================
+// STEP 3 — 生成
+// ============================================================
+function refreshGo(){
+  var hasTarget = !!(swatch || descText());
+  var hasMask   = maskHasPixels();
+  $("go").disabled = !(photo && hasMask && hasTarget);
+  $("go").textContent = !photo     ? "請先上傳現況照片"
+                      : !hasMask   ? "請在照片上塗抹要模擬的範圍"
+                      : !hasTarget ? "請輸入文字描述或上傳色板"
+                      : "開始模擬";
+}
+
+// 產生「標記圖」：原圖 + 洋紅色標示選取範圍，給模型辨識範圍用
+function buildMarked(){
+  var c = mkCanvas(photo.w, photo.h);
+  var x = c.getContext("2d");
+  x.drawImage(photo.canvas, 0, 0);
+
+  var t = mkCanvas(photo.w, photo.h);
+  var tx = t.getContext("2d");
+  tx.drawImage(mask, 0, 0);
+  tx.globalCompositeOperation = "source-in";
+  tx.fillStyle = "#FF00E5";
+  tx.fillRect(0, 0, photo.w, photo.h);
+
+  x.globalAlpha = 0.55;
+  x.drawImage(t, 0, 0);
+  x.globalAlpha = 1;
+  return c;
+}
+
+function buildPrompt(hasSwatch){
+  var desc = descText();
+  var part = $("part").value.trim();
+
+  var target;
+  if(hasSwatch && desc){
+    target = "換成【圖3 木皮樣板】的顏色與紋理，並同時滿足這個需求：" + desc;
+  }else if(hasSwatch){
+    target = "換成【圖3 木皮樣板】的顏色與紋理";
+  }else{
+    target = "換成以下描述的樣子：" + desc;
+  }
+
+  var lines = [
+    "你是室內裝修的照片級視覺化工具。請以【圖1 現況照片】為基底，輸出一張同尺寸、同視角、同構圖的寫實照片。",
+    "",
+    "任務：只把【圖2 標記圖】中洋紅色覆蓋到的區域" + (part ? "（該區域是：" + part + "）" : "") + "，其材質" + target + "。",
+    "",
+    "必須遵守：",
+    "1. 完整保留原照片的光影、明暗漸層、陰影、反光位置與強度，換材質後仍要符合現場光線。",
+    "2. 保留原本的透視、板材分割線、縫隙、門片邊界與五金位置。",
+    "3. 木紋方向順著原本板材的長邊延伸，紋理比例符合實際尺度。",
+    "4. 標記區域以外的所有內容（牆面、地板、天花、家具、窗戶、燈具、人物）必須與原圖完全一致，不得更動。",
+    "5. 輸出畫面中不可出現洋紅色標記本身。",
+    "6. 不要加入文字、浮水印、邊框或前後對比拼接。",
+    "",
+    "輸出：僅一張寫實的模擬照片。"
+  ];
+  return lines.join("\n");
+}
+
+async function generate(){
+  if(!API_KEY){ showKey(); return; }
+  if($("go").disabled) return;
+
+  var btn = $("go");
+  btn.classList.add("busy");
+  btn.disabled = true;
+  setStatus('<span class="spin"></span><span>AI 模擬中，約需 10～30 秒…</span>');
+
+  try{
+    var basePart   = canvasToParts(photo.canvas, 0.94);
+    var markedPart = canvasToParts(buildMarked(), 0.94);
+
+    var parts = [
+      { text: "【圖1】現況照片：" },
+      { inline_data: { mime_type: basePart.mime, data: basePart.b64 } },
+      { text: "【圖2】標記圖，洋紅色覆蓋處＝要更換材質的範圍：" },
+      { inline_data: { mime_type: markedPart.mime, data: markedPart.b64 } }
+    ];
+    if(swatch){
+      parts.push({ text: "【圖3】目標木皮樣板：" });
+      parts.push({ inline_data: { mime_type: swatch.mime, data: swatch.b64 } });
+    }
+    parts.push({ text: buildPrompt(!!swatch) });
+
+    var body = {
+      contents: [{ role: "user", parts: parts }],
+      generationConfig: { responseModalities: ["IMAGE"] }
+    };
+
+    var model = $("model").value;
+    var res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+        body: JSON.stringify(body)
+      }
+    );
+
+    var data = await res.json();
+    if(data.error) throw new Error(data.error.message || "API 錯誤");
+
+    var parts = (data.candidates && data.candidates[0] && data.candidates[0].content &&
+                 data.candidates[0].content.parts) || [];
+    var imgPart = null;
+    for(var i = 0; i < parts.length; i++){
+      var p = parts[i].inlineData || parts[i].inline_data;
+      if(p && p.data){ imgPart = p; break; }
+    }
+    if(!imgPart){
+      var why = (data.candidates && data.candidates[0] && data.candidates[0].finishReason) || "";
+      throw new Error("模型沒有回傳圖片" + (why ? "（" + why + "）" : "") + "，請調整選取範圍或改用其他模型重試。");
+    }
+
+    var mime = imgPart.mimeType || imgPart.mime_type || "image/png";
+    var aiImg = await new Promise(function(resolve, reject){
+      var im = new Image();
+      im.onload  = function(){ resolve(im); };
+      im.onerror = function(){ reject(new Error("回傳圖片解析失敗")); };
+      im.src = "data:" + mime + ";base64," + imgPart.data;
+    });
+
+    result = $("lock").checked ? compositeWithMask(aiImg) : fitToBase(aiImg);
+    showResult();
+    setStatus("");
+  }catch(e){
+    setStatus("生成失敗：" + e.message, "err");
+  }finally{
+    btn.classList.remove("busy");
+    refreshGo();
+  }
+}
+
+// 把 AI 圖縮放對齊原圖尺寸
+function fitToBase(aiImg){
+  var c = mkCanvas(photo.w, photo.h);
+  c.getContext("2d").drawImage(aiImg, 0, 0, photo.w, photo.h);
+  return c;
+}
+
+// 只取遮罩內的 AI 像素疊回原圖（羽化邊緣），確保其餘完全不變
+function compositeWithMask(aiImg){
+  var out = mkCanvas(photo.w, photo.h);
+  var ox  = out.getContext("2d");
+  ox.drawImage(photo.canvas, 0, 0);
+
+  var layer = mkCanvas(photo.w, photo.h);
+  var lx = layer.getContext("2d");
+  lx.drawImage(aiImg, 0, 0, photo.w, photo.h);
+
+  // 羽化遮罩，讓接縫自然
+  var soft = mkCanvas(photo.w, photo.h);
+  var sx = soft.getContext("2d");
+  var r = Math.max(1.5, Math.min(photo.w, photo.h) * 0.006);
+  sx.filter = "blur(" + r.toFixed(1) + "px)";
+  sx.drawImage(mask, 0, 0);
+  sx.filter = "none";
+
+  lx.globalCompositeOperation = "destination-in";
+  lx.drawImage(soft, 0, 0);
+
+  ox.drawImage(layer, 0, 0);
+  return out;
+}
+
+// ============================================================
+// 結果 / 對比滑桿
+// ============================================================
+function showResult(){
+  $("im-before").src = photo.canvas.toDataURL("image/jpeg", 0.92);
+  $("im-after").src  = result.toDataURL("image/jpeg", 0.92);
+  $("s4").classList.remove("hide");
+  setSplit(50);
+  $("s4").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function setSplit(pct){
+  pct = Math.max(0, Math.min(100, pct));
+  $("im-after").style.clipPath = "inset(0 0 0 " + pct + "%)";
+  $("cbar").style.left = pct + "%";
+}
+
+(function bindCompare(){
+  var cmp = $("cmp");
+  var dragging = false;
+  function move(e){
+    var r = cmp.getBoundingClientRect();
+    setSplit(((e.clientX - r.left) / r.width) * 100);
+  }
+  cmp.addEventListener("pointerdown", function(e){
+    dragging = true; cmp.setPointerCapture(e.pointerId); move(e);
+  });
+  cmp.addEventListener("pointermove", function(e){ if(dragging) move(e); });
+  cmp.addEventListener("pointerup", function(e){
+    dragging = false; cmp.releasePointerCapture(e.pointerId);
+  });
+})();
+
+function download(){
+  if(!result) return;
+  var a = document.createElement("a");
+  a.download = "施工模擬_" + new Date().toISOString().slice(0, 10) + ".jpg";
+  a.href = result.toDataURL("image/jpeg", 0.95);
+  a.click();
+}
+
+// ============================================================
+// API Key
+// ============================================================
+function showKey(){
+  if($("keymo")) return;
+  var d = document.createElement("div");
+  d.id = "keymo";
+  d.innerHTML =
+    '<div class="ov" onclick="closeKey()"></div>' +
+    '<div class="mo">' +
+      '<div class="mo-t">設定 Google Gemini API 金鑰</div>' +
+      '<div class="mo-d">到 <b>aistudio.google.com/apikey</b> 免費申請，貼進來即可使用。' +
+      '金鑰只存在這台裝置的瀏覽器（localStorage），不會上傳到任何伺服器。</div>' +
+      '<input id="keyin" type="password" placeholder="AIza..." autocomplete="off" value="' + API_KEY + '">' +
+      '<div class="mo-r">' +
+        '<button class="mo-c" onclick="closeKey()">取消</button>' +
+        '<button class="mo-s" onclick="saveKey()">儲存啟用</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(d);
+  $("keyin").focus();
+}
+
+function closeKey(){
+  var m = $("keymo");
+  if(m) m.remove();
+}
+
+function saveKey(){
+  var v = $("keyin").value.trim();
+  API_KEY = v;
+  if(v) localStorage.setItem("gemini_api_key", v);
+  else   localStorage.removeItem("gemini_api_key");
+  closeKey();
+  paintKeyState();
+}
+
+function paintKeyState(){
+  $("kdot").style.background = API_KEY ? "#4AB87A" : "#555";
+  $("klabel").textContent    = API_KEY ? "金鑰已設定" : "設定金鑰";
+}
+
+// ============================================================
+// 啟動
+// ============================================================
+bindDrop("d-photo",  "f-photo",  loadPhoto);
+bindDrop("d-swatch", "f-swatch", loadSwatch);
+$("sw-prev").onclick = function(){ $("f-swatch").click(); };
+paintKeyState();
+onBrush();
+syncStep2();
+</script>
+
+</body>
+</html>
