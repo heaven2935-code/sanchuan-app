@@ -77,7 +77,7 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .send{width:46px;height:46px;border-radius:12px;background:var(--gold);border:none;cursor:pointer;
       color:#0D1117;font-size:19px;font-weight:800;flex-shrink:0;font-family:var(--font)}
 .send:disabled{opacity:.35;cursor:not-allowed}
-.qrow{display:flex;gap:6px;overflow-x:auto;margin-bottom:9px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.qrow{display:flex;gap:6px;overflow-x:auto;margin-bottom:9px;padding-right:60px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .qrow::-webkit-scrollbar{display:none}
 .q{flex-shrink:0;background:var(--card2);border:1px solid var(--border2);border-radius:15px;
    padding:5px 12px;cursor:pointer;color:var(--muted2);font-size:11.5px;font-family:var(--font);white-space:nowrap}
@@ -201,7 +201,7 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .libup:hover{border-color:var(--gold);color:var(--gold2)}
 
 /* 已選色板 chip */
-.selsw{display:flex;align-items:center;gap:8px;background:var(--gold-bg);border:1px solid var(--gold);
+.selsw{display:flex;align-items:center;gap:8px;padding-right:64px;background:var(--gold-bg);border:1px solid var(--gold);
        border-radius:9px;padding:6px 9px;margin-bottom:9px}
 .selsw img{width:30px;height:30px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid var(--border2)}
 .selsw .t{flex:1;min-width:0;font-size:11.5px;line-height:1.4}
@@ -245,12 +245,12 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 
 
 /* ── 右下角圓點選單 ── */
-.fab{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);z-index:80;
+.fab{position:absolute;right:14px;bottom:calc(100% + 12px);z-index:80;
      width:54px;height:54px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;
      color:#0D1117;font-size:23px;font-weight:800;font-family:var(--font);
      box-shadow:0 5px 20px rgba(0,0,0,.55);transition:transform .2s}
 .fab.open{transform:rotate(45deg)}
-.fabmenu{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 156px);z-index:80;
+.fabmenu{position:absolute;right:14px;bottom:calc(100% + 76px);z-index:80;
          display:flex;flex-direction:column;align-items:flex-end;gap:8px}
 .fabitem{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border2);
          border-radius:24px;padding:9px 15px;cursor:pointer;color:var(--text);font-size:12.5px;
@@ -259,7 +259,7 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .fabmenu.open .fabitem{opacity:1;transform:none}
 .fabitem:hover{border-color:var(--gold)}
 .fabitem .ic{font-size:15px}
-.fabmask{position:fixed;inset:0;z-index:70;background:rgba(13,17,23,.5)}
+.fabmask{position:fixed;inset:0;z-index:55;background:rgba(13,17,23,.5)}
 
 /* ── 客戶模式（全螢幕）── */
 .client{position:fixed;inset:0;z-index:400;background:#08090C;display:flex;flex-direction:column}
@@ -378,6 +378,8 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 
 <!-- 底部輸入列 -->
 <div class="dock hide" id="dock">
+  <button class="fab" id="fab" onclick="toggleFab()">＋</button>
+  <div class="fabmenu hide" id="fabmenu"></div>
   <div class="dock-in">
     <div id="selsw-box"></div>
     <div class="qrow" id="qrow"></div>
@@ -389,10 +391,6 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
   </div>
 </div>
 
-
-<!-- 右下角圓點 -->
-<button class="fab hide" id="fab" onclick="toggleFab()">＋</button>
-<div class="fabmenu hide" id="fabmenu"></div>
 
 <!-- 客戶模式 -->
 <div class="client hide" id="client">
@@ -891,9 +889,8 @@ function askKey(e){
 
 function toggleAdv(){
   var a = $("adv");
-  var open = a.classList.toggle("hide");
-  $("advtoggle").textContent = open ? "⚙ 進階：自己圈選範圍" : "▲ 收起進階";
-  if(!open) a.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  var hidden = a.classList.toggle("hide");
+  if(!hidden) a.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 // ============================================================
@@ -1683,6 +1680,7 @@ function setLibTab(t){
 
 function renderLib(){
   var cats = $("libcats"), grid = $("libgrid");
+  if(!cats || !grid) return;   // 色板庫視窗沒開就不用畫
   if(libTab === "builtin"){
     cats.innerHTML = '<div class="cats">' + MATERIALS.map(function(g, i){
       return '<button class="cat' + (i === curCat ? " on" : "") +
@@ -1781,8 +1779,7 @@ function clearSel(){ sel = null; renderSel(); }
 
 function renderSel(){
   var box = $("selsw-box");
-  if(!sel){ box.innerHTML = ""; $("a-lib").classList.remove("on"); return; }
-  $("a-lib").classList.add("on");
+  if(!sel){ box.innerHTML = ""; return; }
   var img = sel.url
     ? '<img src="' + sel.url + '">'
     : '<span style="width:30px;height:30px;border-radius:6px;flex-shrink:0;background:' + sel.css + '"></span>';
