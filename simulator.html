@@ -18,7 +18,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 
 .wrap{max-width:820px;margin:0 auto;padding:0 16px 64px}
 
-/* ── header ── */
+/* header */
 .hd{position:sticky;top:0;z-index:50;background:rgba(13,17,23,0.94);backdrop-filter:blur(8px);
     border-bottom:1px solid var(--border);margin:0 -16px 20px;padding:14px 16px;
     display:flex;align-items:center;gap:12px;flex-wrap:wrap}
@@ -35,16 +35,16 @@ select,input[type=text]{background:var(--card);border:1px solid var(--border2);b
         color:var(--text);font-family:var(--font);font-size:12px;padding:7px 10px;outline:none}
 select:focus,input[type=text]:focus{border-color:var(--gold)}
 
-/* ── step card ── */
+/* step card */
 .step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
-.step-h{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.step-h{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
 .step-n{width:24px;height:24px;border-radius:7px;background:var(--gold-bg);border:1px solid var(--gold);
         color:var(--gold);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .step-t{font-size:14px;font-weight:700}
 .step-d{font-size:11px;color:var(--muted2);margin-left:auto;text-align:right}
 .step.done .step-n{background:var(--green);border-color:var(--green);color:#0D1117}
 
-/* ── drop zone ── */
+/* drop zone */
 .drop{border:1.5px dashed var(--border2);border-radius:12px;padding:26px 16px;text-align:center;
       cursor:pointer;transition:border-color .15s,background .15s}
 .drop:hover,.drop.over{border-color:var(--gold);background:var(--gold-bg)}
@@ -52,12 +52,30 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .drop-t{font-size:13px;font-weight:600}
 .drop-s{font-size:11px;color:var(--muted2);margin-top:3px}
 
-/* ── canvas stage ── */
+/* 模擬條件（顏色圖層） */
+.lay-wrap{background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:12px;margin-bottom:12px}
+.lay-t{font-size:12.5px;font-weight:700;color:var(--gold2);margin-bottom:9px}
+.lay-row{display:flex;gap:7px;flex-wrap:wrap}
+.lay{display:flex;align-items:center;gap:7px;background:var(--card);border:1.5px solid var(--border2);
+     border-radius:9px;padding:7px 10px;cursor:pointer;font-family:var(--font);transition:all .15s}
+.lay:hover{border-color:var(--gold2)}
+.lay.on{border-color:var(--gold);background:var(--gold-bg)}
+.lay-dot{width:14px;height:14px;border-radius:4px;flex-shrink:0;border:1px solid rgba(0,0,0,.35)}
+.lay-nm{font-size:12px;font-weight:700;color:var(--text)}
+.lay-mt{font-size:10.5px;color:var(--muted2)}
+.lay.on .lay-mt{color:var(--gold2)}
+.lay-x{color:var(--muted);font-size:14px;padding:0 2px;line-height:1}
+.lay-x:hover{color:var(--red)}
+.lay-add{background:transparent;border:1.5px dashed var(--border2);border-radius:9px;padding:7px 12px;
+         cursor:pointer;color:var(--muted2);font-size:12px;font-weight:600;font-family:var(--font)}
+.lay-add:hover{border-color:var(--gold);color:var(--gold2)}
+
+/* canvas */
 .stage{position:relative;border-radius:12px;overflow:hidden;background:#000;border:1px solid var(--border2);
        line-height:0;touch-action:none}
 .stage canvas{width:100%;height:auto;display:block;cursor:crosshair;touch-action:none}
 
-/* ── toolbar ── */
+/* toolbar */
 .tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:12px}
 .tbtn{display:flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border2);
       border-radius:8px;padding:8px 12px;cursor:pointer;color:var(--text);font-size:12px;
@@ -76,9 +94,8 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .hint{background:var(--gold-bg);border-left:2px solid var(--gold);border-radius:0 8px 8px 0;
       padding:9px 12px;font-size:11.5px;color:var(--gold2);margin-top:12px;line-height:1.65}
 
-/* ── AI 自動框選 ── */
-.autosel{background:var(--card2);border:1px solid var(--border2);border-radius:12px;
-         padding:13px;margin-bottom:14px}
+/* AI 自動框選 */
+.autosel{background:var(--card2);border:1px solid var(--border2);border-radius:12px;padding:13px;margin-bottom:12px}
 .autosel-t{font-size:12.5px;font-weight:700;color:var(--gold2);margin-bottom:8px}
 .autorow{display:flex;gap:8px;flex-wrap:wrap}
 .autorow input[type=text]{flex:1;min-width:150px}
@@ -102,7 +119,7 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .segmsg{font-size:11.5px;color:var(--muted2);margin-top:8px;line-height:1.65}
 .segmsg.err{color:#F0A0A0}
 
-/* ── 材質分類 ── */
+/* 材質分類 */
 .cats{display:flex;gap:7px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;
       scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .cats::-webkit-scrollbar{display:none}
@@ -131,7 +148,11 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
             padding:2px 5px;font-family:var(--font);flex-shrink:0}
 .picked .px:hover{color:var(--red)}
 
-/* ── swatch upload ── */
+.forlay{display:inline-flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--border2);
+        border-radius:16px;padding:4px 11px;font-size:11.5px;color:var(--muted2);margin-left:auto}
+.forlay .lay-dot{width:12px;height:12px}
+
+/* swatch upload */
 .sw-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-top:14px}
 .sw-prev{width:104px;height:104px;border-radius:10px;border:1px solid var(--border2);
          object-fit:cover;flex-shrink:0;background:var(--card2)}
@@ -147,14 +168,14 @@ textarea{width:100%;background:var(--bg);border:1px solid var(--border2);border-
 textarea:focus{border-color:var(--gold)}
 textarea::placeholder{color:var(--muted)}
 
-/* ── go ── */
+/* go */
 .go{width:100%;background:var(--gold);border:none;border-radius:11px;padding:15px;cursor:pointer;
     color:#0D1117;font-size:15px;font-weight:800;font-family:var(--font);letter-spacing:1px;transition:all .15s}
 .go:hover:not(:disabled){background:var(--gold2)}
 .go:disabled{opacity:.4;cursor:not-allowed}
 .go.busy{opacity:.7;cursor:wait}
 
-/* ── 結果 ── */
+/* 結果 */
 .vtabs{display:flex;gap:6px;margin-left:auto}
 .vt{background:var(--card2);border:1px solid var(--border2);border-radius:7px;padding:6px 12px;
     cursor:pointer;color:var(--muted2);font-size:11.5px;font-weight:600;font-family:var(--font)}
@@ -189,13 +210,12 @@ textarea::placeholder{color:var(--muted)}
       border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0}
 @keyframes sp{to{transform:rotate(360deg)}}
 
-/* ── toast ── */
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:300;
        background:var(--card2);border:1px solid var(--gold);color:var(--gold2);
        border-radius:10px;padding:11px 16px;font-size:12.5px;max-width:88vw;text-align:center;
        box-shadow:0 6px 24px rgba(0,0,0,.5)}
 
-/* ── modal ── */
+/* modal */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200}
 .mo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:201;width:min(420px,92vw);
     background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:22px}
@@ -260,10 +280,15 @@ textarea::placeholder{color:var(--muted)}
 
     <div class="hide" id="photo-box">
 
+      <div class="lay-wrap">
+        <div class="lay-t">模擬條件 — 一個顏色一種材質，可以同時做好幾種</div>
+        <div class="lay-row" id="lay-row"></div>
+      </div>
+
       <div class="autosel">
-        <div class="autosel-t">✨ 用講的圈選 — 說出部位，AI 幫你框</div>
+        <div class="autosel-t">✨ 用講的圈選 — 說出部位，AI 幫你分出邊界</div>
         <div class="autorow">
-          <input type="text" id="seg-q" placeholder="例：牆面、地板、系統櫃門片"
+          <input type="text" id="seg-q" placeholder="例：牆面、地板、門片"
                  autocomplete="off" oninput="refreshGo()" onkeydown="if(event.key==='Enter')autoSelect()">
           <button class="gobtn" id="seg-btn" onclick="autoSelect()">AI 自動框選</button>
         </div>
@@ -284,7 +309,8 @@ textarea::placeholder{color:var(--muted)}
       <div class="stage"><canvas id="cv"></canvas></div>
 
       <div class="tools">
-        <button class="tbtn on" id="t-paint"   onclick="setMode('paint')">🖌 塗抹</button>
+        <button class="tbtn on" id="t-tap"     onclick="setMode('tap')">👆 點選</button>
+        <button class="tbtn"    id="t-paint"   onclick="setMode('paint')">🖌 塗抹</button>
         <button class="tbtn"    id="t-line"    onclick="setMode('line')">📏 直線</button>
         <button class="tbtn"    id="t-rect"    onclick="setMode('rect')">▭ 方框</button>
         <button class="tbtn"    id="t-ellipse" onclick="setMode('ellipse')">◯ 圓形</button>
@@ -293,7 +319,7 @@ textarea::placeholder{color:var(--muted)}
 
       <div class="tools">
         <button class="tbtn" id="t-undo" onclick="undo()" disabled>↶ 復原</button>
-        <button class="tbtn" onclick="clearMask()">✕ 清除</button>
+        <button class="tbtn" onclick="clearMask()">✕ 清除此色</button>
         <button class="tbtn" onclick="selectAll()">▣ 全選</button>
         <div class="tsep"></div>
         <button class="tbtn" onclick="resetPhoto()">↺ 換照片</button>
@@ -315,8 +341,8 @@ textarea::placeholder{color:var(--muted)}
   <div class="step" id="s2">
     <div class="step-h">
       <div class="step-n">2</div>
-      <div class="step-t">選擇想要的材質</div>
-      <div class="step-d" id="s2d">材質、文字、色板，至少給一項</div>
+      <div class="step-t">選擇材質</div>
+      <div class="forlay" id="forlay"></div>
     </div>
 
     <div id="picked-box"></div>
@@ -465,32 +491,43 @@ var MATERIALS = [
 var MAX_EDGE = 1536;
 var API_KEY  = localStorage.getItem("gemini_api_key") || "";
 
-var photo   = null;   // {canvas, w, h}
-var mask    = null;   // 遮罩 canvas（白色不透明 = 選取）
-var swatch  = null;   // {dataUrl, mime, b64}
-var result  = null;   // 合成後的 canvas
-var cv, ctx;
-var tintC, tintX;
+// 一個顏色 = 一組模擬條件。標記色刻意選現場不會出現的螢光色。
+var LAYER_COLORS = [
+  { hex:"#FF00E5", name:"洋紅" },
+  { hex:"#00E5FF", name:"青色" },
+  { hex:"#B4FF00", name:"黃綠" },
+  { hex:"#FF7A00", name:"橘色" },
+  { hex:"#9D00FF", name:"紫色" },
+  { hex:"#00FF66", name:"亮綠" },
+  { hex:"#FF0033", name:"正紅" },
+  { hex:"#0066FF", name:"藍色" }
+];
 
-var mode = "paint";           // paint | line | rect | ellipse | erase
+var photo   = null;    // {canvas, w, h}
+var layers  = [];      // 見 newLayer()
+var actL    = 0;       // 目前編輯中的圖層
+var result  = null;
+var cv, ctx, tintC, tintX;
+
+var mode = "tap";      // tap | paint | line | rect | ellipse | erase
 var brush = 48;
-var drawing = false;
+var drawing = false, moved = false;
 var startPt = null, lastPt = null;
-var undoStack = [];
+var undoStack = [];    // [{li, canvas, regions}]
 
 var curCat = 0;
-var picked = null;            // {name, css, desc}
 
 var TOOL_HINT = {
-  paint:   "用手指或滑鼠<b>直接在照片上塗抹</b>，塗到的地方顯示金色。",
+  tap:     "直接<b>點照片上的物件</b>，AI 會自動抓出它的邊界（例如單獨一片門片）。<b>再點一次就取消</b>。",
+  paint:   "用手指或滑鼠<b>直接在照片上塗抹</b>，塗到的地方會標上目前的顏色。",
   line:    "按住起點<b>拖到終點放開</b>，會畫出一條粗線（粗細用下面的滑桿調）。",
-  rect:    "按住<b>斜拉出一個方框</b>放開，框內整塊被選起來。適合門片、牆面。",
+  rect:    "按住<b>斜拉出一個方框</b>放開，框內整塊被選起來。",
   ellipse: "按住<b>斜拉出橢圓</b>放開，圈內整塊被選起來。",
-  erase:   "在<b>已選取的金色區域</b>上塗抹，可以把多餘的部分擦掉。"
+  erase:   "在<b>已選取的區域</b>上塗抹，可以把多餘的部分擦掉。"
 };
 
 // ============================================================
-// 工具
+// 小工具
 // ============================================================
 function $(id){ return document.getElementById(id); }
 
@@ -552,8 +589,118 @@ function bindDrop(dropId, inputId, handler){
   });
 }
 
+// 遮罩上某點是否有內容
+function hitCanvas(c, p){
+  if(!c) return false;
+  var x = Math.round(p.x), y = Math.round(p.y);
+  if(x < 0 || y < 0 || x >= c.width || y >= c.height) return false;
+  return c.getContext("2d").getImageData(x, y, 1, 1).data[3] > 40;
+}
+
+function canvasCoverage(c){
+  if(!c) return 0;
+  var s = 120;
+  var t = mkCanvas(s, s);
+  var tx = t.getContext("2d");
+  tx.drawImage(c, 0, 0, s, s);
+  var d = tx.getImageData(0, 0, s, s).data;
+  var n = 0;
+  for(var i = 3; i < d.length; i += 4){ if(d[i] > 12) n++; }
+  return n / (s * s) * 100;
+}
+
 // ============================================================
-// STEP 1 — 照片 + 選取
+// 圖層（模擬條件）
+// ============================================================
+function newLayer(ci){
+  return {
+    ci: ci,
+    mask: photo ? mkCanvas(photo.w, photo.h) : null,
+    regions: [],          // AI 圈出來的區塊，可以再點一下取消
+    picked: null,         // 材質色票
+    desc: "",             // 補充需求
+    swatch: null          // 實際色板照片
+  };
+}
+
+function L(){ return layers[actL]; }
+function LC(){ return LAYER_COLORS[L().ci]; }
+function layerName(i){ return "條件 " + (i + 1); }
+
+function layerTargetName(l){
+  if(l.picked) return l.picked.name;
+  if(l.swatch) return "色板";
+  if(l.desc)   return l.desc.length > 6 ? l.desc.slice(0, 6) + "…" : l.desc;
+  return "未選材質";
+}
+
+function layerHasMask(l){ return l && l.mask && canvasCoverage(l.mask) > 0.01; }
+function anyMask(){ return layers.some(layerHasMask); }
+
+function renderLayers(){
+  var html = layers.map(function(l, i){
+    var c = LAYER_COLORS[l.ci];
+    return '<div class="lay' + (i === actL ? " on" : "") + '" onclick="setLayer(' + i + ')">' +
+             '<span class="lay-dot" style="background:' + c.hex + '"></span>' +
+             '<span class="lay-nm">' + layerName(i) + '</span>' +
+             '<span class="lay-mt">' + layerTargetName(l) + '</span>' +
+             (layers.length > 1
+               ? '<span class="lay-x" onclick="event.stopPropagation();delLayer(' + i + ')">✕</span>'
+               : "") +
+           "</div>";
+  }).join("");
+  if(layers.length < LAYER_COLORS.length){
+    html += '<button class="lay-add" onclick="addLayer()">＋ 新增條件</button>';
+  }
+  $("lay-row").innerHTML = html;
+
+  var c = LC();
+  $("forlay").innerHTML =
+    '<span class="lay-dot" style="background:' + c.hex + '"></span>套用到 ' + layerName(actL);
+}
+
+function addLayer(){
+  var used = layers.map(function(l){ return l.ci; });
+  var ci = 0;
+  for(var i = 0; i < LAYER_COLORS.length; i++){
+    if(used.indexOf(i) < 0){ ci = i; break; }
+  }
+  layers.push(newLayer(ci));
+  actL = layers.length - 1;
+  clearSeg();
+  syncAll();
+}
+
+function delLayer(i){
+  if(layers.length <= 1) return;
+  layers.splice(i, 1);
+  if(actL >= layers.length) actL = layers.length - 1;
+  undoStack = undoStack.filter(function(u){ return u.li < layers.length; });
+  $("t-undo").disabled = !undoStack.length;
+  clearSeg();
+  syncAll();
+}
+
+function setLayer(i){
+  if(i === actL) return;
+  actL = i;
+  clearSeg();
+  syncAll();
+}
+
+// 圖層切換後，把畫面與第二步的材質欄位一起同步
+function syncAll(){
+  renderLayers();
+  renderMats();
+  renderPicked();
+  renderSwatch();
+  $("desc").value = L() ? L().desc : "";
+  redraw();
+  syncStep2();
+}
+
+// ============================================================
+// STEP 1 — 照片
 // ============================================================
 async function loadPhoto(file){
   try{
@@ -568,29 +715,31 @@ async function loadPhoto(file){
     base.getContext("2d").drawImage(img, 0, 0, w, h);
     photo = { canvas: base, w: w, h: h };
 
-    mask  = mkCanvas(w, h);
-    tintC = mkCanvas(w, h);
-    tintX = tintC.getContext("2d");
+    layers = [newLayer(0)];
+    actL = 0;
     undoStack = [];
     $("t-undo").disabled = true;
+
+    tintC = mkCanvas(w, h);
+    tintX = tintC.getContext("2d");
 
     cv = $("cv"); cv.width = w; cv.height = h;
     ctx = cv.getContext("2d");
     bindCanvas();
-    redraw();
 
     $("d-photo").classList.add("hide");
     $("photo-box").classList.remove("hide");
     $("s1").classList.add("done");
     $("s1d").textContent = w + " × " + h;
-    refreshGo();
+    clearSeg();
+    syncAll();
   }catch(e){
     setStatus("照片載入失敗：" + e.message, "err");
   }
 }
 
 function resetPhoto(){
-  photo = null; mask = null; result = null;
+  photo = null; layers = []; result = null; segRegions = [];
   $("d-photo").classList.remove("hide");
   $("photo-box").classList.add("hide");
   $("s1").classList.remove("done");
@@ -600,39 +749,34 @@ function resetPhoto(){
   refreshGo();
 }
 
-// 底圖 + 金色遮罩（preview 為拖曳中的形狀）
+// 底圖 + 每個圖層各自的顏色 + 尚未套用的候選區
 function redraw(preview){
-  if(!photo) return;
+  if(!photo || !ctx) return;
   ctx.clearRect(0, 0, photo.w, photo.h);
   ctx.drawImage(photo.canvas, 0, 0);
 
-  tintX.clearRect(0, 0, photo.w, photo.h);
-  tintX.drawImage(mask, 0, 0);
-  tintX.globalCompositeOperation = "source-in";
-  tintX.fillStyle = "#C9A84C";
-  tintX.fillRect(0, 0, photo.w, photo.h);
-  tintX.globalCompositeOperation = "source-over";
+  function overlay(src, hex, alpha){
+    tintX.clearRect(0, 0, photo.w, photo.h);
+    tintX.drawImage(src, 0, 0);
+    tintX.globalCompositeOperation = "source-in";
+    tintX.fillStyle = hex;
+    tintX.fillRect(0, 0, photo.w, photo.h);
+    tintX.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(tintC, 0, 0);
+    ctx.globalAlpha = 1;
+  }
 
-  ctx.globalAlpha = 0.45;
-  ctx.drawImage(tintC, 0, 0);
-  ctx.globalAlpha = 1;
+  layers.forEach(function(l, i){
+    if(!l.mask) return;
+    overlay(l.mask, LAYER_COLORS[l.ci].hex, i === actL ? 0.5 : 0.32);
+  });
 
-  // AI 自動框選的候選範圍（尚未套用）
   if(segRegions.length){
     var fs = Math.max(13, Math.round(photo.w * 0.026));
     segRegions.forEach(function(r){
       if(!r.on) return;
-      tintX.clearRect(0, 0, photo.w, photo.h);
-      tintX.drawImage(r.canvas, 0, 0);
-      tintX.globalCompositeOperation = "source-in";
-      tintX.fillStyle = r.color;
-      tintX.fillRect(0, 0, photo.w, photo.h);
-      tintX.globalCompositeOperation = "source-over";
-
-      ctx.globalAlpha = 0.5;
-      ctx.drawImage(tintC, 0, 0);
-      ctx.globalAlpha = 1;
-
+      overlay(r.canvas, r.color, 0.5);
       ctx.font = "700 " + fs + "px sans-serif";
       var tw = ctx.measureText(r.label).width;
       var lx = Math.min(Math.max(4, r.box.x0), photo.w - tw - 16);
@@ -647,25 +791,24 @@ function redraw(preview){
   if(preview) preview(ctx);
 }
 
-// ---- 工具切換 ----
+// ---- 工具 ----
 function isBrushMode(){ return mode === "paint" || mode === "erase"; }
+function isShapeMode(){ return mode === "line" || mode === "rect" || mode === "ellipse"; }
 
 function setMode(m){
   mode = m;
-  ["paint","line","rect","ellipse","erase"].forEach(function(k){
+  ["tap","paint","line","rect","ellipse","erase"].forEach(function(k){
     $("t-" + k).classList.toggle("on", k === m);
   });
 
-  // 筆刷粗細只對 塗抹／直線／擦除 有意義
-  var usesBrush = (m !== "rect" && m !== "ellipse");
+  var usesBrush = (m === "paint" || m === "erase" || m === "line");
   $("brush-row").classList.toggle("off", !usesBrush);
   $("bsize").disabled = !usesBrush;
   $("brush-label").textContent = (m === "line") ? "線條粗細" : "筆刷粗細";
-
   $("tool-hint").innerHTML = TOOL_HINT[m];
 
-  if(m === "erase" && !maskHasPixels()){
-    toast("目前還沒有選取任何範圍，<br>先用「塗抹」或「方框」選起來再擦除");
+  if(m === "erase" && !layerHasMask(L())){
+    toast("這個顏色還沒有選取任何範圍，<br>先用「點選」或「塗抹」選起來再擦除");
   }
 }
 
@@ -675,38 +818,46 @@ function onBrush(){
 }
 
 function pushUndo(){
+  var l = L();
+  if(!l || !l.mask) return;
   var snap = mkCanvas(photo.w, photo.h);
-  snap.getContext("2d").drawImage(mask, 0, 0);
-  undoStack.push(snap);
-  if(undoStack.length > 20) undoStack.shift();
+  snap.getContext("2d").drawImage(l.mask, 0, 0);
+  undoStack.push({ li: actL, canvas: snap, regions: l.regions.slice() });
+  if(undoStack.length > 24) undoStack.shift();
   $("t-undo").disabled = false;
 }
 
 function undo(){
   if(!undoStack.length) return;
-  var snap = undoStack.pop();
-  var mx = mask.getContext("2d");
-  mx.clearRect(0, 0, photo.w, photo.h);
-  mx.drawImage(snap, 0, 0);
+  var u = undoStack.pop();
+  var l = layers[u.li];
+  if(l){
+    var mx = l.mask.getContext("2d");
+    mx.clearRect(0, 0, photo.w, photo.h);
+    mx.drawImage(u.canvas, 0, 0);
+    l.regions = u.regions;
+    actL = u.li;
+  }
   $("t-undo").disabled = undoStack.length === 0;
-  redraw(); refreshGo();
+  syncAll();
 }
 
 function clearMask(){
   if(!photo) return;
   pushUndo();
-  mask.getContext("2d").clearRect(0, 0, photo.w, photo.h);
-  redraw(); refreshGo();
+  L().mask.getContext("2d").clearRect(0, 0, photo.w, photo.h);
+  L().regions = [];
+  redraw(); refreshGo(); renderLayers();
 }
 
 function selectAll(){
   if(!photo) return;
   pushUndo();
-  var mx = mask.getContext("2d");
+  var mx = L().mask.getContext("2d");
   mx.globalCompositeOperation = "source-over";
   mx.fillStyle = "#fff";
   mx.fillRect(0, 0, photo.w, photo.h);
-  redraw(); refreshGo();
+  redraw(); refreshGo(); renderLayers();
 }
 
 function toCanvasPt(e){
@@ -717,9 +868,8 @@ function toCanvasPt(e){
   };
 }
 
-// ---- 筆刷塗抹／擦除 ----
 function paintAt(p){
-  var mx = mask.getContext("2d");
+  var mx = L().mask.getContext("2d");
   mx.globalCompositeOperation = (mode === "erase") ? "destination-out" : "source-over";
   mx.strokeStyle = "#fff";
   mx.fillStyle   = "#fff";
@@ -741,12 +891,9 @@ function paintAt(p){
   lastPt = p;
 }
 
-// ---- 形狀路徑（直線／方框／圓形共用）----
 function shapePath(c, a, b){
   if(mode === "line"){
-    c.beginPath();
-    c.moveTo(a.x, a.y);
-    c.lineTo(b.x, b.y);
+    c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y);
   }else if(mode === "rect"){
     c.beginPath();
     c.rect(Math.min(a.x,b.x), Math.min(a.y,b.y), Math.abs(b.x-a.x), Math.abs(b.y-a.y));
@@ -757,31 +904,25 @@ function shapePath(c, a, b){
 }
 
 function commitShape(a, b){
-  var mx = mask.getContext("2d");
+  var mx = L().mask.getContext("2d");
   mx.globalCompositeOperation = "source-over";
-  mx.fillStyle = "#fff";
-  mx.strokeStyle = "#fff";
-  mx.lineCap = "round";
-  mx.lineJoin = "round";
+  mx.fillStyle = "#fff"; mx.strokeStyle = "#fff";
+  mx.lineCap = "round"; mx.lineJoin = "round";
   mx.lineWidth = brush;
   shapePath(mx, a, b);
-  if(mode === "line") mx.stroke();
-  else mx.fill();
+  if(mode === "line") mx.stroke(); else mx.fill();
 }
 
 function previewShape(a, b){
+  var hex = LC().hex;
   return function(c){
     c.save();
     c.globalAlpha = 0.5;
-    c.fillStyle = "#C9A84C";
-    c.strokeStyle = "#E8C97A";
-    c.lineCap = "round";
-    c.lineJoin = "round";
+    c.fillStyle = hex; c.strokeStyle = hex;
+    c.lineCap = "round"; c.lineJoin = "round";
     shapePath(c, a, b);
-    if(mode === "line"){
-      c.lineWidth = brush;
-      c.stroke();
-    }else{
+    if(mode === "line"){ c.lineWidth = brush; c.stroke(); }
+    else{
       c.fill();
       c.globalAlpha = 1;
       c.lineWidth = Math.max(2, photo.w * 0.003);
@@ -796,32 +937,57 @@ function bindCanvas(){
   cv.onpointerdown = function(e){
     e.preventDefault();
     cv.setPointerCapture(e.pointerId);
-    pushUndo();
-    drawing = true;
+    drawing = true; moved = false;
     startPt = toCanvasPt(e);
     lastPt = null;
+
+    // 候選區還在畫面上時，點一下就是開關那一塊
+    if(segRegions.length && hitSeg(startPt) >= 0) return;
+    if(mode === "tap") return;
+
+    pushUndo();
     if(isBrushMode()){ paintAt(startPt); redraw(); }
-    else { redraw(previewShape(startPt, startPt)); }
+    else redraw(previewShape(startPt, startPt));
   };
 
   cv.onpointermove = function(e){
     if(!drawing) return;
     e.preventDefault();
     var p = toCanvasPt(e);
+    if(Math.abs(p.x - startPt.x) > 3 || Math.abs(p.y - startPt.y) > 3) moved = true;
+    if(mode === "tap") return;
     if(isBrushMode()){ paintAt(p); redraw(); }
-    else { redraw(previewShape(startPt, p)); }
+    else redraw(previewShape(startPt, p));
   };
 
   cv.onpointerup = cv.onpointercancel = function(e){
     if(!drawing) return;
     drawing = false;
     var p = toCanvasPt(e);
-    if(!isBrushMode()) commitShape(startPt, p);
-    lastPt = null; startPt = null;
     try{ cv.releasePointerCapture(e.pointerId); }catch(err){}
-    redraw();
-    refreshGo();
+
+    var hit = segRegions.length ? hitSeg(startPt) : -1;
+    if(hit >= 0 && !moved){
+      segRegions[hit].on = !segRegions[hit].on;
+      renderSegList();
+      redraw();
+    }else if(mode === "tap"){
+      if(!moved) tapSelect(p);
+    }else{
+      if(isShapeMode()) commitShape(startPt, p);
+      redraw();
+      refreshGo();
+      renderLayers();
+    }
+    lastPt = null; startPt = null;
   };
+}
+
+function hitSeg(p){
+  for(var i = segRegions.length - 1; i >= 0; i--){
+    if(hitCanvas(segRegions[i].canvas, p)) return i;
+  }
+  return -1;
 }
 
 // ============================================================
@@ -829,16 +995,49 @@ function bindCanvas(){
 // ============================================================
 var SEG_MODEL  = "gemini-2.5-flash";
 var SEG_COLORS = ["#4A8CD0","#4AB87A","#E07B39","#9B6BC6","#3AAFA9","#D05050","#C9A84C","#D4A017"];
-var segRegions = [];   // [{label, canvas, color, on, pct}]
+var segRegions = [];
 
-function segQuick(t){
-  $("seg-q").value = t;
-  autoSelect();
-}
+function segQuick(t){ $("seg-q").value = t; autoSelect(); }
 
 function segMsg(html, err){
   $("seg-status").innerHTML = html
     ? '<div class="segmsg' + (err ? " err" : "") + '">' + html + "</div>" : "";
+}
+
+function segBody(prompt){
+  var basePart = canvasToParts(photo.canvas, 0.9);
+  return {
+    contents: [{ role: "user", parts: [
+      { inline_data: { mime_type: basePart.mime, data: basePart.b64 } },
+      { text: prompt }
+    ]}],
+    generationConfig: {
+      responseMimeType: "application/json",
+      thinkingConfig: { thinkingBudget: 0 }
+    }
+  };
+}
+
+var SEG_FORMAT =
+  "輸出一個 JSON 陣列，每個項目包含：\n" +
+  '- "box_2d"：該區域的邊界框 [ymin, xmin, ymax, xmax]，數值正規化到 0-1000\n' +
+  '- "mask"：該邊界框內的分割遮罩，base64 PNG\n' +
+  '- "label"：繁體中文標籤\n';
+
+async function callSeg(prompt){
+  var res = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/" + SEG_MODEL + ":generateContent",
+    { method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+      body: JSON.stringify(segBody(prompt)) }
+  );
+  var data = await res.json();
+  if(data.error) throw new Error(data.error.message || "API 錯誤");
+  var txt = "";
+  var ps = (data.candidates && data.candidates[0] && data.candidates[0].content &&
+            data.candidates[0].content.parts) || [];
+  for(var i = 0; i < ps.length; i++){ if(ps[i].text) txt += ps[i].text; }
+  return parseSegJson(txt);
 }
 
 async function autoSelect(){
@@ -856,76 +1055,92 @@ async function autoSelect(){
   redraw();
 
   try{
-    var basePart = canvasToParts(photo.canvas, 0.9);
-    var prompt =
-      "這是一張室內裝修的現場照片。請找出畫面中所有屬於「" + q + "」的區域。\n\n" +
-      "輸出一個 JSON 陣列，每個項目包含：\n" +
-      '- "box_2d"：該區域的邊界框 [ymin, xmin, ymax, xmax]，數值正規化到 0-1000\n' +
-      '- "mask"：該邊界框內的分割遮罩，base64 PNG\n' +
-      '- "label"：繁體中文標籤\n\n' +
-      "規則：\n" +
+    var items = await callSeg(
+      "這是一張室內裝修的現場照片。請找出畫面中所有屬於「" + q + "」的區域。\n\n" + SEG_FORMAT +
+      "\n規則：\n" +
       "1. 只輸出畫面中真實存在的區域，沒有就回傳空陣列 []。\n" +
       "2. 嚴格貼合物件的真實輪廓，不要把相鄰的牆面、地板、天花板或家具一起圈進來。\n" +
-      "3. 同一類若有多塊分開的面（例如多片門片、兩面牆），請分開列出。\n" +
-      "4. 最多 10 個項目。";
+      "3. 同一類若有多塊分開的面（例如三片門片、兩面牆），務必一片一個項目分開列出，" +
+      "標籤加上編號，例如「門片 1」「門片 2」。\n" +
+      "4. 最多 10 個項目。");
 
-    var body = {
-      contents: [{
-        role: "user",
-        parts: [
-          { inline_data: { mime_type: basePart.mime, data: basePart.b64 } },
-          { text: prompt }
-        ]
-      }],
-      generationConfig: {
-        responseMimeType: "application/json",
-        thinkingConfig: { thinkingBudget: 0 }
-      }
-    };
-
-    var res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + SEG_MODEL + ":generateContent",
-      { method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
-        body: JSON.stringify(body) }
-    );
-    var data = await res.json();
-    if(data.error) throw new Error(data.error.message || "API 錯誤");
-
-    var txt = "";
-    var ps = (data.candidates && data.candidates[0] && data.candidates[0].content &&
-              data.candidates[0].content.parts) || [];
-    for(var i = 0; i < ps.length; i++){ if(ps[i].text) txt += ps[i].text; }
-
-    var items = parseSegJson(txt);
     if(!items.length){
-      segMsg("找不到「" + q + "」。換個說法試試（例如「主牆」「木作櫃」），或直接用下面的工具手動框選。", true);
+      segMsg("找不到「" + q + "」。換個說法試試（例如「主牆」「木作櫃」），或用「👆 點選」直接點畫面上的物件。", true);
       return;
     }
-
-    var regions = [];
-    for(var j = 0; j < items.length; j++){
-      var r = await regionFromItem(items[j], j);
-      if(r) regions.push(r);
-    }
-    if(!regions.length){
-      segMsg("有偵測到範圍，但遮罩無法解析。請改用下面的工具手動框選。", true);
-      return;
-    }
-
-    segRegions = regions;
-    renderSegList();
-    redraw();
-    segMsg("點下面的清單可以開關個別範圍，確認後按「套用」。不夠精準的話，套用後還能用塗抹／擦除修。");
+    await showSegItems(items, "點畫面上的色塊或下面的清單可以逐一開關，確認後按「套用」。");
   }catch(e){
-    var m = e.message || "";
-    var tip = "";
-    if(/limit:\s*0|quota|RESOURCE_EXHAUSTED/i.test(m)) tip = "（辨識用的是文字模型，額度與生成分開計算）";
-    segMsg("自動框選失敗：" + m + tip, true);
+    segMsg("自動框選失敗：" + (e.message || ""), true);
   }finally{
     btn.disabled = false;
     btn.textContent = "AI 自動框選";
   }
+}
+
+// 點一下畫面 -> 抓出該點所在的那個物件
+async function tapSelect(p){
+  if(!API_KEY){ showKey(); return; }
+
+  // 已經在目前顏色的某個區塊裡 -> 取消該區塊
+  var l = L();
+  for(var i = l.regions.length - 1; i >= 0; i--){
+    if(hitCanvas(l.regions[i].canvas, p)){
+      pushUndo();
+      var mx = l.mask.getContext("2d");
+      mx.globalCompositeOperation = "destination-out";
+      mx.drawImage(l.regions[i].canvas, 0, 0);
+      mx.globalCompositeOperation = "source-over";
+      var nm = l.regions[i].label;
+      l.regions.splice(i, 1);
+      redraw(); refreshGo(); renderLayers();
+      toast("已取消「" + nm + "」");
+      return;
+    }
+  }
+
+  var px = (p.x / photo.w * 100).toFixed(1);
+  var py = (p.y / photo.h * 100).toFixed(1);
+  segMsg('<span class="spin" style="display:inline-block;vertical-align:-3px"></span> 正在辨識你點的位置…');
+  try{
+    var items = await callSeg(
+      "這是一張室內裝修的現場照片。畫面上有一個指定點，位於水平方向 " + px +
+      "%、垂直方向 " + py + "% 的位置（左上角為 0%,0%）。\n\n" +
+      "請找出「涵蓋這個點的那一個獨立表面或物件」，例如單獨一片門片、一整面牆、地板、一片檯面。\n\n" + SEG_FORMAT +
+      "\n規則：\n" +
+      "1. 只回傳一個項目，就是涵蓋該點的那一個物件。\n" +
+      "2. 嚴格貼合它的真實輪廓，不要把相鄰的面一起圈進來。\n" +
+      "3. 若該點落在牆上就只回傳那一面牆，落在某一片門片上就只回傳那一片門片。");
+
+    if(!items.length){ segMsg("這個位置抓不到明確的物件，換個地方點，或改用「方框」手動框。", true); return; }
+    var r = await regionFromItem(items[0], 0);
+    if(!r){ segMsg("遮罩無法解析，請改用手動工具框選。", true); return; }
+
+    pushUndo();
+    var mx2 = L().mask.getContext("2d");
+    mx2.globalCompositeOperation = "source-over";
+    mx2.drawImage(r.canvas, 0, 0);
+    L().regions.push({ label: r.label, canvas: r.canvas });
+    segMsg("已加入「" + r.label + "」。再點它一次就可以取消。");
+    redraw(); refreshGo(); renderLayers();
+  }catch(e){
+    segMsg("點選辨識失敗：" + (e.message || ""), true);
+  }
+}
+
+async function showSegItems(items, msg){
+  var regions = [];
+  for(var j = 0; j < items.length; j++){
+    var r = await regionFromItem(items[j], j);
+    if(r) regions.push(r);
+  }
+  if(!regions.length){
+    segMsg("有偵測到範圍，但遮罩無法解析。請改用手動工具框選。", true);
+    return;
+  }
+  segRegions = regions;
+  renderSegList();
+  redraw();
+  segMsg(msg);
 }
 
 function parseSegJson(txt){
@@ -942,7 +1157,6 @@ function parseSegJson(txt){
   return out.filter(function(o){ return o && o.box_2d && o.mask; });
 }
 
-// box_2d 是 0-1000 正規化的 [ymin,xmin,ymax,xmax]；mask 是該框內的機率圖
 function regionFromItem(item, idx){
   return new Promise(function(resolve){
     var b = item.box_2d;
@@ -963,10 +1177,10 @@ function regionFromItem(item, idx){
       tx.drawImage(im, 0, 0, bw, bh);
 
       // 機率圖 -> 二值 alpha
+      // 灰階不透明（官方格式）看灰階值；若形狀存在 alpha 則看 alpha
       var d = tx.getImageData(0, 0, bw, bh);
       var p = d.data, on = 0;
       for(var i = 0; i < p.length; i += 4){
-        // 灰階不透明（官方格式）看灰階值；若形狀存在 alpha 則看 alpha
         var v = (p[i + 3] < 250) ? p[i + 3] : p[i];
         if(v > 127){ p[i] = p[i+1] = p[i+2] = 255; p[i+3] = 255; on++; }
         else { p[i+3] = 0; }
@@ -1009,24 +1223,24 @@ function renderSegList(){
     "</div>";
 }
 
-function toggleSeg(i, on){
-  segRegions[i].on = on;
-  redraw();
-}
+function toggleSeg(i, on){ segRegions[i].on = on; redraw(); }
 
 function writeSeg(replace){
   var chosen = segRegions.filter(function(r){ return r.on; });
   if(!chosen.length){ toast("請至少勾選一個範圍"); return; }
   pushUndo();
-  var mx = mask.getContext("2d");
-  if(replace) mx.clearRect(0, 0, photo.w, photo.h);
+  var l = L();
+  var mx = l.mask.getContext("2d");
+  if(replace){ mx.clearRect(0, 0, photo.w, photo.h); l.regions = []; }
   mx.globalCompositeOperation = "source-over";
-  chosen.forEach(function(r){ mx.drawImage(r.canvas, 0, 0); });
+  chosen.forEach(function(r){
+    mx.drawImage(r.canvas, 0, 0);
+    l.regions.push({ label: r.label, canvas: r.canvas });
+  });
   segRegions = [];
   $("seg-list").innerHTML = "";
-  segMsg("已套用。範圍不夠精準的話，可以用下面的「塗抹」補、「擦除」修。");
-  redraw();
-  refreshGo();
+  segMsg("已套用到 " + layerName(actL) + "。用「👆 點選」點那一塊可以再取消，或用塗抹／擦除微調。");
+  redraw(); refreshGo(); renderLayers();
 }
 
 function applySeg(){ writeSeg(true); }
@@ -1034,191 +1248,233 @@ function addSeg(){ writeSeg(false); }
 
 function clearSeg(){
   segRegions = [];
-  $("seg-list").innerHTML = "";
+  var el = $("seg-list");
+  if(el) el.innerHTML = "";
   segMsg("");
   redraw();
 }
 
-function maskHasPixels(){
-  if(!mask) return false;
-  var s = 96;
-  var t = mkCanvas(s, s);
-  var tx = t.getContext("2d");
-  tx.drawImage(mask, 0, 0, s, s);
-  var d = tx.getImageData(0, 0, s, s).data;
-  for(var i = 3; i < d.length; i += 4){ if(d[i] > 12) return true; }
-  return false;
-}
-
 // ============================================================
-// STEP 2 — 材質分類
+// STEP 2 — 材質（綁在目前的顏色圖層上）
 // ============================================================
 function renderCats(){
   $("cats").innerHTML = MATERIALS.map(function(g, i){
     return '<button class="cat' + (i === curCat ? " on" : "") +
-           '" onclick="setCat(' + i + ')">' + g.cat + '</button>';
+           '" onclick="setCat(' + i + ')">' + g.cat + "</button>";
   }).join("");
 }
 
-function setCat(i){
-  curCat = i;
-  renderCats();
-  renderMats();
-}
+function setCat(i){ curCat = i; renderCats(); renderMats(); }
 
 function renderMats(){
-  var items = MATERIALS[curCat].items;
-  $("mats").innerHTML = items.map(function(m, j){
+  var picked = L() ? L().picked : null;
+  $("mats").innerHTML = MATERIALS[curCat].items.map(function(m, j){
     var on = (picked && picked.name === m.name) ? " on" : "";
-    return '<button class="mat' + on + '" onclick="pickMat(' + curCat + ',' + j + ')">' +
+    return '<button class="mat' + on + '" onclick="pickMat(' + curCat + "," + j + ')">' +
              '<span class="sw" style="background:' + m.css + '"></span>' +
-             '<span class="nm">' + m.name + '</span>' +
-           '</button>';
+             '<span class="nm">' + m.name + "</span>" +
+           "</button>";
   }).join("");
 }
 
 function pickMat(ci, ji){
+  if(!L()){ toast("請先上傳現況照片"); return; }
   var m = MATERIALS[ci].items[ji];
-  picked = (picked && picked.name === m.name) ? null : m;   // 再點一次取消
-  renderMats();
-  renderPicked();
-  syncStep2();
+  L().picked = (L().picked && L().picked.name === m.name) ? null : m;
+  renderMats(); renderPicked(); renderLayers(); syncStep2();
 }
 
 function renderPicked(){
   var box = $("picked-box");
-  if(!picked){ box.innerHTML = ""; return; }
+  var p = L() ? L().picked : null;
+  if(!p){ box.innerHTML = ""; return; }
   box.innerHTML =
     '<div class="picked">' +
-      '<span class="psw" style="background:' + picked.css + '"></span>' +
-      '<span class="ptx"><span class="pnm">' + picked.name + '</span>' +
-        '<br><span class="pds">' + picked.desc + '</span></span>' +
+      '<span class="psw" style="background:' + p.css + '"></span>' +
+      '<span class="ptx"><span class="pnm">' + p.name + "</span>" +
+        '<br><span class="pds">' + p.desc + "</span></span>" +
       '<button class="px" onclick="clearPicked()" title="取消">✕</button>' +
-    '</div>';
+    "</div>";
 }
 
 function clearPicked(){
-  picked = null;
-  renderMats();
-  renderPicked();
-  syncStep2();
+  if(!L()) return;
+  L().picked = null;
+  renderMats(); renderPicked(); renderLayers(); syncStep2();
 }
 
-async function loadSwatch(file){
-  try{
-    var r = await fileToImage(file);
-    var img = r.img;
-
-    var scale = Math.min(1, 768 / Math.max(img.width, img.height));
-    var c = mkCanvas(Math.round(img.width * scale), Math.round(img.height * scale));
-    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-
-    var p = canvasToParts(c, 0.95);
-    swatch = { dataUrl: r.dataUrl, mime: p.mime, b64: p.b64 };
-
-    var prev = $("sw-prev");
-    prev.src = r.dataUrl;
+function renderSwatch(){
+  var s = L() ? L().swatch : null;
+  var prev = $("sw-prev");
+  if(s){
+    prev.src = s.dataUrl;
     prev.classList.remove("hide");
     $("d-swatch").classList.add("hide");
     $("sw-clear").classList.remove("hide");
-    syncStep2();
+  }else{
+    prev.classList.add("hide");
+    prev.removeAttribute("src");
+    $("d-swatch").classList.remove("hide");
+    $("sw-clear").classList.add("hide");
+  }
+}
+
+async function loadSwatch(file){
+  if(!L()){ toast("請先上傳現況照片"); return; }
+  try{
+    var r = await fileToImage(file);
+    var img = r.img;
+    var scale = Math.min(1, 768 / Math.max(img.width, img.height));
+    var c = mkCanvas(Math.round(img.width * scale), Math.round(img.height * scale));
+    c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+    var p = canvasToParts(c, 0.95);
+    L().swatch = { dataUrl: r.dataUrl, mime: p.mime, b64: p.b64 };
+    renderSwatch(); renderLayers(); syncStep2();
   }catch(e){
     setStatus("色板載入失敗：" + e.message, "err");
   }
 }
 
 function clearSwatch(){
-  swatch = null;
-  $("sw-prev").classList.add("hide");
-  $("sw-prev").removeAttribute("src");
-  $("d-swatch").classList.remove("hide");
-  $("sw-clear").classList.add("hide");
+  if(!L()) return;
+  L().swatch = null;
+  renderSwatch(); renderLayers(); syncStep2();
+}
+
+function onDesc(){
+  if(L()) L().desc = $("desc").value;
+  renderLayers();
   syncStep2();
 }
 
-function onDesc(){ syncStep2(); }
-function descText(){ return $("desc").value.trim(); }
+function layerHasTarget(l){ return !!(l && (l.picked || l.swatch || (l.desc || "").trim())); }
 
 function syncStep2(){
-  var d = descText();
-  var ok = !!(picked || swatch || d);
+  var ok = layerHasTarget(L());
   $("s2").classList.toggle("done", ok);
-
-  var bits = [];
-  if(picked) bits.push(picked.name);
-  if(swatch) bits.push("色板");
-  if(d)      bits.push("補充需求");
-  $("s2d").textContent = bits.length ? bits.join(" + ") : "材質、文字、色板，至少給一項";
-
   refreshGo();
 }
 
 // ============================================================
 // STEP 3 — 生成
 // ============================================================
-// 沒圈選時，要靠文字講清楚改哪裡
 function areaText(){
-  return $("part").value.trim() || (photo ? $("seg-q").value.trim() : "");
+  return $("part").value.trim() || $("seg-q").value.trim();
+}
+
+// 真正會被送出的圖層：有範圍也有材質
+function activeLayers(){
+  return layers.filter(function(l){ return layerHasMask(l) && layerHasTarget(l); });
 }
 
 function refreshGo(){
-  var hasTarget = !!(picked || swatch || descText());
-  var hasMask   = photo && maskHasPixels();
-  var hasArea   = !!areaText();
+  var go = $("go");
+  if(!photo){
+    go.disabled = true; go.textContent = "請先上傳現況照片";
+    $("lock-note").innerHTML = "";
+    return;
+  }
 
-  $("go").disabled = !(photo && hasTarget && (hasMask || hasArea));
-  $("go").textContent =
-      !photo                  ? "請先上傳現況照片"
-    : !hasTarget              ? "請選擇材質、輸入文字或上傳色板"
-    : (!hasMask && !hasArea)  ? "請圈選範圍，或在「指定部位」寫要改哪裡"
-    : hasMask                 ? "開始模擬"
-                              : "開始模擬（依文字判斷範圍）";
+  var ready   = activeLayers();
+  var masked  = layers.filter(layerHasMask);
+  var hasArea = !!areaText();
+  var textMode = masked.length === 0;
 
-  // 沒有遮罩就無法鎖定未選取區域
+  if(textMode){
+    // 沒有任何圈選 -> 純文字模式，用第一個圖層的材質
+    var ok = layerHasTarget(layers[0]) && hasArea;
+    go.disabled = !ok;
+    go.textContent = !layerHasTarget(layers[0]) ? "請選擇材質、輸入文字或上傳色板"
+                   : !hasArea                   ? "請圈選範圍，或在「指定部位」寫要改哪裡"
+                   : "開始模擬（依文字判斷範圍）";
+  }else{
+    go.disabled = ready.length === 0;
+    go.textContent = ready.length === 0
+      ? "圈選好的顏色還沒指定材質"
+      : (ready.length > 1 ? "開始模擬（" + ready.length + " 種條件）" : "開始模擬");
+  }
+
+  // 有圈選才談得上鎖定
   var lock = $("lock");
-  lock.disabled = !hasMask;
-  $("lock-note").innerHTML = hasMask
-    ? ""
-    : '<div class="segmsg err" style="margin-top:6px">未圈選範圍時無法鎖定 — AI 會依「' +
-      (hasArea ? areaText() : "文字") + '」自行判斷改哪裡，畫面其他地方有可能一併被調整。' +
-      '建議先用上面的<b>「AI 自動框選」</b>把範圍框出來。</div>';
+  lock.disabled = textMode;
+
+  var notes = [];
+  if(textMode){
+    notes.push('未圈選範圍時無法鎖定 — AI 會依「' + (hasArea ? areaText() : "文字") +
+      '」自行判斷改哪裡，畫面其他地方有可能一併被調整。建議先用<b>「👆 點選」</b>或<b>「AI 自動框選」</b>把範圍框出來。');
+  }else{
+    var noMat = masked.filter(function(l){ return !layerHasTarget(l); })
+                      .map(function(l){ return layerName(layers.indexOf(l)); });
+    if(noMat.length) notes.push(noMat.join("、") + " 有圈選範圍但還沒指定材質，這次不會被套用。");
+  }
+  $("lock-note").innerHTML = notes.length
+    ? '<div class="segmsg err" style="margin-top:6px">' + notes.join("<br>") + "</div>" : "";
 }
 
-function buildMarked(){
+// 每個圖層各自的標記色都畫上去
+function buildMarked(list){
   var c = mkCanvas(photo.w, photo.h);
   var x = c.getContext("2d");
   x.drawImage(photo.canvas, 0, 0);
 
-  var t = mkCanvas(photo.w, photo.h);
-  var tx = t.getContext("2d");
-  tx.drawImage(mask, 0, 0);
-  tx.globalCompositeOperation = "source-in";
-  tx.fillStyle = "#FF00E5";
-  tx.fillRect(0, 0, photo.w, photo.h);
-
-  x.globalAlpha = 0.55;
-  x.drawImage(t, 0, 0);
-  x.globalAlpha = 1;
+  list.forEach(function(l){
+    var t = mkCanvas(photo.w, photo.h);
+    var tx = t.getContext("2d");
+    tx.drawImage(l.mask, 0, 0);
+    tx.globalCompositeOperation = "source-in";
+    tx.fillStyle = LAYER_COLORS[l.ci].hex;
+    tx.fillRect(0, 0, photo.w, photo.h);
+    x.globalAlpha = 0.55;
+    x.drawImage(t, 0, 0);
+    x.globalAlpha = 1;
+  });
   return c;
 }
 
-function buildPrompt(hasSwatch, hasMask){
-  var extra = descText();
-  var area  = areaText();
+// 所有要套用的圖層聯集，用來鎖定其餘區域
+function unionMask(list){
+  var c = mkCanvas(photo.w, photo.h);
+  var x = c.getContext("2d");
+  list.forEach(function(l){ x.drawImage(l.mask, 0, 0); });
+  return c;
+}
 
+function colorWord(ci){
+  var n = LAYER_COLORS[ci].name;
+  return n.slice(-1) === "色" ? n : n + "色";
+}
+
+function layerWants(l, swatchNo){
   var wants = [];
-  if(hasSwatch) wants.push("以【圖" + (hasMask ? 3 : 2) + " 材質樣板】的顏色與紋理為準");
-  if(picked)    wants.push(picked.desc);
-  if(extra)     wants.push(extra);
+  if(l.swatch) wants.push("以【圖" + swatchNo + " " + layerName(layers.indexOf(l)) + " 材質樣板】的顏色與紋理為準");
+  if(l.picked) wants.push(l.picked.desc);
+  var d = (l.desc || "").trim();
+  if(d) wants.push(d);
+  return wants.join("；");
+}
 
-  var target = hasMask
-    ? "【圖2 標記圖】中洋紅色覆蓋到的區域" + (area ? "（該區域是：" + area + "）" : "")
-    : "照片中「" + area + "」的部分（請自行判斷它的完整範圍與邊界）";
-
+function buildPrompt(list, swatchNos, hasMask){
+  var area = areaText();
   var lines = [
     "你是室內裝修的照片級視覺化工具。請以【圖1 現況照片】為基底，輸出一張同尺寸、同視角、同構圖的寫實照片。",
-    "",
-    "任務：只把" + target + "，材質換成以下條件：" + wants.join("；") + "。",
+    ""
+  ];
+
+  if(!hasMask){
+    lines.push("任務：只把照片中「" + area + "」的部分（請自行判斷它的完整範圍與邊界），材質換成以下條件：" +
+      layerWants(layers[0], 2) + "。");
+  }else if(list.length === 1){
+    lines.push("任務：只把【圖2 標記圖】中" + colorWord(list[0].ci) + "覆蓋到的區域" +
+      (area ? "（該區域是：" + area + "）" : "") + "，材質換成以下條件：" + layerWants(list[0], swatchNos[0]) + "。");
+  }else{
+    lines.push("任務：【圖2 標記圖】上用不同顏色標出了 " + list.length + " 個區域，各自要換成不同的材質：");
+    list.forEach(function(l, i){
+      lines.push("- " + colorWord(l.ci) + "標記的區域 → " + layerWants(l, swatchNos[i]));
+    });
+    lines.push("每個顏色只套用它自己那一條，不要互相混用。");
+  }
+
+  lines.push(
     "",
     "必須遵守：",
     "1. 完整保留原照片的光影、明暗漸層、陰影、反光與強度，換材質後仍要符合現場光線。",
@@ -1227,11 +1483,11 @@ function buildPrompt(hasSwatch, hasMask){
     hasMask
       ? "4. 標記區域以外的所有內容（牆面、地板、天花、家具、窗戶、燈具、人物）必須與原圖完全一致，不得更動。"
       : "4. 除了上述部位以外，其他所有內容（牆面、地板、天花、家具、窗戶、燈具、人物）必須與原圖完全一致，不得更動。",
-    hasMask ? "5. 輸出畫面中不可出現洋紅色標記本身。" : "5. 邊界要貼合物件的真實輪廓，不可溢出到相鄰的面。",
+    hasMask ? "5. 輸出畫面中不可出現任何標記顏色本身。" : "5. 邊界要貼合物件的真實輪廓，不可溢出到相鄰的面。",
     "6. 不要加入文字、浮水印、邊框或前後對比拼接。",
     "",
     "輸出：僅一張寫實的模擬照片。"
-  ];
+  );
   return lines.join("\n");
 }
 
@@ -1245,37 +1501,45 @@ async function generate(){
   setStatus('<span class="spin"></span><span>AI 模擬中，約需 10～30 秒…</span>');
 
   try{
-    var hasMask  = maskHasPixels();
+    var list    = activeLayers();
+    var hasMask = list.length > 0;
     var basePart = canvasToParts(photo.canvas, 0.94);
 
     var parts = [
       { text: "【圖1】現況照片：" },
       { inline_data: { mime_type: basePart.mime, data: basePart.b64 } }
     ];
+    var no = 2;
     if(hasMask){
-      var markedPart = canvasToParts(buildMarked(), 0.94);
-      parts.push({ text: "【圖2】標記圖，洋紅色覆蓋處＝要更換材質的範圍：" });
+      var markedPart = canvasToParts(buildMarked(list), 0.94);
+      parts.push({ text: "【圖2】標記圖，畫面上被標色的區域＝要更換材質的範圍：" });
       parts.push({ inline_data: { mime_type: markedPart.mime, data: markedPart.b64 } });
+      no = 3;
     }
-    if(swatch){
-      parts.push({ text: "【圖" + (hasMask ? 3 : 2) + "】目標材質樣板：" });
-      parts.push({ inline_data: { mime_type: swatch.mime, data: swatch.b64 } });
-    }
-    parts.push({ text: buildPrompt(!!swatch, hasMask) });
 
-    var body = {
-      contents: [{ role: "user", parts: parts }],
-      generationConfig: { responseModalities: ["IMAGE"] }
-    };
-
-    var model = $("model").value;
-    var res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
-        body: JSON.stringify(body)
+    var swatchNos = [];
+    var srcList = hasMask ? list : [layers[0]];
+    srcList.forEach(function(l){
+      if(l.swatch){
+        swatchNos.push(no);
+        parts.push({ text: "【圖" + no + "】" + layerName(layers.indexOf(l)) + " 的材質樣板：" });
+        parts.push({ inline_data: { mime_type: l.swatch.mime, data: l.swatch.b64 } });
+        no++;
+      }else{
+        swatchNos.push(null);
       }
+    });
+
+    parts.push({ text: buildPrompt(list, swatchNos, hasMask) });
+
+    var res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/" + $("model").value + ":generateContent",
+      { method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: parts }],
+          generationConfig: { responseModalities: ["IMAGE"] }
+        }) }
     );
 
     var data = await res.json();
@@ -1301,24 +1565,21 @@ async function generate(){
       im.src = "data:" + mime + ";base64," + imgPart.data;
     });
 
-    result = (hasMask && $("lock").checked) ? compositeWithMask(aiImg) : fitToBase(aiImg);
+    result = (hasMask && $("lock").checked)
+      ? compositeWithMask(aiImg, unionMask(list))
+      : fitToBase(aiImg);
     showResult();
     setStatus("");
   }catch(e){
     var m = e.message || "";
     var tip = "";
     if(/API key not valid|API_KEY_INVALID/i.test(m)){
-      tip = "<br>→ 金鑰字串不對。點右上角「設定金鑰」，按<b>「測試金鑰」</b>看實際原因。";
+      tip = '<br>→ 金鑰字串不對。點右上角「設定金鑰」，按<b>「測試金鑰」</b>看實際原因。';
     }else if(/limit:\s*0/i.test(m)){
       tip = '<br><b>→ 免費方案對影像模型的額度是 0，必須先開啟計費才能生成。</b>' +
-            '<br>1. 開啟 <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">console.cloud.google.com/billing</a>，用同一個 Google 帳號建立帳單帳戶（綁信用卡）' +
-            '<br>2. 把帳單帳戶連結到金鑰所屬的專案' +
-            '<br>3. 回來重按「開始模擬」' +
-            '<br><span style="opacity:.75">一張圖約 US$0.03～0.13，依模型與解析度而定。</span>';
+            '<br>到 <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">console.cloud.google.com/billing</a> 建立帳單帳戶並連結到金鑰所屬的專案。';
     }else if(/quota|RESOURCE_EXHAUSTED|rate limit/i.test(m)){
       tip = "<br>→ 短時間內請求太多，等 30～60 秒再按一次「開始模擬」。";
-    }else if(/billing|not available on the free/i.test(m)){
-      tip = '<br>→ 這個模型需要專案綁定付款方式，請到 <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">console.cloud.google.com/billing</a> 開啟計費。';
     }else if(/SERVICE_DISABLED|has not been used|PERMISSION_DENIED/i.test(m)){
       tip = "<br>→ 該專案尚未啟用 Generative Language API，錯誤訊息裡的連結可直接開啟啟用。";
     }
@@ -1335,7 +1596,7 @@ function fitToBase(aiImg){
   return c;
 }
 
-function compositeWithMask(aiImg){
+function compositeWithMask(aiImg, m){
   var out = mkCanvas(photo.w, photo.h);
   var ox  = out.getContext("2d");
   ox.drawImage(photo.canvas, 0, 0);
@@ -1348,7 +1609,7 @@ function compositeWithMask(aiImg){
   var sx = soft.getContext("2d");
   var r = Math.max(1.5, Math.min(photo.w, photo.h) * 0.006);
   sx.filter = "blur(" + r.toFixed(1) + "px)";
-  sx.drawImage(mask, 0, 0);
+  sx.drawImage(m, 0, 0);
   sx.filter = "none";
 
   lx.globalCompositeOperation = "destination-in";
@@ -1364,11 +1625,9 @@ function compositeWithMask(aiImg){
 function showResult(){
   var beforeUrl = photo.canvas.toDataURL("image/jpeg", 0.92);
   var afterUrl  = result.toDataURL("image/jpeg", 0.92);
-
   $("im-result").src = afterUrl;
   $("im-before").src = beforeUrl;
   $("im-after").src  = afterUrl;
-
   $("s4").classList.remove("hide");
   setView("after");
   setSplit(50);
@@ -1390,7 +1649,7 @@ function setSplit(pct){
 }
 
 (function bindCompare(){
-  var cmp = $("cmp") || $("view-compare");
+  var cmp = $("view-compare");
   var dragging = false;
   function move(e){
     var r = cmp.getBoundingClientRect();
@@ -1434,8 +1693,8 @@ function showKey(){
         '<button class="mo-c" onclick="closeKey()">取消</button>' +
         '<button class="mo-c" onclick="testKey()">測試金鑰</button>' +
         '<button class="mo-s" onclick="saveKey()">儲存啟用</button>' +
-      '</div>' +
-    '</div>';
+      "</div>" +
+    "</div>";
   document.body.appendChild(d);
   $("keyin").oninput = showKeyInfo;
   showKeyInfo();
@@ -1468,7 +1727,6 @@ async function testKey(){
   var el = $("keyinfo");
   var v = cleanKey($("keyin").value);
   if(!v){ el.textContent = "請先貼上金鑰"; el.className = "keyinfo warn"; return; }
-
   el.textContent = "測試中…";
   el.className = "keyinfo";
   try{
@@ -1517,8 +1775,8 @@ renderCats();
 renderMats();
 paintKeyState();
 onBrush();
-setMode("paint");
-syncStep2();
+setMode("tap");
+refreshGo();
 </script>
 
 </body>
