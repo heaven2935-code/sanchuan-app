@@ -473,7 +473,7 @@ var MATERIALS = [
 // ============================================================
 // 狀態
 // ============================================================
-var BUILD      = "08/11 23:15";
+var BUILD      = "08/11 23:19";
 var MAX_EDGE   = 1536;
 var API_KEY    = localStorage.getItem("gemini_api_key") || "";
 
@@ -1490,6 +1490,127 @@ function useMat(ci, ji){
 
 
 
+
+// ============================================================
+// 診斷：一次把每一關跑過，直接指出卡在哪
+// ============================================================
+function diagLine(ok, name, detail){
+  var mark = ok === true ? "✓" : ok === false ? "✕" : "…";
+  var col  = ok === true ? "var(--green)" : ok === false ? "#F0A0A0" : "var(--muted2)";
+  return '<div style="display:flex;gap:8px;padding:4px 0;line-height:1.5">' +
+    '<span style="color:' + col + ';font-weight:800;flex-shrink:0">' + mark + "</span>" +
+    '<span style="flex:1;min-width:0"><b>' + name + "</b>" +
+    (detail ? '<br><span style="color:var(--muted2);font-size:11px;word-break:break-word">' +
+              detail + "</span>" : "") + "</span></div>";
+}
+
+function tinyImage(){
+  var c = mkCanvas(64, 64);
+  var x = c.getContext("2d");
+  x.fillStyle = "#8a8a86"; x.fillRect(0, 0, 64, 64);
+  x.fillStyle = "#5a4632"; x.fillRect(0, 32, 64, 32);
+  return jpegParts(c, 0.8);
+}
+
+async function runDiag(withGen){
+  var out = [];
+  function show(extra){
+    setState('<b style="color:var(--gold2)">診斷結果</b><div style="margin-top:8px">' +
+      out.join("") + "</div>" + (extra || ""), "ask");
+  }
+
+  out.push(diagLine(true, "版本", BUILD));
+  out.push(diagLine(null, "檢查中…", ""));
+  show();
+
+  // 1. 金鑰
+  out.pop();
+  if(!API_KEY){
+    out.push(diagLine(false, "金鑰", "尚未設定"));
+    show('<div class="confirm-r"><button class="cbtn" onclick="showKey()">開啟金鑰設定</button></div>');
+    return;
+  }
+  out.push(diagLine(true, "金鑰", "長度 " + API_KEY.length + "，開頭 " + API_KEY.slice(0, 6) + "…"));
+
+  // 2. 模型清單
+  out.push(diagLine(null, "查詢可用模型…", ""));
+  show();
+  var p;
+  try{
+    p = await resolveModels(true);
+    out.pop();
+    out.push(diagLine(true, "可用模型", p.all.length + " 個"));
+    out.push(diagLine(true, "辨識用", p.seg));
+    out.push(diagLine(!!p.img, "生成用", p.img || "找不到影像模型"));
+  }catch(e){
+    out.pop();
+    out.push(diagLine(false, "查詢模型失敗", e.message));
+    show('<div class="confirm-r"><button class="cbtn" onclick="showKey()">開啟金鑰設定</button></div>');
+    return;
+  }
+
+  // 3. 實際打一次辨識
+  out.push(diagLine(null, "測試辨識…", ""));
+  show();
+  var t = tinyImage();
+  try{
+    await segCall({
+      contents: [{ role: "user", parts: [
+        { inline_data: { mime_type: t.mime, data: t.b64 } },
+        { text: "這張圖上半部與下半部各是什麼顏色？只回一句話。" }
+      ]}]
+    });
+    out.pop();
+    out.push(diagLine(true, "辨識", "正常（" + p.seg + "）"));
+  }catch(e){
+    out.pop();
+    out.push(diagLine(false, "辨識失敗", e.message));
+    show();
+    return;
+  }
+
+  // 4. 生成要花錢，另外問
+  if(!withGen){
+    out.push(diagLine(null, "生成", "尚未測試（會實際產生一張圖，約 1 元）"));
+    show('<div class="confirm-r">' +
+         '<button class="cbtn" onclick="runDiag(true)">連生成一起測</button>' +
+         '<button class="cbtn alt" onclick="setState(\'\')">關閉</button></div>');
+    return;
+  }
+
+  out.pop();
+  out.push(diagLine(null, "測試生成…", ""));
+  show();
+  try{
+    var res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/" + $("model").value + ":generateContent",
+      { method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [
+            { inline_data: { mime_type: t.mime, data: t.b64 } },
+            { text: "把這張圖的上半部改成深藍色，其餘不變。只輸出圖片。" }
+          ]}],
+          generationConfig: { responseModalities: ["IMAGE"] }
+        }) });
+    var d = await res.json();
+    out.pop();
+    if(d.error) out.push(diagLine(false, "生成失敗", d.error.message + "（" + $("model").value + "）"));
+    else{
+      var ps = (d.candidates && d.candidates[0] && d.candidates[0].content &&
+                d.candidates[0].content.parts) || [];
+      var got = ps.some(function(q){ var i = q.inlineData || q.inline_data; return i && i.data; });
+      out.push(diagLine(got, got ? "生成" : "生成沒回傳圖片",
+                        got ? "正常（" + $("model").value + "）"
+                            : ((d.candidates && d.candidates[0] && d.candidates[0].finishReason) || "")));
+    }
+  }catch(e){
+    out.pop();
+    out.push(diagLine(false, "生成失敗", e.message));
+  }
+  show('<div class="confirm-r"><button class="cbtn alt" onclick="setState(\'\')">關閉</button></div>');
+}
+
 // ============================================================
 // 右下角圓點選單
 // ============================================================
@@ -1503,7 +1624,8 @@ var FAB_ITEMS = [
   { ic:"💡", t:"配色建議",  fn:"askStyle()",   need:"photo" },
   { ic:"✏️", t:"自己圈範圍", fn:"toggleAdv()",  need:"photo" },
   { ic:"↩",  t:"回到原圖",  fn:"showOriginal()", need:"photo" },
-  { ic:"⚙",  t:"金鑰與畫質", fn:"openSettings()" }
+  { ic:"⚙",  t:"金鑰與畫質", fn:"openSettings()" },
+  { ic:"🩺", t:"診斷",      fn:"runDiag()" }
 ];
 
 function toggleFab(){
