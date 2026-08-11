@@ -381,14 +381,14 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 </div>
 
 <!-- 底部輸入列 -->
-<div class="dock hide" id="dock">
+<div class="dock" id="dock">
   <button class="fab" id="fab" onclick="toggleFab()">＋</button>
   <div class="fabmenu hide" id="fabmenu"></div>
   <div class="dock-in">
     <div id="selsw-box"></div>
     <div class="qrow" id="qrow"></div>
     <div class="askrow">
-      <textarea class="ask" id="ask" rows="1" placeholder="想怎麼改？例：把櫃體門片換成深胡桃木"
+      <textarea class="ask" id="ask" rows="1" placeholder="先上傳現況照片，再打一句話說要怎麼改"
                 oninput="growAsk()" onkeydown="askKey(event)"></textarea>
       <button class="send" id="send" onclick="submitAsk()">↑</button>
     </div>
@@ -473,7 +473,7 @@ var MATERIALS = [
 // ============================================================
 // 狀態
 // ============================================================
-var BUILD      = "08/11 23:10";
+var BUILD      = "08/11 23:11";
 var MAX_EDGE   = 1536;
 var API_KEY    = localStorage.getItem("gemini_api_key") || "";
 
@@ -686,9 +686,8 @@ async function loadPhoto(file){
 
     $("d-photo").classList.add("hide");
     $("main").classList.remove("hide");
-    $("dock").classList.remove("hide");
     setMode("off");
-    $("fab").classList.remove("hide");
+    $("ask").placeholder = "想怎麼改？例：把櫃體門片換成深胡桃木";
     renderQuicks();
     renderThread();
     redraw();
@@ -704,7 +703,6 @@ function resetAll(){
   orig = null; cur = null; stack = []; turns = []; pending = null; mask = null;
   $("d-photo").classList.remove("hide");
   $("main").classList.add("hide");
-  $("dock").classList.add("hide");
   setState("");
 }
 
@@ -752,7 +750,6 @@ function redraw(preview){
 function refreshBar(){
   $("counter").textContent = turns.length ? turns.length + " 個方案" : "";
   $("send").disabled = busy;
-  $("fab").classList.toggle("hide", !cur);
 }
 
 // 每一張模擬結果都帶著「用了哪個色板／材質」的標註，
@@ -1477,9 +1474,9 @@ var FAB_ITEMS = [
   { ic:"📤", t:"分享全部",  fn:"shareAll()",    need:"result" },
   { ic:"🔍", t:"前後對比",  fn:"openCompare()", need:"result" },
   { ic:"🎨", t:"色板庫",    fn:"openLib()" },
-  { ic:"💡", t:"配色建議",  fn:"askStyle()" },
-  { ic:"✏️", t:"自己圈範圍", fn:"toggleAdv()" },
-  { ic:"↩",  t:"回到原圖",  fn:"showOriginal()" },
+  { ic:"💡", t:"配色建議",  fn:"askStyle()",   need:"photo" },
+  { ic:"✏️", t:"自己圈範圍", fn:"toggleAdv()",  need:"photo" },
+  { ic:"↩",  t:"回到原圖",  fn:"showOriginal()", need:"photo" },
   { ic:"⚙",  t:"金鑰與畫質", fn:"openSettings()" }
 ];
 
@@ -1490,7 +1487,9 @@ function toggleFab(){
   var mask = $("fabmask");
   if(fabOpen){
     m.innerHTML = FAB_ITEMS.filter(function(it){
-      return it.need !== "result" || turns.length;
+      if(it.need === "result") return turns.length > 0;
+      if(it.need === "photo")  return !!cur;
+      return true;
     }).map(function(it){
       return '<button class="fabitem" onclick="toggleFab();' + it.fn + '">' +
              '<span class="ic">' + it.ic + "</span>" + it.t + "</button>";
