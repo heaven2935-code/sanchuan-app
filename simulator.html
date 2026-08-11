@@ -472,8 +472,100 @@ var MATERIALS = [
 // 狀態
 // ============================================================
 var MAX_EDGE   = 1536;
-var SEG_MODEL  = "gemini-2.5-flash";
 var API_KEY    = localStorage.getItem("gemini_api_key") || "";
+
+// 不寫死模型：Google 會汰換型號，寫死遲早會壞。
+// 改成問這把金鑰實際可用哪些模型，再挑最合適的，結果快取起來。
+var MODEL_KEY  = "sim_models_v1";
+var picked     = null;
+try{ picked = JSON.parse(localStorage.getItem(MODEL_KEY) || "null"); }catch(e){ picked = null; }
+
+function isBad(n){
+  return /embedding|aqa|tts|audio|live|imagen|veo|learnlm|gemma/i.test(n);
+}
+
+function verOf(n){
+  var m = n.match(/gemini-(\d+(?:\.\d+)?)/i);
+  return m ? parseFloat(m[1]) : 0;
+}
+
+// 分割與理解用：要看得懂圖、便宜、夠快
+function scoreSeg(n){
+  if(!/gemini/i.test(n) || isBad(n) || /image/i.test(n)) return -1;
+  var s = verOf(n) * 100;
+  if(/flash/i.test(n)) s += 40;
+  if(/lite/i.test(n))  s -= 25;      // lite 辨識邊界較差
+  if(/pro/i.test(n))   s += 10;
+  if(/preview|exp/i.test(n)) s -= 5; // 同分時偏好正式版
+  return s;
+}
+
+// 生圖用
+function scoreImg(n){
+  if(!/gemini/i.test(n) || isBad(n) || !/image/i.test(n)) return -1;
+  return verOf(n) * 100 + (/flash/i.test(n) ? 20 : 0);
+}
+
+async function listModels(){
+  var out = [], token = "";
+  for(var i = 0; i < 4; i++){
+    var url = "https://generativelanguage.googleapis.com/v1beta/models?pageSize=200" +
+              (token ? "&pageToken=" + encodeURIComponent(token) : "");
+    var r = await fetch(url, { headers: { "x-goog-api-key": API_KEY } });
+    var d = await r.json();
+    if(d.error) throw new Error(d.error.message || "無法取得模型清單");
+    (d.models || []).forEach(function(m){
+      var meth = m.supportedGenerationMethods || m.supported_generation_methods || [];
+      if(meth.indexOf("generateContent") < 0) return;
+      out.push(String(m.name).replace(/^models\//, ""));
+    });
+    token = d.nextPageToken || d.next_page_token || "";
+    if(!token) break;
+  }
+  return out;
+}
+
+function best(names, scorer){
+  var b = null, bs = -1;
+  names.forEach(function(n){
+    var sc = scorer(n);
+    if(sc > bs){ bs = sc; b = n; }
+  });
+  return bs > 0 ? b : null;
+}
+
+async function resolveModels(force){
+  if(picked && !force) return picked;
+  var names = await listModels();
+  picked = {
+    seg: best(names, scoreSeg),
+    img: best(names, scoreImg),
+    all: names
+  };
+  if(!picked.seg) throw new Error("這把金鑰沒有可用的辨識模型。");
+  localStorage.setItem(MODEL_KEY, JSON.stringify(picked));
+  fillModelSelect();
+  return picked;
+}
+
+function fillModelSelect(){
+  if(!picked || !picked.all) return;
+  var imgs = picked.all.filter(function(n){ return scoreImg(n) > 0; })
+                       .sort(function(a, b){ return scoreImg(b) - scoreImg(a); });
+  if(!imgs.length) return;
+  var sel2 = $("model");
+  var keep = sel2.value;
+  sel2.innerHTML = imgs.map(function(n){
+    var label = /pro/i.test(n) ? "Pro（畫質最好）" : /flash/i.test(n) ? "快速（便宜）" : n;
+    return '<option value="' + n + '">' + label + "</option>";
+  }).join("");
+  if(imgs.indexOf(keep) >= 0) sel2.value = keep;
+}
+
+// 舊型號被下架時會回這類訊息，清快取重挑一次
+function isStale(m){
+  return /no longer available|not found|NOT_FOUND|is not supported|does not exist/i.test(m || "");
+}
 
 var orig    = null;   // 原始上傳照片 {canvas,w,h}
 var cur     = null;   // 目前這張（每次模擬後更新）
@@ -873,6 +965,26 @@ function cancelPending(){
 }
 
 // 一次呼叫同時做：聽懂要改哪裡 + 要改成什麼 + 切出範圍
+
+// 辨識類呼叫的共用出口：自動挑模型，型號被下架時重挑一次再試
+async function segCall(body){
+  var p = await resolveModels(false);
+  for(var attempt = 0; attempt < 2; attempt++){
+    var res = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/" + p.seg + ":generateContent",
+      { method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+        body: JSON.stringify(body) });
+    var data = await res.json();
+    if(!data.error) return data;
+    if(attempt === 0 && isStale(data.error.message)){
+      p = await resolveModels(true);   // 清快取重挑
+      continue;
+    }
+    throw new Error(data.error.message || "API 錯誤");
+  }
+}
+
 async function understand(text){
   var p = jpegParts(cur, 0.9);
   var prompt =
@@ -890,20 +1002,13 @@ async function understand(text){
     "3. 若使用者講的是整體性的調整（例如整體變亮），regions 回傳空陣列 []。\n" +
     "4. regions 最多 10 個。";
 
-  var res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/" + SEG_MODEL + ":generateContent",
-    { method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [
-          { inline_data: { mime_type: p.mime, data: p.b64 } },
-          { text: prompt }
-        ]}],
-        generationConfig: { responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } }
-      }) }
-  );
-  var data = await res.json();
-  if(data.error) throw new Error(data.error.message || "API 錯誤");
+  var data = await segCall({
+    contents: [{ role: "user", parts: [
+      { inline_data: { mime_type: p.mime, data: p.b64 } },
+      { text: prompt }
+    ]}],
+    generationConfig: { responseMimeType: "application/json", thinkingConfig: { thinkingBudget: 0 } }
+  });
 
   var txt = "";
   var ps = (data.candidates && data.candidates[0] && data.candidates[0].content &&
@@ -1048,17 +1153,26 @@ async function runGenerate(){
     }
     parts.push({ text: buildPrompt(withMask) });
 
-    var res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + $("model").value + ":generateContent",
-      { method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: parts }],
-          generationConfig: { responseModalities: ["IMAGE"] }
-        }) }
-    );
-    var data = await res.json();
-    if(data.error) throw new Error(data.error.message || "API 錯誤");
+    var gbody = {
+      contents: [{ role: "user", parts: parts }],
+      generationConfig: { responseModalities: ["IMAGE"] }
+    };
+    var mdl = $("model").value;
+    var data = null;
+    for(var att = 0; att < 2; att++){
+      var res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/" + mdl + ":generateContent",
+        { method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
+          body: JSON.stringify(gbody) });
+      data = await res.json();
+      if(!data.error) break;
+      if(att === 0 && isStale(data.error.message)){
+        var np = await resolveModels(true);
+        if(np.img){ mdl = np.img; continue; }
+      }
+      throw new Error(data.error.message || "API 錯誤");
+    }
 
     var rp = (data.candidates && data.candidates[0] && data.candidates[0].content &&
               data.candidates[0].content.parts) || [];
@@ -1797,19 +1911,12 @@ async function askStyle(){
       '"material"（具體材質描述，含顏色、紋理、光澤）\n\n' +
       "規則：只針對照片中真的看得到的部位提建議；每套 2～4 個部位；材質描述要具體到可以直接照著做。";
 
-    var res = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + SEG_MODEL + ":generateContent",
-      { method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [
-            { inline_data: { mime_type: p.mime, data: p.b64 } }, { text: ask }
-          ]}],
-          generationConfig: { responseMimeType: "application/json" }
-        }) }
-    );
-    var data = await res.json();
-    if(data.error) throw new Error(data.error.message || "API 錯誤");
+    var data = await segCall({
+      contents: [{ role: "user", parts: [
+        { inline_data: { mime_type: p.mime, data: p.b64 } }, { text: ask }
+      ]}],
+      generationConfig: { responseMimeType: "application/json" }
+    });
 
     var txt = "";
     var ps = (data.candidates && data.candidates[0] && data.candidates[0].content &&
@@ -1920,6 +2027,11 @@ function saveKey(){
   API_KEY = v;
   if(v) localStorage.setItem("gemini_api_key", v); else localStorage.removeItem("gemini_api_key");
   closeKey(); paintKeyState();
+  if(API_KEY){
+    picked = null;
+    localStorage.removeItem(MODEL_KEY);
+    resolveModels(true).catch(function(){});
+  }
 }
 function paintKeyState(){
   $("kdot").style.background = API_KEY ? "#4AB87A" : "#555";
@@ -1958,6 +2070,7 @@ renderCats();
 renderMats();
 paintKeyState();
 onBrush();
+if(API_KEY) resolveModels(false).catch(function(){});
 </script>
 
 </body>
