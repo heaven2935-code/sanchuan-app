@@ -686,9 +686,10 @@ try {
 // 資料層
 // ══════════════════════════════════════════════════════
 const TODAY = new Date().toISOString().slice(0,10);
-// API Key 從 localStorage 讀取
-let API_KEY = localStorage.getItem('sk_apikey') || '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';
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxz7LxSNx_llXUd06BGH8aMbacjUuR3sz2fBurBrQhwjB-6q2En2gDtoXFWdMPdGlIC/exec';
+// 金鑰與試算表網址一律只從 localStorage 讀，不寫進原始碼。
+// 這個檔案會被公開提供，任何寫死在這裡的字串等同對外公開。
+let API_KEY = localStorage.getItem('sk_apikey') || '';
+const GAS_URL = localStorage.getItem('gas_url') || '';
 
 const LS = {
   get: k => JSON.parse(localStorage.getItem(k) || '[]'),
