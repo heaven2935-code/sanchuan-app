@@ -243,6 +243,53 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 .sug-u{background:var(--gold);border:none;border-radius:7px;padding:5px 10px;cursor:pointer;
        color:#0D1117;font-size:11px;font-weight:700;font-family:var(--font);flex-shrink:0}
 
+
+/* ── 右下角圓點選單 ── */
+.fab{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);z-index:80;
+     width:54px;height:54px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;
+     color:#0D1117;font-size:23px;font-weight:800;font-family:var(--font);
+     box-shadow:0 5px 20px rgba(0,0,0,.55);transition:transform .2s}
+.fab.open{transform:rotate(45deg)}
+.fabmenu{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 156px);z-index:80;
+         display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.fabitem{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border2);
+         border-radius:24px;padding:9px 15px;cursor:pointer;color:var(--text);font-size:12.5px;
+         font-weight:600;font-family:var(--font);white-space:nowrap;box-shadow:0 3px 14px rgba(0,0,0,.45);
+         opacity:0;transform:translateY(8px);transition:opacity .16s,transform .16s}
+.fabmenu.open .fabitem{opacity:1;transform:none}
+.fabitem:hover{border-color:var(--gold)}
+.fabitem .ic{font-size:15px}
+.fabmask{position:fixed;inset:0;z-index:70;background:rgba(13,17,23,.5)}
+
+/* ── 客戶模式（全螢幕）── */
+.client{position:fixed;inset:0;z-index:400;background:#08090C;display:flex;flex-direction:column}
+.cbar{display:flex;align-items:center;gap:10px;padding:12px 14px;flex-shrink:0}
+.cbar .ct{font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px}
+.cbar .cx{margin-left:auto;background:none;border:none;color:var(--muted2);font-size:24px;
+          cursor:pointer;font-family:var(--font);line-height:1;padding:0 4px}
+.cview{flex:1;position:relative;overflow:hidden;touch-action:pan-y;display:flex;
+       align-items:center;justify-content:center;background:#000}
+.cview img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.cnav{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:70px;
+      background:rgba(13,17,23,.55);border:none;color:#E8EDF5;font-size:22px;cursor:pointer;
+      font-family:var(--font)}
+.cnav.l{left:0;border-radius:0 10px 10px 0}
+.cnav.r{right:0;border-radius:10px 0 0 10px}
+.cnav:disabled{opacity:.2}
+.clabel{flex-shrink:0;display:flex;align-items:center;gap:13px;padding:14px 16px;
+        border-top:1px solid var(--border);background:var(--card)}
+.clabel img,.clabel span.cs{width:56px;height:56px;border-radius:10px;flex-shrink:0;
+        border:1px solid var(--border2);object-fit:cover;display:block}
+.clabel .cb{flex:1;min-width:0}
+.clabel .cn{font-size:17px;font-weight:800;color:var(--gold2);line-height:1.35}
+.clabel .cd{font-size:12px;color:var(--muted2);line-height:1.5;margin-top:2px}
+.clabel .cc{font-size:11px;color:var(--muted);margin-top:3px}
+.cshare{background:var(--gold);border:none;border-radius:11px;padding:13px 17px;cursor:pointer;
+        color:#0D1117;font-size:14px;font-weight:800;font-family:var(--font);flex-shrink:0}
+.cdots{display:flex;justify-content:center;gap:6px;padding:9px 0 4px;flex-shrink:0}
+.cdot{width:7px;height:7px;border-radius:50%;background:var(--border2)}
+.cdot.on{background:var(--gold);width:18px;border-radius:4px}
+
 .hide{display:none !important}
 </style>
 </head>
@@ -253,13 +300,11 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
   <div class="hd">
     <div class="hd-t">三川工方</div>
     <div class="hd-r">
-      <select id="model" title="生成模型">
-        <option value="gemini-3-pro-image-preview">Pro（畫質最好）</option>
-        <option value="gemini-3.1-flash-image-preview" selected>快速（便宜）</option>
-      </select>
-      <button class="keybtn" onclick="showKey()">
-        <span class="kdot" id="kdot"></span><span id="klabel">金鑰</span>
-      </button>
+      <span class="kdot" id="kdot" title="金鑰狀態"></span>
+      <span id="counter" style="font-size:11px;color:var(--muted)"></span>
+      <select id="model" class="hide"><option value="gemini-3-pro-image-preview">Pro</option>
+        <option value="gemini-3.1-flash-image-preview" selected>快速</option></select>
+      <span id="klabel" class="hide"></span>
     </div>
   </div>
 
@@ -276,13 +321,6 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
   <div class="hide" id="main">
     <div class="stage" id="stage"><canvas id="cv"></canvas></div>
 
-    <div class="imgbar">
-      <button class="ib" id="b-orig"  onclick="showOriginal()">原圖</button>
-      <button class="ib" id="b-undo"  onclick="stepBack()" disabled>↶ 上一步</button>
-      <button class="ib" id="b-cmp"   onclick="openCompare()" disabled>前後對比</button>
-      <button class="ib" id="b-dl"    onclick="download()" disabled>⤓ 下載</button>
-      <span class="ib-sp" id="counter"></span>
-    </div>
 
     <div id="state"></div>
     <div id="sugbox"></div>
@@ -321,11 +359,6 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 <div class="dock hide" id="dock">
   <div class="dock-in">
     <div id="selsw-box"></div>
-    <div class="actrow">
-      <button class="act" id="a-lib" onclick="openLib()">🎨 色板庫</button>
-      <button class="act" onclick="askStyle()">💡 配色建議</button>
-      <button class="act" id="advtoggle2" onclick="toggleAdv()">⚙ 進階</button>
-    </div>
     <div class="qrow" id="qrow"></div>
     <div class="askrow">
       <textarea class="ask" id="ask" rows="1" placeholder="想怎麼改？例：把櫃體門片換成深胡桃木"
@@ -333,6 +366,26 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
       <button class="send" id="send" onclick="submitAsk()">↑</button>
     </div>
   </div>
+</div>
+
+
+<!-- 右下角圓點 -->
+<button class="fab hide" id="fab" onclick="toggleFab()">＋</button>
+<div class="fabmenu hide" id="fabmenu"></div>
+
+<!-- 客戶模式 -->
+<div class="client hide" id="client">
+  <div class="cbar">
+    <span class="ct">三川工方 · 施工模擬</span>
+    <button class="cx" onclick="closeClient()">✕</button>
+  </div>
+  <div class="cview" id="cview">
+    <img id="cimg" alt="">
+    <button class="cnav l" id="cprev" onclick="clientGo(-1)">‹</button>
+    <button class="cnav r" id="cnext" onclick="clientGo(1)">›</button>
+  </div>
+  <div class="cdots" id="cdots"></div>
+  <div class="clabel" id="clabel"></div>
 </div>
 
 <script>
@@ -519,6 +572,7 @@ async function loadPhoto(file){
     $("main").classList.remove("hide");
     $("dock").classList.remove("hide");
     setMode("off");
+    $("fab").classList.remove("hide");
     renderQuicks();
     renderThread();
     redraw();
@@ -580,11 +634,9 @@ function redraw(preview){
 }
 
 function refreshBar(){
-  $("b-undo").disabled = stack.length === 0;
-  $("b-cmp").disabled  = turns.length === 0;
-  $("b-dl").disabled   = turns.length === 0;
-  $("counter").textContent = turns.length ? "已模擬 " + turns.length + " 次" : "";
+  $("counter").textContent = turns.length ? turns.length + " 個方案" : "";
   $("send").disabled = busy;
+  $("fab").classList.toggle("hide", !cur);
 }
 
 // 每一張模擬結果都帶著「用了哪個色板／材質」的標註，
@@ -606,7 +658,8 @@ function renderThread(){
             '<div class="res-no">第 ' + (i + 1) + " 張 · " + t.at + "</div>" +
           "</div></div>" +
         '<div class="res-bar">' +
-          '<button class="res-b" onclick="downloadOne(' + i + ')">⤓ 下載（含標註）</button>' +
+          '<button class="res-b" onclick="shareOne(' + i + ')">📤 分享</button>' +
+          '<button class="res-b" onclick="downloadOne(' + i + ')">⤓ 下載</button>' +
           '<button class="res-b" onclick="revertTo(' + i + ')">設為目前</button>' +
         "</div></div>";
     }).reverse().join("");
@@ -1272,6 +1325,179 @@ function useMat(ci, ji){
   pickSwatch({ id: "builtin:" + ci + ":" + ji, name: m.name, css: m.css, desc: m.desc });
 }
 
+
+
+// ============================================================
+// 右下角圓點選單
+// ============================================================
+var fabOpen = false;
+
+var FAB_ITEMS = [
+  { ic:"👤", t:"客戶模式",  fn:"openClient()",  need:"result" },
+  { ic:"📤", t:"分享全部",  fn:"shareAll()",    need:"result" },
+  { ic:"🔍", t:"前後對比",  fn:"openCompare()", need:"result" },
+  { ic:"🎨", t:"色板庫",    fn:"openLib()" },
+  { ic:"💡", t:"配色建議",  fn:"askStyle()" },
+  { ic:"✏️", t:"自己圈範圍", fn:"toggleAdv()" },
+  { ic:"↩",  t:"回到原圖",  fn:"showOriginal()" },
+  { ic:"⚙",  t:"金鑰與畫質", fn:"openSettings()" }
+];
+
+function toggleFab(){
+  fabOpen = !fabOpen;
+  $("fab").classList.toggle("open", fabOpen);
+  var m = $("fabmenu");
+  var mask = $("fabmask");
+  if(fabOpen){
+    m.innerHTML = FAB_ITEMS.filter(function(it){
+      return it.need !== "result" || turns.length;
+    }).map(function(it){
+      return '<button class="fabitem" onclick="toggleFab();' + it.fn + '">' +
+             '<span class="ic">' + it.ic + "</span>" + it.t + "</button>";
+    }).join("");
+    m.classList.remove("hide");
+    requestAnimationFrame(function(){ m.classList.add("open"); });
+    if(!mask){
+      var d = document.createElement("div");
+      d.id = "fabmask"; d.className = "fabmask";
+      d.onclick = toggleFab;
+      document.body.appendChild(d);
+    }
+  }else{
+    m.classList.remove("open");
+    m.classList.add("hide");
+    if(mask) mask.remove();
+  }
+}
+
+function openSettings(){ showKey(); }
+
+// ============================================================
+// 客戶模式：全螢幕看圖，只留大圖與色號
+// ============================================================
+var cIdx = 0;
+
+function clientSlides(){
+  var out = [{ url: orig.canvas.toDataURL("image/jpeg", .9), name: "施工前現況",
+               desc: "原始照片", swUrl: "", swCss: "", no: "" }];
+  turns.forEach(function(t, i){
+    out.push({ url: t.url, name: t.swName || "自訂描述", desc: t.text,
+               swUrl: t.swUrl, swCss: t.swCss, no: "方案 " + (i + 1) });
+  });
+  return out;
+}
+
+function openClient(){
+  if(!turns.length){ toast("還沒有模擬結果"); return; }
+  cIdx = 1;
+  $("client").classList.remove("hide");
+  document.body.style.overflow = "hidden";
+  renderClient();
+}
+
+function closeClient(){
+  $("client").classList.add("hide");
+  document.body.style.overflow = "";
+}
+
+function clientGo(d){
+  var s = clientSlides();
+  cIdx = Math.max(0, Math.min(s.length - 1, cIdx + d));
+  renderClient();
+}
+
+function renderClient(){
+  var s = clientSlides(), it = s[cIdx];
+  $("cimg").src = it.url;
+  $("cprev").disabled = cIdx === 0;
+  $("cnext").disabled = cIdx === s.length - 1;
+  $("cdots").innerHTML = s.map(function(_, i){
+    return '<span class="cdot' + (i === cIdx ? " on" : "") + '"></span>';
+  }).join("");
+
+  var sw = it.swUrl ? '<img src="' + it.swUrl + '">'
+         : it.swCss ? '<span class="cs" style="background:' + it.swCss + '"></span>'
+         : '<span class="cs" style="background:var(--card2)"></span>';
+  $("clabel").innerHTML = sw +
+    '<div class="cb"><div class="cn">' + it.name + "</div>" +
+    '<div class="cd">' + it.desc + "</div>" +
+    (it.no ? '<div class="cc">' + it.no + " · 共 " + turns.length + " 個方案</div>" : "") +
+    "</div>" +
+    (cIdx > 0 ? '<button class="cshare" onclick="shareOne(' + (cIdx - 1) + ')">分享</button>' : "");
+}
+
+(function bindClientSwipe(){
+  var v = $("cview"), x0 = null;
+  v.addEventListener("pointerdown", function(e){ x0 = e.clientX; });
+  v.addEventListener("pointerup", function(e){
+    if(x0 === null) return;
+    var dx = e.clientX - x0;
+    x0 = null;
+    if(Math.abs(dx) > 45) clientGo(dx < 0 ? 1 : -1);
+  });
+})();
+
+// ============================================================
+// 一鍵分享（LINE／訊息／相簿都走系統分享）
+// ============================================================
+async function annotatedCanvas(t){
+  var im = await new Promise(function(res){
+    var q = new Image(); q.onload = function(){ res(q); }; q.src = t.url;
+  });
+  var c = mkCanvas(im.width, im.height);
+  c.getContext("2d").drawImage(im, 0, 0);
+  return annotate(c, t);
+}
+
+function canvasToFile(canvas, name){
+  return new Promise(function(res){
+    canvas.toBlob(function(b){
+      res(new File([b], name, { type: "image/jpeg" }));
+    }, "image/jpeg", 0.92);
+  });
+}
+
+function safeName(s){ return (s || "方案").replace(/[\\/:*?"<>|]/g, "_"); }
+
+async function shareFiles(files, text){
+  if(navigator.canShare && navigator.canShare({ files: files })){
+    try{
+      await navigator.share({ files: files, title: "施工模擬", text: text });
+      return true;
+    }catch(e){
+      if(e && e.name === "AbortError") return true;   // 使用者自己取消
+    }
+  }
+  // 不支援系統分享就退回下載
+  files.forEach(function(f){
+    var a = document.createElement("a");
+    a.download = f.name;
+    a.href = URL.createObjectURL(f);
+    a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+  });
+  toast("這個瀏覽器不支援直接分享，已改成下載");
+  return false;
+}
+
+async function shareOne(i){
+  var t = turns[i];
+  toast("準備分享…");
+  var c = await annotatedCanvas(t);
+  var f = await canvasToFile(c, "施工模擬_" + safeName(t.swName) + ".jpg");
+  await shareFiles([f], (t.swName ? t.swName + " — " : "") + t.text);
+}
+
+async function shareAll(){
+  if(!turns.length){ toast("還沒有模擬結果"); return; }
+  toast("整理 " + turns.length + " 張圖…");
+  var files = [];
+  for(var i = 0; i < turns.length; i++){
+    var c = await annotatedCanvas(turns[i]);
+    files.push(await canvasToFile(c, (i + 1) + "_" + safeName(turns[i].swName) + ".jpg"));
+  }
+  await shareFiles(files, "施工模擬共 " + turns.length + " 個方案");
+}
 
 // ============================================================
 // 色板庫：內建材質（文字描述）＋ 自己上傳的實拍色板（參考影像）
