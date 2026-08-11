@@ -160,6 +160,7 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
 
 /* ── modal ── */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200}
+#keymo .ov,#keymo .mo{z-index:500}
 .mo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:201;width:min(420px,92vw);
     background:var(--card);border:1px solid var(--border2);border-radius:14px;padding:22px}
 .mo-t{font-size:15px;font-weight:800;color:var(--gold);margin-bottom:8px}
@@ -321,7 +322,9 @@ select:focus,input[type=text]:focus{border-color:var(--gold)}
   <div class="hd">
     <div class="hd-t">三川工方</div>
     <div class="hd-r">
-      <span class="kdot" id="kdot" title="金鑰狀態"></span>
+      <button class="keybtn" onclick="showKey()" title="設定金鑰">
+        <span class="kdot" id="kdot"></span><span>金鑰</span>
+      </button>
       <span id="counter" style="font-size:11px;color:var(--muted)"></span>
       <select id="model" class="hide"><option value="gemini-3-pro-image-preview">Pro</option>
         <option value="gemini-3.1-flash-image-preview" selected>快速</option></select>
@@ -898,7 +901,7 @@ function toggleAdv(){
 // ============================================================
 async function submitAsk(){
   if(busy) return;
-  if(!API_KEY){ showKey(); return; }
+  if(!API_KEY){ toast("請先設定 Gemini 金鑰"); showKey(); return; }
   var text = $("ask").value.trim();
   if(!text && !sel){ toast("先打一句話說要怎麼改，或從色板庫選一個材質"); return; }
   if(!text) text = "換成這個材質";
@@ -1219,15 +1222,18 @@ async function runGenerate(){
 function errText(e){
   var m = e.message || "";
   var tip = "";
-  if(/API key not valid|API_KEY_INVALID/i.test(m)){
-    tip = '<br>→ 金鑰不對。點右上角「金鑰」，按<b>「測試金鑰」</b>看原因。';
+  var keyBtn = '<div class="confirm-r"><button class="cbtn" onclick="showKey()">開啟金鑰設定</button></div>';
+  if(/API key not valid|API_KEY_INVALID|API_KEY_INVALID/i.test(m)){
+    tip = "<br>→ 金鑰字串不對或已被刪除。開啟設定後按<b>「測試金鑰」</b>可看實際原因。" + keyBtn;
   }else if(/limit:\s*0/i.test(m)){
     tip = '<br><b>→ 免費方案對影像模型的額度是 0，要先開啟計費。</b>' +
           '<br>到 <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">console.cloud.google.com/billing</a> 建立帳單帳戶並連結到金鑰所屬的專案。';
   }else if(/quota|RESOURCE_EXHAUSTED|rate limit/i.test(m)){
     tip = "<br>→ 短時間內請求太多，等 30～60 秒再試一次。";
   }else if(/SERVICE_DISABLED|has not been used|PERMISSION_DENIED/i.test(m)){
-    tip = "<br>→ 該專案尚未啟用 Generative Language API。";
+    tip = "<br>→ 該專案尚未啟用 Generative Language API。" + keyBtn;
+  }else if(/沒有可用的辨識模型|模型清單/.test(m)){
+    tip = "<br>→ 可能是金鑰失效或權限不足。" + keyBtn;
   }
   return "失敗：" + m + tip;
 }
