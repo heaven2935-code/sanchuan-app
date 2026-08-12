@@ -5,6 +5,12 @@
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>三川工方｜施工模擬</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="施工模擬">
+<meta name="theme-color" content="#FAF9F7">
 <style>
 :root{
   --bg:#FAF9F7; --card:#FFFFFF; --line:#EAE7E1; --line2:#DAD5CC;
@@ -43,10 +49,12 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15p
          color:var(--brand);box-shadow:var(--shadow)}
 .hello-t{font-size:20px;font-weight:650;letter-spacing:.4px}
 .hello-d{font-size:13.5px;color:var(--faint);margin-top:10px;line-height:2}
-.hello-eg{display:inline-block;margin-top:20px;background:var(--card);border:1px solid var(--line);
-          border-radius:13px;padding:13px 16px;text-align:left;font-size:12.5px;color:var(--muted);
-          line-height:1.9;box-shadow:var(--shadow)}
-.hello-eg b{color:var(--ink);font-weight:650}
+.setup{display:inline-block;margin-top:26px;background:var(--card);border:1px solid var(--line);
+        border-radius:15px;padding:16px 20px;font-size:13px;color:var(--ink);font-weight:600;
+        box-shadow:var(--shadow)}
+.setup-s{font-size:11.5px;color:var(--faint);font-weight:400;line-height:1.7;margin-top:5px}
+.setup-b{display:block;width:100%;margin-top:13px;background:var(--ink);border:none;border-radius:11px;
+         padding:11px 18px;cursor:pointer;color:#F7F5F2;font-size:13px;font-weight:650;font-family:var(--sans)}
 
 .turn{margin-bottom:26px}
 
@@ -205,7 +213,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15p
 <script>
 "use strict";
 
-var BUILD    = "08/12 02:41";
+var BUILD    = "08/12 09:34";
 var API_KEY  = localStorage.getItem("gemini_api_key") || "";
 var MAX_EDGE = 1408;
 
@@ -284,7 +292,12 @@ function renderThread(){
         '<path d="M4 32V13l16-9 16 9v19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>' +
         '<path d="M15 34V21h10v13"/><path d="M20 4v9"/></svg></div>' +
       '<div class="hello-t">加照片，說一句話</div>' +
-      '<div class="hello-d">可以一次加現況照與色板照<br>再用「圖1」「圖2」指定</div></div>';
+      '<div class="hello-d">可以一次加現況照與色板照<br>再用「圖1」「圖2」指定</div>' +
+      (API_KEY ? "" :
+        '<div class="setup">這台裝置還沒設定金鑰' +
+        '<div class="setup-s">從主畫面捷徑開啟時，資料與 Safari 是分開的，要各自設定一次</div>' +
+        '<button class="setup-b" onclick="showKey()">設定金鑰</button></div>') +
+      "</div>";
     return;
   }
   $("thread").innerHTML = turns.map(function(t, i){
@@ -626,7 +639,7 @@ function saveKey(){
   if(v) localStorage.setItem("gemini_api_key", v);
   else localStorage.removeItem("gemini_api_key");
   imgModel = ""; localStorage.removeItem(MODEL_KEY);
-  closeKey(); paintKey(); refreshSend();
+  closeKey(); paintKey(); refreshSend(); renderThread();
 }
 
 function paintKey(){ $("kdot").style.background = API_KEY ? "var(--green)" : "#C6CEDC"; }
