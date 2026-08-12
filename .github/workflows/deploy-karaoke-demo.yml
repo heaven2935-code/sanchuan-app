@@ -1,0 +1,68 @@
+name: Deploy Karaoke (HOOKED MUSIC) to GitHub Pages
+
+on:
+  push:
+    branches:
+      - claude/windows-vocal-separator-zei8rm
+    paths:
+      - "karaoke/frontend/**"
+      - "index.html"
+      - ".github/workflows/deploy-karaoke-demo.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: karaoke/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: karaoke/frontend
+        run: npm ci
+
+      - name: Build frontend (real backend)
+        working-directory: karaoke/frontend
+        env:
+          VITE_API_BASE: https://karaoke-backend-mchf.onrender.com
+          VITE_BASE_PATH: /sanchuan-app/karaoke/
+        run: npm run build
+
+      - name: Assemble Pages site
+        run: |
+          set -e
+          mkdir -p _site/karaoke
+          cp index.html _site/index.html
+          cp -r karaoke/frontend/dist/. _site/karaoke/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

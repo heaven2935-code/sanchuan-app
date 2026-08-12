@@ -1,0 +1,43 @@
+:root {
+  --bg: #090a0e;
+  --surface: #1a1d24;
+  --text: #f1f2f4;
+  --text-muted: #9096a3;
+  --accent: #ff4d67;
+  --accent-2: #ffb347;
+  --border: #2b2f38;
+
+  color-scheme: dark;
+  font: 16px/1.5 system-ui, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+input[type="range"] {
+  accent-color: var(--accent);
+}
+
+a {
+  color: inherit;
+}
